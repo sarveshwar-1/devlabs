@@ -1,3 +1,4 @@
+
 import React from 'react'
 import {
   Card,
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Car } from 'lucide-react';
+import { CreateTeamDialog } from "@/components/team/create-team-dialog";
 
 function page() {
   
@@ -37,9 +39,7 @@ function page() {
             <CardDescription>Team 3</CardDescription>
           </CardContent>
         </Card>
-        <Button className='w-[100%] mt-5 mb-5'>
-          Create Team
-        </Button>
+        <CreateTeamDialog />
         <Card>
           <CardHeader>
             <CardTitle>Projects</CardTitle>
