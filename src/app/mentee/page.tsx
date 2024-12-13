@@ -25,7 +25,7 @@ type Team = {
   members: TeamMember[];
 }
 
-function page() {
+function Page() {
   const [teams, setTeams] = useState<Team[]>([]);
 
   useEffect(() => {
@@ -79,4 +79,4 @@ function page() {
   )
 }
 
-export default page
+export default Page;

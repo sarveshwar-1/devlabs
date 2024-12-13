@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prismadb";
 
-const prisma = new PrismaClient();
+
 export async function GET() {
   try {
     const teams = await prisma.team.findMany({

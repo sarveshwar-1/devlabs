@@ -8,8 +8,6 @@ import {
   Home,
   BookOpen,
   FileText,
-  Terminal,
-  MessageSquare,
   LucideIcon,
   Cloudy,
 } from "lucide-react";

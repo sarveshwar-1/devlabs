@@ -6,6 +6,9 @@ export async function middleware(req: Request) {
   const { pathname, origin } = req.nextUrl;
 
   const absolute = (path: string) => `${origin}${path}`;
+  if (pathname=="/auth/register") {
+    return NextResponse.next();
+  }
 
   if (!token?.user && pathname !== "/auth/login") {
     return NextResponse.redirect(absolute("/auth/login"));
