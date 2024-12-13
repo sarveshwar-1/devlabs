@@ -8,8 +8,6 @@ import {
   Home,
   BookOpen,
   FileText,
-  Terminal,
-  MessageSquare,
   LucideIcon,
   Cloudy,
 } from "lucide-react";
@@ -26,19 +24,15 @@ type UserRole = "MENTOR" | "MENTEE";
 const navItemsByRole: Record<UserRole, NavItem[]> = {
   MENTOR: [
     { name: "Home", href: "/mentor", icon: Home },
-    { name: "Quiz", href: "/mentor/quiz", icon: BookOpen },
-    { name: "Assignments", href: "/mentor/assignments", icon: FileText },
-    { name: "SharePoint", href: "/mentor/sharepoint", icon: Cloudy },
-    { name: "IDE", href: "/ide", icon: Terminal },
-    { name: "Forum", href: "/forum", icon: MessageSquare }
+    { name: "Projects", href: "/mentor/project", icon: BookOpen },
+    { name: "Teams", href: "/mentor/teams", icon: FileText },
+    { name: "Blog", href: "/mentor/blogs", icon: Cloudy },
   ],
   MENTEE: [
     { name: "Home", href: "/mentee", icon: Home },
-    { name: "Quiz", href: "/mentee/quiz", icon: BookOpen },
-    { name: "Assignments", href: "/mentee/assignments", icon: FileText },
-    { name: "SharePoint", href: "/mentee/sharepoint", icon: Cloudy },
-    { name: "IDE", href: "/ide", icon: Terminal },
-    { name: "Forum", href: "/forum", icon: MessageSquare }
+    { name: "Projects", href: "/mentee/project", icon: BookOpen },
+    { name: "Teams", href: "/mentee/teams", icon: FileText },
+    { name: "Blog", href: "/mentee/blogs", icon: Cloudy },
   ],
 };
 

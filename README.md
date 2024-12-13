@@ -20,6 +20,10 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Authentication
+
+This application supports authentication using both credentials and GitHub. To use GitHub authentication, you need to set up a GitHub OAuth application and provide the `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` environment variables.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
