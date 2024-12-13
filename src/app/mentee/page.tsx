@@ -1,19 +1,41 @@
-
-import React from 'react'
+"use client"
+import React, { useEffect, useState } from 'react'
 import {
   Card,
   CardHeader,
-  CardFooter,
   CardTitle,
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car } from 'lucide-react';
 import { CreateTeamDialog } from "@/components/team/create-team-dialog";
+import TeamCard from "@/components/team/team-card";
+
+type TeamMember = {
+  user: {
+    name: string;
+    rollNo: string;
+  }
+}
+
+type Team = {
+  id: number;
+  name: string;
+  description?: string;
+  members: TeamMember[];
+}
 
 function page() {
-  
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  useEffect(() => {
+    fetch("/api/team")
+      .then((res) => res.json())
+      .then((data) => setTeams(data))
+      .catch((error) => console.error("Failed to fetch teams:", error));
+  }, []);
+
+
   return (
     <div className='flex justify-evenly'>
       <div className='w-[45%] h-[100%]'>
@@ -34,9 +56,9 @@ function page() {
             <CardTitle>Teams</CardTitle>
           </CardHeader>
           <CardContent className='overflow-scroll'>
-            <CardDescription>Team 1</CardDescription>
-            <CardDescription>Team 2</CardDescription>
-            <CardDescription>Team 3</CardDescription>
+            {teams.map((item) => (
+              <TeamCard key={item.id} {...item} />
+            ))}
           </CardContent>
         </Card>
         <CreateTeamDialog />
@@ -44,11 +66,7 @@ function page() {
           <CardHeader>
             <CardTitle>Projects</CardTitle>
           </CardHeader>
-          <CardContent className='overflow-scroll'>
-            <CardDescription>Project 1</CardDescription>
-            <CardDescription>Project 2</CardDescription>
-            <CardDescription>Project 3</CardDescription>
-          </CardContent>
+          
         </Card>
         <Button className='w-[100%] mt-5 mb-5'>
           Create Project

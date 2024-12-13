@@ -7,8 +7,17 @@ export async function GET() {
     const projects = await prisma.project.findMany({
         include: {
             team: true,
-            mentor: true,
-        },
+            mentor: {
+                select: {
+                    id: true,
+                    user: {
+                        select: {
+                            name: true,
+                        }
+                    }
+                },
+            },
+        }
     });
 
     return NextResponse.json(projects);

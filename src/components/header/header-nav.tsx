@@ -24,7 +24,8 @@ const HeaderNavbar = async () => {
           </Button>
 
           <ThemeToggler />
-          {session?.user && (
+          {
+            session?.user ? (
             <>
               <Button variant="ghost" size="icon" className="mr-2">
                 <Bell className="h-5 w-5" />
@@ -32,7 +33,12 @@ const HeaderNavbar = async () => {
               </Button>
               <UserNav />
             </>
-          )}
+            ) : (
+            <Link href="/auth/login">
+                  <Button variant="outline">Login</Button>
+            </Link>
+          )
+        }
         </div>
       </div>
     </header>
