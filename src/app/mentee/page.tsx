@@ -56,9 +56,12 @@ function Page() {
             <CardTitle>Teams</CardTitle>
           </CardHeader>
           <CardContent className='overflow-scroll'>
-            {teams.map((item) => (
-              <TeamCard key={item.id} {...item} />
-            ))}
+            {
+              !(teams.length !== 0) &&
+              teams.map((item) => (
+                <TeamCard key={item.id} {...item} />
+              ))
+            }
           </CardContent>
         </Card>
         <CreateTeamDialog />
@@ -66,7 +69,7 @@ function Page() {
           <CardHeader>
             <CardTitle>Projects</CardTitle>
           </CardHeader>
-          
+
         </Card>
         <Button className='w-[100%] mt-5 mb-5'>
           Create Project
@@ -74,7 +77,7 @@ function Page() {
 
 
       </div>
-      
+
     </div>
   )
 }

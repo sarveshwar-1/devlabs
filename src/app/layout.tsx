@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 
 import { MainNav } from "@/components/main-nav";
 import HeaderNavbar from "@/components/header/header-nav";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "DevLabs",
@@ -26,6 +27,7 @@ export default function RootLayout({
             <div className="flex-1 ml-28 m-6">
               {children}
             </div>
+            <Toaster />
           </main>
         </Providers>
       </body>

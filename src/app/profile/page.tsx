@@ -273,6 +273,18 @@ export default function UserProfilePage() {
         }
     }
 
+    const handleGitHubConnect = async () => {
+        // Store current URL to return after GitHub auth
+        sessionStorage.setItem('githubReturnTo', window.location.href);
+        
+        // Redirect to GitHub OAuth flow
+        const response = await fetch('/api/github/auth');
+        const data = await response.json();
+        if (data.url) {
+            window.location.href = data.url;
+        }
+    };
+
     if (!user) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -500,7 +512,7 @@ export default function UserProfilePage() {
                                                 Link your GitHub account to access and display your repositories
                                             </p>
                                             <Button
-                                                onClick={() => signIn('github')}
+                                                onClick={handleGitHubConnect}
                                                 className="gap-2"
                                             >
                                                 <Github className="h-4 w-4" />

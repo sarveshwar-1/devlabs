@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
+    "@radix-ui/react-tooltip": "^1.1.5",
     "archiver": "^7.0.1",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
@@ -37,6 +38,7 @@
     "react-easy-crop": "^5.2.0",
     "react-hook-form": "^7.54.0",
     "recharts": "^2.14.1",
+    "sonner": "^1.7.1",
     "stream": "^0.0.3",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

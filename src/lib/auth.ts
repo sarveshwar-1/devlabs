@@ -1,18 +1,22 @@
 import NextAuth, { User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import GitHubProvider from "next-auth/providers/github"; // Add GitHub provider import
-
 import { AdapterUser } from "next-auth/adapters";
 import { compare, hash } from "bcryptjs";
 import { prisma } from "./db/prismadb";
 
-
 declare module "next-auth/jwt" {
     interface JWT {
         id: string;
+        githubToken?: string;
     }
 }
 
+declare module "next-auth" {
+    interface Session {
+        user: User & AdapterUser;
+        githubToken?: string;
+    }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     session: {
@@ -73,87 +77,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
             },
         }),
-        GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET,
-            authorization: {
-                params: {
-                    scope: 'read:user user:email repo',
-                },
-            },
-        }),
     ],
     callbacks: {
-        async signIn({ user, account, profile }: any) {
-            if (account?.provider === 'github') {
-                try {
-                    const session = await auth();
-                    
-                    // If user is already logged in with credentials, link the GitHub account
-                    if (session?.user?.email) {
-                        await prisma.user.update({
-                            where: { email: session.user.email },
-                            data: {
-                                githubId: profile.id?.toString(),
-                                githubUsername: profile.login?.toString(),
-                                githubToken: account.access_token
-                            }
-                        });
-                        return true;
-                    }
-
-                    // Check if this GitHub account is already linked to a user
-                    const existingUser = await prisma.user.findFirst({
-                        where: {
-                            OR: [
-                                { githubId: profile.id?.toString() },
-                                { email: profile.email }
-                            ]
-                        }
-                    });
-
-                    if (existingUser) {
-                        // Update token if user exists
-                        await prisma.user.update({
-                            where: { id: existingUser.id },
-                            data: { githubToken: account.access_token }
-                        });
-                        return true;
-                    }
-
-                    // Redirect to login if no existing user found
-                    return '/auth/login?message=Please log in first to link your GitHub account';
-                } catch (error) {
-                    console.error("Error in signIn callback:", error);
-                    return '/auth/error?error=DatabaseError';
-                }
-            }
-            return true;
-        },
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.user = user;
             }
-            if (account?.provider === 'github') {
-                // Use stored token instead of session token
-                const dbUser = await prisma.user.findFirst({
-                    where: { 
-                        OR: [
-                            { githubId: account.providerAccountId },
-                            { id: token.user?.id }
-                        ]
-                    }
-                });
-                if (dbUser?.githubToken) {
-                    token.githubAccessToken = dbUser.githubToken;
-                }
+            // Get GitHub token from database
+            const dbUser = await prisma.user.findUnique({
+                where: { id: token.user?.id },
+                select: { githubToken: true }
+            });
+            if (dbUser?.githubToken) {
+                token.githubToken = dbUser.githubToken;
             }
             return token;
         },
         async session({ session, token }) {
             session.user = token.user as AdapterUser & User;
-            if (token.githubAccessToken) {
-                session.githubAccessToken = token.githubAccessToken;
+            if (token.githubToken) {
+                session.githubToken = token.githubToken;
             }
             return session;
         },
