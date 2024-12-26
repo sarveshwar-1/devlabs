@@ -1,13 +1,12 @@
+"use client";
 
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useParams } from 'next/navigation';
-import { GitHubRepo, RepoStats } from '@/types/github';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, LineChart } from '@/components/charts';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
+import { GitHubRepo, RepoStats } from "@/types/github";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, LineChart } from "@/components/charts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RepositoryPage() {
   const { data: session } = useSession();
@@ -18,34 +17,50 @@ export default function RepositoryPage() {
 
   useEffect(() => {
     const fetchRepoDetails = async () => {
-      if (!session?.githubAccessToken) return;
+      if (!session?.githubToken) return;
 
       try {
-        const [repoData, languagesData, commitsData, contributorsData] = await Promise.all([
-          fetch(`https://api.github.com/repos/${params.owner}/${params.name}`, {
-            headers: { Authorization: `Bearer ${session.githubAccessToken}` },
-          }).then(res => res.json()),
-          
-          fetch(`https://api.github.com/repos/${params.owner}/${params.name}/languages`, {
-            headers: { Authorization: `Bearer ${session.githubAccessToken}` },
-          }).then(res => res.json()),
-          
-          fetch(`https://api.github.com/repos/${params.owner}/${params.name}/stats/commit_activity`, {
-            headers: { Authorization: `Bearer ${session.githubAccessToken}` },
-          }).then(res => res.json()),
-          
-          fetch(`https://api.github.com/repos/${params.owner}/${params.name}/contributors`, {
-            headers: { Authorization: `Bearer ${session.githubAccessToken}` },
-          }).then(res => res.json()),
-        ]);
+        const [repoData, languagesData, commitsData, contributorsData] =
+          await Promise.all([
+            fetch(
+              `https://api.github.com/repos/${params.owner}/${params.name}`,
+              {
+                headers: { Authorization: `Bearer ${session.githubToken}` },
+              }
+            ).then((res) => res.json()),
+
+            fetch(
+              `https://api.github.com/repos/${params.owner}/${params.name}/languages`,
+              {
+                headers: { Authorization: `Bearer ${session.githubToken}` },
+              }
+            ).then((res) => res.json()),
+
+            fetch(
+              `https://api.github.com/repos/${params.owner}/${params.name}/stats/commit_activity`,
+              {
+                headers: { Authorization: `Bearer ${session.githubToken}` },
+              }
+            ).then((res) => res.json()),
+
+            fetch(
+              `https://api.github.com/repos/${params.owner}/${params.name}/contributors`,
+              {
+                headers: { Authorization: `Bearer ${session.githubToken}` },
+              }
+            ).then((res) => res.json()),
+          ]);
 
         setRepo(repoData);
         setStats({
           languages: languagesData,
           commits: {
-            total: commitsData.reduce((acc: number, week: any) => acc + week.total, 0),
+            total: commitsData.reduce(
+              (acc: number, week: any) => acc + week.total,
+              0
+            ),
             history: commitsData.map((week: any) => ({
-              date: new Date(week.week * 1000).toISOString().split('T')[0],
+              date: new Date(week.week * 1000).toISOString().split("T")[0],
               count: week.total,
             })),
           },
@@ -60,7 +75,7 @@ export default function RepositoryPage() {
           },
         });
       } catch (error) {
-        console.error('Error fetching repo details:', error);
+        console.error("Error fetching repo details:", error);
       } finally {
         setLoading(false);
       }
@@ -70,13 +85,17 @@ export default function RepositoryPage() {
   }, [session, params]);
 
   if (loading) {
-    return <div className="container mx-auto p-4"><Skeleton className="h-[500px]" /></div>;
+    return (
+      <div className="container mx-auto p-4">
+        <Skeleton className="h-[500px]" />
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">{repo?.name}</h1>
-      
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -84,10 +103,12 @@ export default function RepositoryPage() {
           </CardHeader>
           <CardContent>
             <BarChart
-              data={Object.entries(stats?.languages || {}).map(([name, value]) => ({
-                name,
-                value,
-              }))}
+              data={Object.entries(stats?.languages || {}).map(
+                ([name, value]) => ({
+                  name,
+                  value,
+                })
+              )}
             />
           </CardContent>
         </Card>
@@ -112,14 +133,19 @@ export default function RepositoryPage() {
           <CardContent>
             <div className="space-y-4">
               {stats?.contributors.slice(0, 5).map((contributor) => (
-                <div key={contributor.login} className="flex items-center gap-2">
+                <div
+                  key={contributor.login}
+                  className="flex items-center gap-2"
+                >
                   <img
                     src={contributor.avatar_url}
                     alt={contributor.login}
                     className="w-8 h-8 rounded-full"
                   />
                   <span>{contributor.login}</span>
-                  <span className="ml-auto">{contributor.contributions} commits</span>
+                  <span className="ml-auto">
+                    {contributor.contributions} commits
+                  </span>
                 </div>
               ))}
             </div>

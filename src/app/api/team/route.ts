@@ -1,10 +1,18 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
-
+import { redis } from "@/lib/db/redis";
 
 export async function GET() {
   try {
+    const redisClient = await redis;
+    const cacheKey = 'teams:all';
+    
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(JSON.parse(cachedData));
+    }
+
     const teams = await prisma.team.findMany({
       include: {
         members: {
@@ -14,6 +22,9 @@ export async function GET() {
         },
       },
     });
+
+    await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
+
     return NextResponse.json(teams, { status: 200 });
   } catch (error) {
     console.error("Team fetch error:", error);
@@ -59,7 +70,6 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log({ users });
 
     if (users.length !== members.length || users.length < 0) {
       return NextResponse.json({ error: "Members not found" }, { status: 400 });
@@ -81,6 +91,10 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    // Invalidate cache after creating new team
+    const redisClient = await redis;
+    await redisClient.del('teams:all');
 
     return NextResponse.json(team, { status: 201 });
   } catch (error) {

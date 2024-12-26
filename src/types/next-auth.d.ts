@@ -17,12 +17,12 @@ declare module "next-auth" {
 
     interface Session {
         user: User;
-        githubAccessToken?: string;
+        githubToken?: string;
     }
 }
 
 declare module "next-auth/jwt" {
     interface JWT {
-        githubAccessToken?: string;
+        githubToken?: string;
     }
 }

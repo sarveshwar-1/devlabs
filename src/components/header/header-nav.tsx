@@ -12,10 +12,16 @@ const HeaderNavbar = async () => {
   return (
     <header className="fixed top-0 left-0 right-0 h-14 border-b z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between h-full px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <p className="rounded-lg border-2 border-b-4 border-r-4 border-black px-2 py-1 text-x1 font-bold transition-all hover:-translate-y-[2px] md:block dark:border-white">
-            DevLabs
-          </p>
+        <Link
+          href="/"
+          className="inline-block transition-transform duration-200 ease-in-out hover:scale-105"
+        >
+          <h1 className="text-2xl font-extrabold tracking-tight">
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Dev
+            </span>
+            <span className="text-gray-800 dark:text-gray-200">Labs</span>
+          </h1>
         </Link>
 
         <div className="flex items-center">
@@ -24,8 +30,7 @@ const HeaderNavbar = async () => {
           </Button>
 
           <ThemeToggler />
-          {
-            session?.user ? (
+          {session?.user ? (
             <>
               <Button variant="ghost" size="icon" className="mr-2">
                 <Bell className="h-5 w-5" />
@@ -33,12 +38,11 @@ const HeaderNavbar = async () => {
               </Button>
               <UserNav />
             </>
-            ) : (
+          ) : (
             <Link href="/auth/login">
-                  <Button variant="outline">Login</Button>
+              <Button variant="outline">Login</Button>
             </Link>
-          )
-        }
+          )}
         </div>
       </div>
     </header>

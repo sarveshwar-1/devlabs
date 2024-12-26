@@ -30,8 +30,7 @@ type Project = {
 };
 
 export default function ProjectCard(props: Project) {
-  console.log(props);
-  console.log(props.mentor);
+
   return (
     <Card>
       <CardHeader>

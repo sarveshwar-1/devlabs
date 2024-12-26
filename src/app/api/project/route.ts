@@ -2,20 +2,38 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prismadb';
 import { auth } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { redis } from '@/lib/db/redis';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const redisClient = await redis;
+    const projectId = searchParams.get('projectId');
+
+    if (!projectId) {
+        return NextResponse.json(
+            { error: 'Project ID is required' },
+            { status: 400 }
+        );
+    }
+
     const session = await auth();
     if (!session?.user.email) {
-      return NextResponse.json(
-        {
-          error: "Not Authorised",
-        },
-        {
-          status: 401,
-        }
-      );
+        return NextResponse.json(
+            {
+                error: "Not Authorised",
+            },
+            {
+                status: 401,
+            }
+        );
     }
-    const projects = await prisma.project.findMany({
+    const cachedProjects = await redisClient.get(`${projectId}`);
+    if (cachedProjects) {
+        return NextResponse.json(JSON.parse(cachedProjects));
+    }
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
         include: {
             team: true,
             mentor: {
@@ -31,7 +49,14 @@ export async function GET() {
         }
     });
 
-    return NextResponse.json(projects);
+    if (!project) {
+        return NextResponse.json(
+            { error: 'Project not found' },
+            { status: 404 }
+        );
+    }
+    redisClient.setex(`${projectId}`, 60, JSON.stringify(project));
+    return NextResponse.json(project);
 }
 
 export async function POST(req: Request) {

@@ -4,13 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Home,
-  BookOpen,
-  FileText,
-  LucideIcon,
-  Cloudy,
-} from "lucide-react";
+import { Home, BookOpen, FileText, type LucideIcon, Cloudy } from 'lucide-react';
 import { useSession } from "next-auth/react";
 
 type NavItem = {
@@ -50,10 +44,10 @@ export function MainNav() {
 
   if (status === "loading") {
     return (
-      <div className="fixed top-14 left-0 flex h-[calc(100%-3.5rem)] w-[80px] flex-col z-20 bg-background border-r">
-        <div className="flex flex-col items-center gap-2 mt-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="w-[70px] h-[70px] rounded-lg animate-pulse bg-muted" />
+      <div className="fixed top-14 left-0 flex h-[calc(100vh-3.5rem)] w-20 flex-col z-20 bg-background border-r shadow-md transition-all duration-300 ease-in-out">
+        <div className="flex flex-col items-center gap-4 mt-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="w-14 h-14 rounded-xl animate-pulse bg-muted" />
           ))}
         </div>
       </div>
@@ -63,8 +57,8 @@ export function MainNav() {
   if (!navItems.length) return null;
 
   return (
-    <div className="fixed top-14 left-0 flex h-[calc(100%-3.5rem)] w-[80px] flex-col z-20 bg-background border-r">
-      <nav className="flex flex-col items-center gap-2 mt-2">
+    <div className="fixed top-14 left-0 flex h-[calc(100vh-3.5rem)] w-20 flex-col z-20 bg-background border-r shadow-md transition-all duration-300 ease-in-out">
+      <nav className="flex flex-col items-center gap-4 mt-6">
         {navItems.map(({ name, href, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -72,14 +66,14 @@ export function MainNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center w-[70px] h-[70px] rounded-lg text-center transition-colors",
+                "flex flex-col items-center justify-center w-14 h-14 rounded-xl text-center transition-all duration-200 ease-in-out",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-primary text-primary-foreground shadow-lg scale-110"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:scale-105"
               )}
             >
-              <Icon className="h-5 w-5 mb-1" />
-              <span className="text-xs font-medium">{name}</span>
+              <Icon className={cn("h-6 w-6 mb-1", isActive ? "stroke-[2.5px]" : "stroke-2")} />
+              <span className={cn("text-[10px] font-medium", isActive ? "font-semibold" : "")}>{name}</span>
             </Link>
           );
         })}
@@ -87,3 +81,4 @@ export function MainNav() {
     </div>
   );
 }
+

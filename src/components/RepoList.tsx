@@ -1,38 +1,43 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { GitHubRepo } from '@/types/github';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { GitHubRepo } from "@/types/github";
+import { useRouter } from "next/navigation";
 
 export default function RepoList() {
   const { data: session } = useSession();
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
   useEffect(() => {
     const fetchRepos = async () => {
       try {
-        if (session?.githubAccessToken) {
-          const response = await fetch('https://api.github.com/user/repos?affiliation=owner&sort=updated&per_page=100', {
-            headers: {
-              Authorization: `Bearer ${session.githubAccessToken}`,
-              Accept: 'application/vnd.github.v3+json',
-            },
-          });
+        if (session?.githubToken) {
+          const response = await fetch(
+            "https://api.github.com/user/repos?affiliation=owner&sort=updated&per_page=100",
+            {
+              headers: {
+                Authorization: `Bearer ${session.githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+              },
+            }
+          );
 
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Failed to fetch repositories');
+            throw new Error(error.message || "Failed to fetch repositories");
           }
 
           const data = await response.json();
           setRepos(data);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch repositories');
-        console.error('Error fetching repos:', err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch repositories"
+        );
+        console.error("Error fetching repos:", err);
       }
     };
 
@@ -40,7 +45,7 @@ export default function RepoList() {
   }, [session]);
 
   const handleRepoClick = (repo: GitHubRepo) => {
-    const [owner, name] = repo.full_name.split('/');
+    const [owner, name] = repo.full_name.split("/");
     router.push(`/repository/${owner}/${name}`);
   };
 
@@ -51,8 +56,8 @@ export default function RepoList() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {repos.map((repo) => (
-        <div 
-          key={repo.id} 
+        <div
+          key={repo.id}
           className="p-4 border rounded-lg cursor-pointer hover:border-primary"
           onClick={() => handleRepoClick(repo)}
         >
