@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,7 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+
+type Mentor = {
+  id: string; // This is the mentor id directly
+  user: {
+    id: string;
+    name: string;
+  };
+};
 
 type Team = {
   id: number;
@@ -30,25 +40,48 @@ type Repository = {
   name: string;
   full_name: string;
 };
-type Mentor = {
-  id: string;
-  user: {
-    name: string;
-  };
+
+type Project = {
+  id: number;
+  title: string;
+  description?: string;
+  repository: string;
+  status: string;
+  isPrivate?: boolean;
+  team: Team;
+  mentor: Mentor[];
 };
 
-export function CreateProjectDialog() {
+interface EditProjectDialogProps {
+  project: Project;
+  onProjectUpdated: () => void;
+}
+
+interface FormData {
+  title: string;
+  description: string;
+  repository: string;
+  teamId: number;
+  mentorIds: string[];
+  isPrivate: boolean;
+}
+
+export function EditProjectDialog({
+  project,
+  onProjectUpdated,
+}: EditProjectDialogProps) {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    repository: "",
-    teamId: "",
-    mentorIds: [] as string[], // Changed to array
+  const [formData, setFormData] = useState<FormData>({
+    title: project.title,
+    description: project.description || "",
+    repository: project.repository,
+    teamId: project.team.id,
+    mentorIds: project.mentor.map((m: Mentor) => m.id), // Use mentor.id instead of mentor.user.id
+    isPrivate: project.isPrivate || false,
   });
 
   useEffect(() => {
@@ -68,7 +101,8 @@ export function CreateProjectDialog() {
       const data = await response.json();
       setRepositories(data);
     };
-    //Fetch mentors
+
+    // Fetch mentors
     const fetchMentors = async () => {
       const response = await fetch("/api/mentor");
       const data = await response.json();
@@ -80,37 +114,65 @@ export function CreateProjectDialog() {
     fetchMentors();
   }, [session]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`/api/project`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
+          id: project.id,
           ...formData,
-          status: "PENDING",
-          teamId: formData.teamId,
-          mentorIds: formData.mentorIds,
         }),
       });
 
-      if (response.ok) {
-        setOpen(false);
-        window.location.reload();
-      }
+      if (!response.ok) throw new Error("Failed to update project");
+
+      onProjectUpdated();
+      setOpen(false);
     } catch (error) {
-      console.error("Failed to create project:", error);
+      console.error("Failed to update project:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this project?")) return;
+
+    try {
+      const response = await fetch(`/api/project`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: project.id }),
+      });
+
+      if (!response.ok) throw new Error("Failed to delete project");
+
+      onProjectUpdated();
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to delete project:", error);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="mt-5">Create Project</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <div className="flex space-x-2">
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        <Button variant="ghost" size="icon" onClick={handleDelete}>
+          <Trash2 className="h-4 w-4 text-red-500" />
+        </Button>
+      </div>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
+          <DialogTitle>Edit Project</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -124,6 +186,7 @@ export function CreateProjectDialog() {
               required
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -134,6 +197,7 @@ export function CreateProjectDialog() {
               }
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="repository">Repository</Label>
             <Select
@@ -154,12 +218,13 @@ export function CreateProjectDialog() {
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="team">Team</Label>
             <Select
-              value={formData.teamId}
+              value={formData.teamId.toString()}
               onValueChange={(value) =>
-                setFormData({ ...formData, teamId: value })
+                setFormData({ ...formData, teamId: parseInt(value) })
               }
             >
               <SelectTrigger>
@@ -174,6 +239,7 @@ export function CreateProjectDialog() {
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="mentors">Mentors</Label>
             <div className="space-y-2">
@@ -226,7 +292,8 @@ export function CreateProjectDialog() {
               </Button>
             </div>
           </div>
-          <Button type="submit">Create Project</Button>
+
+          <Button type="submit">Save Changes</Button>
         </form>
       </DialogContent>
     </Dialog>

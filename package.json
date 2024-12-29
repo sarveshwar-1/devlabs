@@ -6,7 +6,12 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rimraf .next && rimraf node_modules/.cache && npm run clean:cache",
+    "clean:cache": "rimraf .cache && redis-cli FLUSHALL",
+    "clean:full": "npm run clean && rimraf node_modules && npm install",
+    "clean:redis": "redis-cli FLUSHALL",
+    "clean:next": "rimraf .next"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -55,6 +60,7 @@
     "eslint-config-next": "14.2.18",
     "postcss": "^8",
     "prisma": "^6.0.1",
+    "rimraf": "^5.0.10",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

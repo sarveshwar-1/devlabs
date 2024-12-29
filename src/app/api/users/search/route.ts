@@ -14,11 +14,16 @@ export async function GET(req: NextRequest) {
 
         const users = await prisma.user.findMany({
             where: {
-                OR: [
-                    { name: { contains: query, mode: 'insensitive' } },
-                    { email: { contains: query, mode: 'insensitive' } },
-                ],
-                role: 'MENTEE',
+                AND: [
+                    { role: "MENTEE" },
+                    {
+                        OR: [
+                            { name: { contains: query, mode: 'insensitive' } },
+                            { email: { contains: query, mode: 'insensitive' } },
+                        ]
+                    }
+                ]
+                ,
                 NOT: {
                     id: session.user.id
                 }

@@ -5,27 +5,56 @@ import { redis } from "@/lib/db/redis";
 
 export async function GET() {
   try {
+    const session = await auth();
     const redisClient = await redis;
-    const cacheKey = 'teams:all';
-    
-    const cachedData = await redisClient.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(JSON.parse(cachedData));
+    if (!session?.user.email) {
+      return NextResponse.json(
+        {
+          error: "Not Authorised",
+        },
+        {
+          status: 401,
+        }
+      );
     }
-
-    const teams = await prisma.team.findMany({
-      include: {
-        members: {
-          include: {
-            user: true,
+    const cacheKey = 'teams:' + session.user.id;
+    const CashedData = await redisClient.get(cacheKey);
+    if (CashedData) {
+      return NextResponse.json(JSON.parse(CashedData));
+    }
+    if (session?.user?.role === 'MENTOR') {
+      const teams = await prisma.team.findMany({
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
           },
         },
-      },
-    });
-
-    await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
-
-    return NextResponse.json(teams, { status: 200 });
+      });
+      await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
+      return NextResponse.json(teams, { status: 200 });
+    }
+    if (session?.user?.role === 'MENTEE') {
+      const teams = await prisma.team.findMany({
+        where: {
+          OR: [
+            { teamLeaderId: session.user.id },
+            { members: { some: { id: session.user.id } } },
+          ]
+        }
+        ,
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      })
+      await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
+      return NextResponse.json(teams, { status: 200 });
+    }
   } catch (error) {
     console.error("Team fetch error:", error);
     return NextResponse.json(
@@ -94,13 +123,121 @@ export async function POST(req: Request) {
 
     // Invalidate cache after creating new team
     const redisClient = await redis;
-    await redisClient.del('teams:all');
-
+    await redisClient.del('teams:'+session.user.id);
     return NextResponse.json(team, { status: 201 });
   } catch (error) {
     console.error("Team creation error:", error);
     return NextResponse.json(
       { error: "Failed to create team" },
+      { status: 500 }
+    );
+  }
+}
+export async function PUT(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user.email) {
+      return NextResponse.json(
+        {
+          error: "Not Authorised",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const { id, name, description, members } = await req.json();
+    if (!members) {
+      return NextResponse.json(
+        { error: "At least one member is required" },
+        { status: 400 }
+      );
+    }
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    }
+
+    const users = await prisma.mentee.findMany({
+      where: {
+        user: {
+          rollNo: {
+            in: members,
+          },
+        },
+      },
+    });
+
+    if (users.length !== members.length || users.length < 0) {
+      return NextResponse.json({ error: "Members not found" }, { status: 400 });
+    }
+
+    const team = await prisma.team.update({
+      where: { id: id },
+      data: {
+        name,
+        description,
+        members: {
+          set: users.map((user) => ({ id: user.id })),
+        },
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    const redisClient = await redis;
+    await redisClient.del('teams:'+session.user.id);
+    return NextResponse.json(team, { status: 200 });
+  } catch (error) {
+    console.error("Team update error:", error);
+    return NextResponse.json(
+      { error: "Failed to update team" },
+      { status: 500 }
+    );
+  }
+}
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user.email) {
+      return NextResponse.json(
+        { error: "Not Authorised" },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await req.json();
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    // First disconnect all members
+    await prisma.team.update({
+      where: { id },
+      data: {
+        members: {
+          set: [], // Remove all members first
+        },
+      },
+    });
+
+    // Then delete the team
+    await prisma.team.delete({
+      where: { id },
+    });
+
+    const redisClient = await redis;
+    await redisClient.del('teams:'+session.user.id);
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("Team deletion error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete team. Please try again." },
       { status: 500 }
     );
   }

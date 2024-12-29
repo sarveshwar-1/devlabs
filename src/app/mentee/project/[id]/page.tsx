@@ -6,12 +6,7 @@ import { motion } from "framer-motion";
 import { CommitTree } from "@/components/project/tree";
 import { Pie, PieChart, Cell, Label, ResponsiveContainer } from "recharts";
 import { ChartTooltip } from "@/components/ui/chart";
-import {
-  Card,
-  CardContent,
-  CardTitle,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, Award, Book } from "lucide-react";
 
@@ -23,7 +18,6 @@ interface Commit {
   additions: number;
   deletions: number;
 }
-
 
 interface Contributor {
   login: string;
@@ -51,7 +45,7 @@ interface Project {
   team: Team;
   isactive: boolean;
 }
-interface User{
+interface User {
   id: string;
   name: string;
   email: string;
@@ -69,7 +63,8 @@ async function fetchWithAuth(url: string) {
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     transition: { duration: 0.6, ease: "easeOut" },
   },
 };
@@ -85,7 +80,6 @@ const containerVariants = {
 };
 
 function Page({ params }: { params: { id: string } }) {
-
   const [commits, setCommits] = useState<Commit[]>([]);
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [repoName, setRepoName] = useState<string | null>(null);
@@ -99,7 +93,7 @@ function Page({ params }: { params: { id: string } }) {
       try {
         const response = await fetch("/api/user");
         if (!response.ok) {
-          throw new Error('Failed to fetch user data');
+          throw new Error("Failed to fetch user data");
         }
         const data = await response.json();
         setUser(data);
@@ -111,8 +105,9 @@ function Page({ params }: { params: { id: string } }) {
   }, []);
   useEffect(() => {
     const fetchProject = async () => {
-      const response = await fetch("/api/project/" + `?projectId=${projectId}`);
+      const response = await fetch("/api/project/" + projectId);
       const data = await response.json();
+      console.log(data);
       setProject(data);
       setRepository(data.repository);
     };
@@ -124,15 +119,15 @@ function Page({ params }: { params: { id: string } }) {
       if (!repository) {
         return;
       }
-      
+
       try {
         const repoData = await fetchWithAuth(repository);
         setRepoName(repoData.name);
-        
+
         const events = await fetchWithAuth(`${repository}/commits`);
         const commitsData: Commit[] = await Promise.all(
           events.map(async (event: Commit) => {
-            const commitUrl = event.url.split('repos/')[1];
+            const commitUrl = event.url.split("repos/")[1];
             const tempdata = await fetchWithAuth(commitUrl);
             return {
               user: tempdata.commit.author.name,

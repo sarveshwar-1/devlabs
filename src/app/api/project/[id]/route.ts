@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse , NextRequest} from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 
-export async function GET(request: Request) {
+export async function GET(request:NextRequest,{params}: { params: { id: string } }) {
   try {
-    const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get('projectId');
-    
+    const projectId = params.id;
+    console.log('projectId:', projectId);
+
     if (!projectId) {
       return NextResponse.json({ error: "Project ID required" }, { status: 400 });
     }
 
     const redisClient = await redis;
     const cacheKey = `project:${projectId}`;
-    
+
     // Try to get from cache
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     await redisClient.setex(cacheKey, 1800, JSON.stringify(project)); // 30 minutes cache
 
     return NextResponse.json(project);
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({ error: "Failed to fetch project" }, { status: 500 });
   }
 }

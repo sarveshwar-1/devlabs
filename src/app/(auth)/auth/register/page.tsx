@@ -155,7 +155,7 @@ export default function RegisterPage() {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="MENTEE">Mentee</SelectItem>
-                                        <SelectItem value="Mentor">Mentor</SelectItem>
+                                        <SelectItem value="MENTOR">Mentor</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />

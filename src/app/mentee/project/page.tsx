@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import {useRouter}from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { CreateProjectDialog } from "@/components/project/create-project-dialog";
+import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 
 type Project = {
   id: number;
@@ -19,7 +21,14 @@ type Project = {
   repository: string;
   status: string;
   team: Team;
+  mentor: Mentor[];
 };
+type Mentor = {
+  user: {
+    id: string;
+    name: string;
+  };
+}
 type TeamMember = {
   user: {
     name: string;
@@ -38,14 +47,15 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
+  
     key: keyof Project;
     direction: "asc" | "desc";
   }>({ key: "title", direction: "asc" });
-
+  const router = useRouter();
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("/api/projects");
+        const response = await fetch("/api/project");
         if (!response.ok) {
           throw new Error("Failed to fetch projects");
         }
@@ -61,6 +71,7 @@ export default function Page() {
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key])
@@ -118,13 +129,16 @@ export default function Page() {
         </TableHeader>
         <TableBody>
           {sortedProjects.map((project) => (
-            <TableRow key={project.id} onClick={
-              () => {
-                window.location.href = `/mentee/project/${project.id}`;
-              }
-            }>
+            <TableRow
+              key={project.id}
+              onClick={() => {
+                router.push(`/mentee/project/${project.id}`);
+              }}
+            >
               <TableCell>{project.title}</TableCell>
-              <TableCell>{project.mentor.map((user) => (user.user.name))}</TableCell>
+              <TableCell>
+                {project.mentor.map((user) => user.user.name)}
+              </TableCell>
               <TableCell>{project.status}</TableCell>
               <TableCell>
                 <a
@@ -137,6 +151,24 @@ export default function Page() {
                 </a>
               </TableCell>
               <TableCell>{project.team.name}</TableCell>
+              <TableCell
+                onClick={(e) => {
+                  e.stopPropagation();
+                }
+              }>
+                <EditProjectDialog
+                  project={project}
+                  onProjectUpdated={() => {
+                    // Refetch projects after update
+                    const fetchProjects = async () => {
+                      const response = await fetch("/api/project");
+                      const data = await response.json();
+                      setProjects(data);
+                    };
+                    fetchProjects();
+                  }}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
