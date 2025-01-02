@@ -9,7 +9,7 @@ import { ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, Award, Book } from "lucide-react";
-
+import TaskList from "@/components/project/task-list";
 interface Commit {
   url: string;
   user: string;
@@ -69,6 +69,13 @@ const cardVariants = {
   },
 };
 
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: string;
+}
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -87,7 +94,16 @@ function Page({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null);
   const [repository, setRepository] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
+  useEffect(() => { 
+    const fetchTasks = async () => {
+      const response = await fetch(`/api/tasks/${projectId}`);
+      const data = await response.json();
+      setTasks(data.tasks);
+    }
+    fetchTasks();
+  }, [projectId]);
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -235,6 +251,9 @@ function Page({ params }: { params: { id: string } }) {
                   Upcoming Tasks
                 </CardTitle>
               </CardHeader>
+              <CardContent>
+                <TaskList tasks={tasks} />
+              </CardContent>
             </Card>
           </div>
         </motion.div>

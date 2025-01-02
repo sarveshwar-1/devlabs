@@ -13,10 +13,13 @@ export async function GET(req: NextRequest,
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    const githubToken = session.user.githubToken;
     const { url } = params as Params;
     const finalurl = url.join('/');
     const cacheKey = `github:${url}`;
+    if (session.user.role = 'MENTOR') {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const githubToken = session.user.githubToken;
 
     try {
         const redisClient = await redis;

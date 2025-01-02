@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
   try {
     const { title, description, repository, teamId, mentorIds, isPrivate } = await req.json();
-
+    const githubtoken = session.user.githubToken;
     if (!title || !teamId || !mentorIds) {
       return NextResponse.json(
         { error: 'Title, team ID, and mentor IDs are required' },
@@ -92,6 +92,7 @@ export async function POST(req: Request) {
         description,
         repository,
         isPrivate: isPrivate || false,
+        githubtoken,
         team: {
           connect: { id: teamId }
         },
@@ -158,6 +159,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   const session = await auth();
   const redisClient = await redis;
+
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Not Authorized" },
@@ -174,9 +176,36 @@ export async function DELETE(req: Request) {
     );
   }
 
-  await prisma.project.delete({
-    where: { id }
-  });
-  await redisClient.del('projects:'+session.user.id);
-  return NextResponse.json({ message: 'Project deleted successfully' });
+  try {
+    // First check if project exists
+    const project = await prisma.project.findUnique({
+      where: { id }
+    });
+
+    if (!project) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
+      );
+    }
+
+    // Then delete tasks and project
+    await prisma.task.deleteMany({
+      where: { projectid: id }
+    });
+
+    await prisma.project.delete({
+      where: { id }
+    });
+
+    await redisClient.del('projects:' + session.user.id);
+    return NextResponse.json({ message: 'Project deleted successfully' });
+
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete project' },
+      { status: 500 }
+    );
+  }
 }

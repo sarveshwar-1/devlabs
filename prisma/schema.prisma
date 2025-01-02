@@ -60,6 +60,7 @@ model Project {
     status      Status   @default(PENDING)
     isPrivate   Boolean  @default(false)
     repository  String?
+    githubtoken String?
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
     isactive    Boolean  @default(true)
