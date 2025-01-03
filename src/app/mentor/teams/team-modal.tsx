@@ -68,7 +68,7 @@ export function TeamModal({ open, onOpenChange, team, onSuccess }) {
             memberIds: selectedMembers.map(m => m.id)
         };
 
-        await fetch("/api/mentee/teams", {
+        await fetch("/api/team", {
             method,
             body: JSON.stringify(body),
             headers: { "Content-Type": "application/json" }

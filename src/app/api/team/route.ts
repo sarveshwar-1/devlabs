@@ -78,8 +78,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, members } = await req.json();
-    if (!members) {
+    const { name, description, memberIds } = await req.json();
+    if (!memberIds) {
       return NextResponse.json(
         { error: "At least one member is required" },
         { status: 400 }
@@ -88,26 +88,37 @@ export async function POST(req: Request) {
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
-
+    const teamLeader = await prisma.mentee.findFirst({
+      where: {
+        user: {
+          id: session.user.id,
+        },
+      },
+    });
     const users = await prisma.mentee.findMany({
       where: {
         user: {
-          rollNo: {
-            in: members,
+          id: {
+            in: memberIds,
           },
         },
       },
     });
 
 
-    if (users.length !== members.length || users.length < 0) {
-      return NextResponse.json({ error: "Members not found" }, { status: 400 });
+    if (users.length !== memberIds.length || users.length < 0) {
+      return NextResponse.json({ error: "memberIds not found" }, { status: 400 });
     }
 
     const team = await prisma.team.create({
       data: {
         name,
         description,
+        teamLeader: {
+          connect: {
+            id: teamLeader?.id,
+          },
+        },
         members: {
           connect: users.map((user) => ({ id: user.id })),
         },
@@ -123,7 +134,7 @@ export async function POST(req: Request) {
 
     // Invalidate cache after creating new team
     const redisClient = await redis;
-    await redisClient.del('teams:'+session.user.id);
+    await redisClient.del('teams:' + session.user.id);
     return NextResponse.json(team, { status: 201 });
   } catch (error) {
     console.error("Team creation error:", error);
@@ -191,7 +202,7 @@ export async function PUT(req: Request) {
     });
 
     const redisClient = await redis;
-    await redisClient.del('teams:'+session.user.id);
+    await redisClient.del('teams:' + session.user.id);
     return NextResponse.json(team, { status: 200 });
   } catch (error) {
     console.error("Team update error:", error);
@@ -232,7 +243,7 @@ export async function DELETE(req: Request) {
     });
 
     const redisClient = await redis;
-    await redisClient.del('teams:'+session.user.id);
+    await redisClient.del('teams:' + session.user.id);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Team deletion error:", error);

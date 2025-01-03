@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
         }
 
         const query = req.nextUrl.searchParams.get("query") || "";
+        console.log(query);
 
         const users = await prisma.user.findMany({
             where: {
