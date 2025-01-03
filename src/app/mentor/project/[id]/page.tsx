@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { use } from "react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CommitTree } from "@/components/project/tree";
@@ -47,6 +47,7 @@ interface Project {
   isPrivate: boolean;
   team: Team;
   isactive: boolean;
+  githubtoken: string;
 }
 interface User {
   id: string;
@@ -63,17 +64,7 @@ interface Task {
   status: string;
 }
 
-async function fetchWithAuth(url: string) {
-  const giturl = `https://api.github.com/repos/${url}`;
-  console.log(giturl);
-  const response = await fetch(giturl);
-  
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  return await response.json();
-}
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -103,7 +94,7 @@ function Page({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
-
+  
   useEffect(() => {
     const exampleTasks: Task[] = [
       {
@@ -168,6 +159,21 @@ function Page({ params }: { params: { id: string } }) {
   }, [projectId]);
 
   useEffect(() => {
+    async function fetchWithAuth(url: string) {
+      const giturl = `https://api.github.com/repos/${url}`;
+      console.log('githubtoken',project?.githubtoken);
+      console.log(giturl);
+      const response = await fetch(giturl, {
+        headers: {
+          Authorization: `Bearer ${project?.githubtoken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+      return await response.json();
+    }
     const fetchData = async () => {
       if (!repository) {
         return;
@@ -204,7 +210,7 @@ function Page({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [repository]);
+  }, [repository,project]);
 
   // chartData is already declared above
 
