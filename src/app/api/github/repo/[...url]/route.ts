@@ -9,6 +9,7 @@ export async function GET(req: NextRequest,
     { params }: { params: Params }
 ) {
     const session = await auth();
+    console.log(session?.user)
     if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -16,9 +17,6 @@ export async function GET(req: NextRequest,
     const { url } = params as Params;
     const finalurl = url.join('/');
     const cacheKey = `github:${url}`;
-    if (session.user.role = 'MENTOR') {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     const githubToken = session.user.githubToken;
 
     try {

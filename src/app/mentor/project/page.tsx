@@ -132,7 +132,7 @@ export default function Page() {
             <TableRow
               key={project.id}
               onClick={() => {
-                router.push(`/mentee/project/${project.id}`);
+                router.push(`/mentor/project/${project.id}`);
               }}
             >
               <TableCell>{project.title}</TableCell>

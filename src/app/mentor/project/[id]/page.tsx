@@ -64,7 +64,10 @@ interface Task {
 }
 
 async function fetchWithAuth(url: string) {
-  const response = await fetch(`/api/github/repo/${url}`);
+  const giturl = `https://api.github.com/repos/${url}`;
+  console.log(giturl);
+  const response = await fetch(giturl);
+  
 
   if (!response.ok) {
     throw new Error("Failed to fetch data");

@@ -143,7 +143,6 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
               required
             />
           </div>
-          console.log(formData)
           <Button type="submit">Create Task</Button>
         </form>
       </DialogContent>
