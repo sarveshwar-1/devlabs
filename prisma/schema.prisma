@@ -65,6 +65,7 @@ model Project {
     updatedAt   DateTime @updatedAt
     isactive    Boolean  @default(true)
     mentor      Mentor[]
+    freezed     Boolean  @default(false)
 
     team   Team   @relation(fields: [teamId], references: [id])
     teamId String

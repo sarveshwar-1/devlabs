@@ -1,5 +1,6 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { EditTaskDialog } from "../tasks/edit-task-dialog";
 import {
   CheckCircle2,
   Clock,
@@ -8,28 +9,32 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Status } from "@prisma/client";
 
 interface Task {
   id: string;
   title: string;
   description: string;
   dueDate: string;
-  status: string;
+  status: Status;
 }
 
 interface TaskListProps {
   tasks: Task[];
+  onTaskSelect?: (task: Task) => void;
+  selectedTaskId?: string;
+  project?: any;
+  user?: any;
 }
 
-export function TaskList({ tasks }: TaskListProps) {
+export function TaskList({ tasks: tasksProps, project, user }: TaskListProps) {
   const [activeTaskId, setActiveTaskId] = React.useState<string | null>(null);
+  const tasks = Array.isArray(tasksProps) ? tasksProps : tasksProps.tasks || [];
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
+  const getStatusColor = (status: Status) => {
+    switch (status) {
       case "COMPLETED":
         return "bg-green-300 dark:bg-green-600";
-      case "IN_PROGRESS":
-        return "bg-blue-300 dark:bg-blue-600";
       case "PENDING":
         return "bg-amber-300 dark:bg-amber-600";
       default:
@@ -37,8 +42,8 @@ export function TaskList({ tasks }: TaskListProps) {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status.toUpperCase()) {
+  const getStatusIcon = (status: Status) => {
+    switch (status) {
       case "COMPLETED":
         return (
           <CheckCircle2 className="w-4 h-4 text-neutral-600 dark:text-neutral-900" />
@@ -55,19 +60,47 @@ export function TaskList({ tasks }: TaskListProps) {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Invalid Date";
+      }
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "Invalid Date";
+    }
+  };
+
+  if (!tasks || !tasks.length) {
+    return (
+      <div className="p-4 text-center text-neutral-600 dark:text-neutral-400">
+        No tasks available
+      </div>
+    );
+  }
+
+  const handleTaskClick = (taskId: string, e: React.MouseEvent) => {
+    // Only toggle if clicking on the main task area, not the details section
+    if (!(e.target as HTMLElement).closest(".task-details")) {
+      setActiveTaskId(activeTaskId === taskId ? null : taskId);
+    }
   };
 
   return (
     <div className="relative w-full">
       <AnimatePresence>
         {tasks.map((task, index) => {
+          if (!task || typeof task !== "object") {
+            console.error("Invalid task object:", task);
+            return null;
+          }
+
           const isActive = activeTaskId === task.id;
 
           return (
@@ -87,18 +120,18 @@ export function TaskList({ tasks }: TaskListProps) {
                     : "bg-neutral-500/5 hover:bg-neutral-500/10"
                 )}
                 whileHover={{ scale: 1.02, translateX: 8 }}
-                onClick={() => setActiveTaskId(isActive ? null : task.id)}
+                onClick={(e) => handleTaskClick(task.id, e)}
                 layout
               >
                 <motion.div
                   className={cn(
                     "relative flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
-                    getStatusColor(task.status)
+                    getStatusColor(task.status as Status)
                   )}
                   whileHover={{ scale: 1.1, rotate: 180 }}
                   transition={{ type: "spring", stiffness: 300, damping: 15 }}
                 >
-                  {getStatusIcon(task.status)}
+                  {getStatusIcon(task.status as Status)}
                 </motion.div>
 
                 <div className="flex-1 min-w-0">
@@ -119,13 +152,24 @@ export function TaskList({ tasks }: TaskListProps) {
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.15, ease: "easeInOut" }}
-                        className="mt-4 pt-4 border-t border-neutral-500/20"
+                        className="mt-4 pt-4 border-t border-neutral-500/20 task-details"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <div className="text-sm text-neutral-600 dark:text-neutral-400">
                           <div className="space-y-2">
-                            <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
-                              Task Details
-                            </p>
+                            <div className="flex justify-between items-center">
+                              <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
+                                Task Details
+                              </p>
+                              {
+                                <EditTaskDialog
+                                  task={task}
+                                  onTaskUpdated={() => {
+                                    window.location.reload();
+                                  }}
+                                />
+                              }
+                            </div>
                             <p>{task.description}</p>
                             <p className="mt-2">
                               <span className="font-medium">Status: </span>

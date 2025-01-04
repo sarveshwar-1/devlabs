@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prismadb';
 import { auth } from '@/lib/auth';
-import {redis} from '@/lib/db/redis';
+import { redis } from '@/lib/db/redis';
+const deleteCashe = (mentorIds: string[]) => {
+  mentorIds.forEach(async (id) => {
+    await redis.del(`projects:${id}`);
+  });
+  
+}
 export async function GET() {
   const redisClient = await redis;
   const session = await auth();
@@ -105,8 +111,9 @@ export async function POST(req: Request) {
         mentor: true
       }
     });
-    await redisClient.del('projects:'+session.user.id);
-    return NextResponse.json(project, { status: 201 });
+    await redisClient.del('projects:' + session.user.id);
+    await deleteCashe(mentorIds);
+    return NextResponse.json({ status: 201 });
   } catch (error) {
     console.error('Project creation error:', error);
     return NextResponse.json(
@@ -153,8 +160,9 @@ export async function PUT(req: Request) {
       mentor: true
     }
   });
-  await redisClient.del('projects:*');
-  return NextResponse.json(project);
+  await redisClient.del(`projects:${session.user.id}`);
+  await deleteCashe(mentorIds);
+  return NextResponse.json({ status: 200 });
 }
 export async function DELETE(req: Request) {
   const session = await auth();
@@ -199,6 +207,7 @@ export async function DELETE(req: Request) {
     });
 
     await redisClient.del('projects:' + session.user.id);
+    await deleteCashe(project.mentor.map((m) => m.id));
     return NextResponse.json({ message: 'Project deleted successfully' });
 
   } catch (error) {

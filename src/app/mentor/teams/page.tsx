@@ -12,13 +12,6 @@ import {
 } from "@/components/ui/table";
 import { useState, useEffect } from "react";
 import { TeamModal } from "./team-modal";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSession } from "next-auth/react";
 import {
   Tooltip,
@@ -26,43 +19,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-// Add useDebounce hook implementation
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { RefreshCw } from "lucide-react";
 
 export default function TeamsPage() {
   const { data: session } = useSession();
-  const [teams, setTeams] = useState<any[]>([]); // Initialize as empty array with type
+  const [teams, setTeams] = useState([]);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const debouncedSearch = useDebounce(search, 500);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchTeams = async () => {
     try {
-      const params = new URLSearchParams({
-        query: debouncedSearch,
-        sort,
-        order,
-      });
-      const res = await fetch(`/api/team?${params}`);
+      const res = await fetch("/api/team");
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to fetch teams");
-      }
-
       setTeams(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -72,73 +42,93 @@ export default function TeamsPage() {
 
   useEffect(() => {
     fetchTeams();
-  }, [debouncedSearch, sort, order]);
+  }, []);
 
   const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to delete this team?")) {
-      await fetch("/api/team", {
+    if (!confirm("Are you sure you want to delete this team?")) return;
+
+    try {
+      const res = await fetch("/api/team", {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ id }),
       });
-      fetchTeams();
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete team");
+      }
+
+      await fetchTeams();
+      // You might want to add a toast notification here for success
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      alert(error.message);
+      // You might want to add a toast notification here for error
     }
   };
 
-  const isTeamLeader = (team) => {
-    return team.teamLeader.id === session?.user?.id;
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchTeams();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
+
+  const filteredTeams = teams.filter(
+    (team) =>
+      team.name.toLowerCase().includes(search.toLowerCase()) ||
+      team.description?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Teams</h1>
-        <Button
-          onClick={() => {
-            setSelectedTeam(null);
-            setIsModalOpen(true);
-          }}
-        >
-          Create Team
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={isRefreshing ? "animate-spin" : ""}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedTeam(null);
+              setIsModalOpen(true);
+            }}
+          >
+            Create Team
+          </Button>
+        </div>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <Input
-          placeholder="Search teams..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-        <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="createdAt">Created Date</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={order} onValueChange={setOrder}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Order" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Input
+        placeholder="Search teams..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="max-w-sm mb-6"
+      />
+
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead>No of Members</TableHead>
+            <TableHead>Members</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {teams.map((team) => (
+          {filteredTeams.map((team) => (
             <TableRow key={team.id}>
               <TableCell>
                 <TooltipProvider>
@@ -147,10 +137,7 @@ export default function TeamsPage() {
                       {team.name}
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>
-                        Join Code:{" "}
-                        <span className="font-mono">{team.joinCode}</span>
-                      </p>
+                      <p>Join Code: {team.joinCode}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -158,7 +145,7 @@ export default function TeamsPage() {
               <TableCell>{team.description}</TableCell>
               <TableCell>{team.members.length}</TableCell>
               <TableCell className="flex gap-2">
-                {isTeamLeader(team) && (
+                {team.teamLeaderId === session?.user?.id && (
                   <>
                     <Button
                       variant="outline"

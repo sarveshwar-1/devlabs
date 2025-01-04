@@ -42,7 +42,6 @@ type Team = {
   description?: string;
   members: TeamMember[];
 };
-
 export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -156,18 +155,18 @@ export default function Page() {
                   e.stopPropagation();
                 }
               }>
-                <EditProjectDialog
-                  project={project}
-                  onProjectUpdated={() => {
-                    // Refetch projects after update
-                    const fetchProjects = async () => {
-                      const response = await fetch("/api/project");
-                      const data = await response.json();
-                      setProjects(data);
-                    };
-                    fetchProjects();
-                  }}
-                />
+                  <EditProjectDialog
+                    project={project}
+                    onProjectUpdated={() => {
+                      // Refetch projects after update
+                      const fetchProjects = async () => {
+                        const response = await fetch("/api/project");
+                        const data = await response.json();
+                        setProjects(data);
+                      };
+                      fetchProjects();
+                    }}
+                  />
               </TableCell>
             </TableRow>
           ))}
