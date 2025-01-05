@@ -9,6 +9,7 @@ import { ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, Award, Book } from "lucide-react";
+import { Status } from "@prisma/client";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 
@@ -17,6 +18,8 @@ interface Commit {
   user: string;
   message: string;
   timestamp: string;
+  additions: number;
+  deletions: number;
 }
 
 interface Contributor {
@@ -92,14 +95,40 @@ function Page({ params }: { params: { id: string } }) {
   const projectId = params.id;
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await fetch(`/api/tasks/${projectId}`);
-      const data = await response.json();
-      console.log(data);
-      setTasks(data.tasks);
-    };
-    fetchTasks();
-  }, [projectId]);
+    const exampleTasks: Task[] = [
+      {
+        id: "1",
+        title: "Implement User Authentication",
+        description:
+          "Add JWT-based authentication system with login/signup flows",
+        dueDate: "2024-12-31T15:00:00",
+        status: "IN_PROGRESS",
+      },
+      {
+        id: "2",
+        title: "Database Schema Review",
+        description:
+          "Review and optimize current database schema for better performance",
+        dueDate: "2024-12-29T12:00:00",
+        status: "PENDING",
+      },
+      {
+        id: "3",
+        title: "Frontend Bug Fixes",
+        description: "Fix reported UI bugs in the dashboard component",
+        dueDate: "2024-12-28T17:00:00",
+        status: "COMPLETED",
+      },
+      {
+        id: "4",
+        title: "API Documentation",
+        description: "Update API documentation with new endpoints and examples",
+        dueDate: "2025-01-02T10:00:00",
+        status: "PENDING",
+      },
+    ];
+    setTasks(exampleTasks);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -156,11 +185,14 @@ function Page({ params }: { params: { id: string } }) {
         const events = await fetchWithAuth(`${repository}/commits`);
         const commitsData: Commit[] = await Promise.all(
           events.map(async (event: Commit) => {
+            const commitUrl = event.url.split("repos/")[1];
+            const tempdata = await fetchWithAuth(commitUrl);
             return {
-              user: events.commit.author.name,
-              message: events.commit.message,
-              timestamp: events.commit.author.date,
-              url: events.url,
+              user: tempdata.commit.author.name,
+              message: tempdata.commit.message,
+              timestamp: tempdata.commit.author.date,
+              additions: tempdata.stats.additions,
+              deletions: tempdata.stats.deletions,
             };
           })
         );

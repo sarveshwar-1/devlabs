@@ -251,12 +251,19 @@ export async function DELETE(req: Request) {
     });
 
     const redisClient = await redis;
-    await redisClient.del('teams:' + session.user.id);
+    const teamkeys = await redisClient.keys('teams:*');
+    await redisClient.del(teamkeys);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Team deletion error:", error);
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: "Delete The projects associated with the team before deleting" },
+        { status: 404 }
+      );
+    }
     return NextResponse.json(
-      { error: "Failed to delete team. Please try again." },
+      { error: error.code },
       { status: 500 }
     );
   }

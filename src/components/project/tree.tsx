@@ -9,7 +9,8 @@ interface Commit {
   user: string;
   message: string;
   timestamp: string;
-  url: string;
+  additions: number;
+  deletions: number;
 }
 
 interface CommitTreeProps {
@@ -99,7 +100,28 @@ export function CommitTree({ commits }: CommitTreeProps) {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.15, ease: "easeInOut" }}
                       className="mt-4 pt-4 border-t border-neutral-500/20"
-                    ></motion.div>
+                    >
+                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
+                              Commit Details
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <span className="flex items-center gap-1">
+                                <span className="text-green-500">
+                                  Additions: {commit.additions}
+                                </span>
+                                <br></br>
+                                <span className="text-red-600">
+                                  Deletions: {commit.deletions}
+                                </span>
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
