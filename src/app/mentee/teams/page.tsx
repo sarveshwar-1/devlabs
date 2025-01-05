@@ -71,15 +71,6 @@ export default function TeamsPage() {
     }
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await fetchTeams();
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const filteredTeams = teams.filter(
     (team) =>
       team.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -91,15 +82,6 @@ export default function TeamsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Teams</h1>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className={isRefreshing ? "animate-spin" : ""}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
           <Button
             onClick={() => {
               setSelectedTeam(null);

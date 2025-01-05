@@ -158,7 +158,24 @@ export async function PUT(req: Request) {
       );
     }
 
-    const { id, name, description, members } = await req.json();
+    const { id, name, description, memberIds } = await req.json();
+    if (!memberIds) {
+      return NextResponse.json(
+        { error: "At least one member is required" },
+        { status: 400 }
+      );
+    }
+    const members = await prisma.mentee.findMany({
+      where: {
+        user: {
+          id: {
+            in: memberIds,
+          }
+        },
+      },
+    });
+
+    console.log(id, name, description, members);
     if (!members) {
       return NextResponse.json(
         { error: "At least one member is required" },
@@ -169,17 +186,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    const users = await prisma.mentee.findMany({
-      where: {
-        user: {
-          rollNo: {
-            in: members,
-          },
-        },
-      },
-    });
-
-    if (users.length !== members.length || users.length < 0) {
+    if (members.length !== members.length || members.length < 0) {
       return NextResponse.json({ error: "Members not found" }, { status: 400 });
     }
 
@@ -189,7 +196,7 @@ export async function PUT(req: Request) {
         name,
         description,
         members: {
-          set: users.map((user) => ({ id: user.id })),
+          set: members.map((user) => ({ id: user.id })),
         },
       },
       include: {
@@ -202,7 +209,8 @@ export async function PUT(req: Request) {
     });
 
     const redisClient = await redis;
-    await redisClient.del('teams:' + session.user.id);
+    const teamkeys = await redisClient.keys('teams:*');
+    await redisClient.del(teamkeys);
     return NextResponse.json(team, { status: 200 });
   } catch (error) {
     console.error("Team update error:", error);

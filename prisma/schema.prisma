@@ -36,7 +36,7 @@ model Mentee {
     id   String @id
     user User   @relation(fields: [id], references: [id])
 
-    Team Team[]
+    Team      Team[]
     leadTeams Team[] @relation(name: "TeamLeader")
     teams     Team[] @relation(name: "TeamMembers")
 }
@@ -82,19 +82,20 @@ enum Status {
 }
 
 model Team {
-    id          String   @id @default(cuid())
-    name        String
-    description String?
-    teamLeader  Mentee   @relation(fields: [teamLeaderId], references: [id], name: "TeamLeader")
+    id           String    @id @default(cuid())
+    name         String
+    description  String?
+    teamLeader   Mentee    @relation(fields: [teamLeaderId], references: [id], name: "TeamLeader")
     teamLeaderId String
-    members     Mentee[] @relation(name: "TeamMembers")
-    isactive    Boolean  @default(true)
-    createdAt   DateTime @default(now())
-    maxMembers  Int      @default(4)
-    joinCode    String   @unique @default(cuid())
-
-    Project Project[]
-    Mentee   Mentee[]
+    members      Mentee[]  @relation(name: "TeamMembers")
+    isactive     Boolean   @default(true)
+    createdAt    DateTime  @default(now())
+    maxMembers   Int       @default(4)
+    joinCode     String    @unique @default(cuid())
+    class        String?
+    semester     String?
+    Project      Project[]
+    Mentee       Mentee[]
 
     @@index([joinCode])
 }

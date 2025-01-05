@@ -69,13 +69,7 @@ export function LoginForm() {
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                 Log in
             </Button>
-            <Button
-                type="button"
-                className="w-full bg-gray-800 text-white hover:bg-gray-700 mt-4"
-                onClick={() => signIn('github')}
-            >
-                Log in with GitHub
-            </Button>
+            
         </form>
     )
 }

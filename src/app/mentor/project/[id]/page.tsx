@@ -9,7 +9,6 @@ import { ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, Award, Book } from "lucide-react";
-import { Status } from "@prisma/client";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 
@@ -18,8 +17,6 @@ interface Commit {
   user: string;
   message: string;
   timestamp: string;
-  additions: number;
-  deletions: number;
 }
 
 interface Contributor {
@@ -64,7 +61,6 @@ interface Task {
   status: string;
 }
 
-
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -94,14 +90,14 @@ function Page({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
-  
+
   useEffect(() => {
     const fetchTasks = async () => {
       const response = await fetch(`/api/tasks/${projectId}`);
       const data = await response.json();
       console.log(data);
       setTasks(data.tasks);
-    }
+    };
     fetchTasks();
   }, [projectId]);
 
@@ -135,7 +131,7 @@ function Page({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchWithAuth(url: string) {
       const giturl = `https://api.github.com/repos/${url}`;
-      console.log('githubtoken',project?.githubtoken);
+      console.log("githubtoken", project?.githubtoken);
       console.log(giturl);
       const response = await fetch(giturl, {
         headers: {
@@ -160,14 +156,11 @@ function Page({ params }: { params: { id: string } }) {
         const events = await fetchWithAuth(`${repository}/commits`);
         const commitsData: Commit[] = await Promise.all(
           events.map(async (event: Commit) => {
-            const commitUrl = event.url.split("repos/")[1];
-            const tempdata = await fetchWithAuth(commitUrl);
             return {
-              user: tempdata.commit.author.name,
-              message: tempdata.commit.message,
-              timestamp: tempdata.commit.author.date,
-              additions: tempdata.stats.additions,
-              deletions: tempdata.stats.deletions,
+              user: events.commit.author.name,
+              message: events.commit.message,
+              timestamp: events.commit.author.date,
+              url: events.url,
             };
           })
         );
@@ -184,7 +177,7 @@ function Page({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [repository,project]);
+  }, [repository, project]);
 
   // chartData is already declared above
 

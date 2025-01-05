@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { redis } from "@/lib/db/redis";
-interface Params{
+interface Params {
     url: string[];
 }
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest,
     if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const { url } = params as Params;
     const finalurl = url.join('/');
     const cacheKey = `github:${url}`;
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest,
     try {
         const redisClient = await redis;
         const cachedData = await redisClient.get(cacheKey);
-        
+
         if (cachedData) {
             return NextResponse.json(JSON.parse(cachedData));
         }
@@ -49,3 +49,4 @@ export async function GET(req: NextRequest,
         );
     }
 }
+

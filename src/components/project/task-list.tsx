@@ -27,7 +27,7 @@ interface TaskListProps {
   user?: any;
 }
 
-export function TaskList({ tasks: tasksProps, project, user }: TaskListProps) {
+export function TaskList({ tasks: tasksProps}: TaskListProps) {
   const [activeTaskId, setActiveTaskId] = React.useState<string | null>(null);
   const tasks = Array.isArray(tasksProps) ? tasksProps : tasksProps.tasks || [];
 
