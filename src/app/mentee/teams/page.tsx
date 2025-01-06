@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RefreshCw } from "lucide-react";
+import Jointeam from "@/components/team/join-team";
 
 export default function TeamsPage() {
   const { data: session } = useSession();
@@ -90,6 +90,7 @@ export default function TeamsPage() {
           >
             Create Team
           </Button>
+          <Jointeam />
         </div>
       </div>
 

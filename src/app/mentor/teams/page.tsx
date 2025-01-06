@@ -1,5 +1,5 @@
 "use client";
-import TeamMembersModal from "./team-member-modals";
+import TeamMembersModal from "@/components/team/team-member-modals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState, useEffect } from "react";
-import { TeamModal } from "./team-modal";
+import { TeamModal } from "@/components/team/team-modal";
 import { useSession } from "next-auth/react";
 import {
   Tooltip,
@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RefreshCw } from "lucide-react";
+import Jointeam from "@/components/team/join-team";
 interface Team {
   id: number;
   name: string;
@@ -38,7 +38,6 @@ export default function TeamsPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
 
@@ -84,15 +83,6 @@ export default function TeamsPage() {
     }
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await fetchTeams();
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const filteredTeams = teams.filter(
     (team) =>
       team.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -105,15 +95,6 @@ export default function TeamsPage() {
         <h1 className="text-2xl font-bold">Teams</h1>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className={isRefreshing ? "animate-spin" : ""}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button
             onClick={() => {
               setSelectedTeam(null);
               setIsModalOpen(true);
@@ -121,6 +102,7 @@ export default function TeamsPage() {
           >
             Create Team
           </Button>
+          
         </div>
       </div>
       <Input

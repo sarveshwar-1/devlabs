@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, memberIds } = await req.json();
+    const { name, description, memberIds, class: className, semester } = await req.json();
     if (!memberIds) {
       return NextResponse.json(
         { error: "At least one member is required" },
@@ -116,6 +116,8 @@ export async function POST(req: Request) {
       data: {
         name,
         description,
+        class: className,
+        semester,
         teamLeader: {
           connect: {
             id: teamLeader?.id,
@@ -154,7 +156,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    const { id, name, description, memberIds } = await req.json();
+    const { id, name, description, memberIds, class: className, semester } = await req.json();
     if (!memberIds) {
       return NextResponse.json(
         { error: "At least one member is required" },
@@ -189,6 +191,8 @@ export async function PUT(req: Request) {
       data: {
         name,
         description,
+        class: className,
+        semester,
         members: {
           set: members.map((user) => ({ id: user.id })),
         },

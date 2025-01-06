@@ -19,16 +19,7 @@ export async function middleware(req: Request) {
       return NextResponse.redirect(absolute("/mentor"));
     }
     return NextResponse.redirect(absolute("/mentee"));
-  }
-
-  // Add role-based path restrictions
-  if (token?.user?.role === "MENTOR" && pathname.startsWith("/mentee")) {
-    return NextResponse.redirect(absolute("/mentor"));
-  }
-
-  if (token?.user?.role === "MENTEE" && pathname.startsWith("/mentor")) {
-    return NextResponse.redirect(absolute("/mentee"));
-  }
+  } 
     
   return NextResponse.next();
 }

@@ -38,6 +38,8 @@ export function CreateTeamDialog({
   const [teamData, setTeamData] = useState({
     name: team?.name || "",
     description: team?.description || "",
+    class: team?.class || "",
+    semester: team?.semester || "",
   });
 
   useEffect(() => {
@@ -80,6 +82,16 @@ export function CreateTeamDialog({
         return;
       }
 
+      if (!teamData.class.trim()) {
+        toast.error("Class is required");
+        return;
+      }
+
+      if (!teamData.semester.trim()) {
+        toast.error("Semester is required");
+        return;
+      }
+
       if (teamMembers.length < 1) {
         toast.error("At least one team member is required");
         return;
@@ -95,6 +107,8 @@ export function CreateTeamDialog({
           id: team?.id,
           name: teamData.name.trim(),
           description: teamData.description.trim(),
+          class: teamData.class.trim(),
+          semester: teamData.semester.trim(),
           memberIds: teamMembers.map((member) => member.id),
         }),
       });
@@ -109,7 +123,7 @@ export function CreateTeamDialog({
         `Team ${mode === "create" ? "created" : "updated"} successfully`
       );
       onSuccess?.();
-      setTeamData({ name: "", description: "" });
+      setTeamData({ name: "", description: "", class: "", semester: "" });
       setTeamMembers([]);
     } catch (error: any) {
       console.error("Submit error:", error);
@@ -137,6 +151,24 @@ export function CreateTeamDialog({
               value={teamData.name}
               onChange={(e) =>
                 setTeamData({ ...teamData, name: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Input
+              placeholder="Class"
+              value={teamData.class}
+              onChange={(e) =>
+                setTeamData({ ...teamData, class: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Input
+              placeholder="Semester"
+              value={teamData.semester}
+              onChange={(e) =>
+                setTeamData({ ...teamData, semester: e.target.value })
               }
             />
           </div>
