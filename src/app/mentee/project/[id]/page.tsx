@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { use } from "react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CommitTree } from "@/components/project/tree";
@@ -9,14 +9,15 @@ import { ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Calendar, Award, Book } from "lucide-react";
-import TaskList from "@/components/project/task-list";
+import { Status } from "@prisma/client";
+import { TaskList } from "@/components/project/task-list";
+import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+
 interface Commit {
   url: string;
   user: string;
   message: string;
   timestamp: string;
-  additions: number;
-  deletions: number;
 }
 
 interface Contributor {
@@ -44,16 +45,23 @@ interface Project {
   isPrivate: boolean;
   team: Team;
   isactive: boolean;
+  githubtoken: string;
+}
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  githubToken: string;
 }
 
-async function fetchWithAuth(url: string) {
-  const response = await fetch(`/api/github/repo/${url}`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  return await response.json();
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: string;
 }
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -63,13 +71,6 @@ const cardVariants = {
   },
 };
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  status: string;
-}
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -87,16 +88,35 @@ function Page({ params }: { params: { id: string } }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [repository, setRepository] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
-  useEffect(() => { 
+
+  useEffect(() => {
     const fetchTasks = async () => {
       const response = await fetch(`/api/tasks/${projectId}`);
       const data = await response.json();
       setTasks(data.tasks);
-    }
+    };
     fetchTasks();
   }, [projectId]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/user");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
+
   useEffect(() => {
     const fetchProject = async () => {
       const response = await fetch("/api/project/" + projectId);
@@ -109,6 +129,19 @@ function Page({ params }: { params: { id: string } }) {
   }, [projectId]);
 
   useEffect(() => {
+    async function fetchWithAuth(url: string) {
+      const giturl = `https://api.github.com/repos/${url}`;
+      const response = await fetch(giturl, {
+        headers: {
+          Authorization: `Bearer ${project?.githubtoken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+      return await response.json();
+    }
     const fetchData = async () => {
       if (!repository) {
         return;
@@ -119,20 +152,12 @@ function Page({ params }: { params: { id: string } }) {
         setRepoName(repoData.name);
 
         const events = await fetchWithAuth(`${repository}/commits`);
-        const commitsData: Commit[] = await Promise.all(
-          events.map(async (event: Commit) => {
-            const commitUrl = event.url.split("repos/")[1];
-            const tempdata = await fetchWithAuth(commitUrl);
-            return {
-              user: tempdata.commit.author.name,
-              message: tempdata.commit.message,
-              timestamp: tempdata.commit.author.date,
-              additions: tempdata.stats.additions,
-              deletions: tempdata.stats.deletions,
-            };
-          })
-        );
-
+        const commitsData: Commit[] = events.map((event: Commit) => ({
+          user: event.commit.author.name,
+          message: event.commit.message,
+          timestamp: event.commit.author.date,
+          url: event.url,
+        }));
         setCommits(commitsData);
 
         const contributorsData: Contributor[] = await fetchWithAuth(
@@ -145,7 +170,7 @@ function Page({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [repository]);
+  }, [repository, project]);
 
   // chartData is already declared above
 
@@ -230,7 +255,12 @@ function Page({ params }: { params: { id: string } }) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <TaskList tasks={tasks} />
+                <CreateTaskDialog projectId={projectId} />
+                <div className="mt-4">
+                  <ScrollArea className="h-[380px] pr-4">
+                    <TaskList tasks={tasks} />
+                  </ScrollArea>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -341,10 +371,19 @@ function Page({ params }: { params: { id: string } }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-500">
                 <Award className="w-5 h-5 text-emerald-500" />
-                Mentor
+                Github
               </CardTitle>
             </CardHeader>
-            <CardContent>{/* Mentor content */}</CardContent>
+            <CardContent>
+              <a
+                href={"https://github.com/" + repository}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-emerald-500 hover:text-emerald-600 transition-colors text-lg font-medium"
+              >
+                Repository Link : {project?.title}
+              </a>
+            </CardContent>
           </Card>
 
           <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">

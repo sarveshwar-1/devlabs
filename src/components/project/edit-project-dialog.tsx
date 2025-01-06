@@ -54,7 +54,6 @@ type Project = {
 
 interface EditProjectDialogProps {
   project: Project;
-  onProjectUpdated: () => void;
 }
 
 interface FormData {
@@ -66,10 +65,7 @@ interface FormData {
   isPrivate: boolean;
 }
 
-export function EditProjectDialog({
-  project,
-  onProjectUpdated,
-}: EditProjectDialogProps) {
+export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -85,34 +81,32 @@ export function EditProjectDialog({
   });
 
   useEffect(() => {
-    // Fetch teams
-    const fetchTeams = async () => {
-      const response = await fetch("/api/team");
-      const data = await response.json();
-      setTeams(data);
-    };
+    if (open) {
+      const fetchTeams = async () => {
+        const response = await fetch("/api/team");
+        const data = await response.json();
+        setTeams(data);
+      };
+      const fetchRepos = async () => {
+        if (!session?.githubToken) return;
+        const response = await fetch(
+          "/api/github/repo?githubToken=" + session.githubToken
+        );
+        const data = await response.json();
+        console.log(data);
+        setRepositories(data);
+      };
+      const fetchMentors = async () => {
+        const response = await fetch("/api/mentor");
+        const data = await response.json();
+        setMentors(data);
+      };
 
-    // Fetch repositories
-    const fetchRepos = async () => {
-      if (!session?.githubToken) return;
-      const response = await fetch("https://api.github.com/user/repos", {
-        headers: { Authorization: `Bearer ${session.githubToken}` },
-      });
-      const data = await response.json();
-      setRepositories(data);
-    };
-
-    // Fetch mentors
-    const fetchMentors = async () => {
-      const response = await fetch("/api/mentor");
-      const data = await response.json();
-      setMentors(data);
-    };
-
-    fetchTeams();
-    fetchRepos();
-    fetchMentors();
-  }, [session]);
+      fetchTeams();
+      fetchRepos();
+      fetchMentors();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -130,7 +124,6 @@ export function EditProjectDialog({
 
       if (!response.ok) throw new Error("Failed to update project");
 
-      onProjectUpdated();
       setOpen(false);
     } catch (error) {
       console.error("Failed to update project:", error);
@@ -150,9 +143,6 @@ export function EditProjectDialog({
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-
-      onProjectUpdated();
-      window.location.reload();
     } catch (error) {
       console.error("Failed to delete project:", error);
     }
@@ -210,11 +200,17 @@ export function EditProjectDialog({
                 <SelectValue placeholder="Select repository" />
               </SelectTrigger>
               <SelectContent>
-                {repositories.map((repo) => (
-                  <SelectItem key={repo.full_name} value={repo.full_name}>
-                    {repo.name}
+                {repositories ? (
+                  repositories.map((repo) => (
+                    <SelectItem key={repo.full_name} value={repo.full_name}>
+                      {repo.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="No repositories found">
+                    No repositories found
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>

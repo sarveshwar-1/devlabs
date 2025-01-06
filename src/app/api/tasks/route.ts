@@ -70,8 +70,6 @@ export async function PUT(req: NextRequest) {
     const { id, title, description, status, dueDate } = await req.json();
     const date = new Date(dueDate);
     const due = date.toISOString();
-    console.log(id, title, description, status, dueDate);
-    console.log(typeof(dueDate));
     const task = await prisma.task.update({
       where: {
         id,

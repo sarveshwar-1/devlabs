@@ -95,6 +95,7 @@ export async function POST(req: Request) {
         },
       },
     });
+    memberIds.push(session.user.id);
     const users = await prisma.mentee.findMany({
       where: {
         user: {
@@ -109,7 +110,8 @@ export async function POST(req: Request) {
     if (users.length !== memberIds.length || users.length < 0) {
       return NextResponse.json({ error: "memberIds not found" }, { status: 400 });
     }
-
+    const teamCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+    console.log('teamCode:', teamCode);
     const team = await prisma.team.create({
       data: {
         name,
@@ -122,20 +124,14 @@ export async function POST(req: Request) {
         members: {
           connect: users.map((user) => ({ id: user.id })),
         },
-      },
-      include: {
-        members: {
-          include: {
-            user: true,
-          },
-        },
-      },
+        joinCode: teamCode,
+      }
     });
 
     // Invalidate cache after creating new team
     const redisClient = await redis;
     await redisClient.del('teams:' + session.user.id);
-    return NextResponse.json(team, { status: 201 });
+    return NextResponse.json({ status: 201 });
   } catch (error) {
     console.error("Team creation error:", error);
     return NextResponse.json(
@@ -174,8 +170,6 @@ export async function PUT(req: Request) {
         },
       },
     });
-
-    console.log(id, name, description, members);
     if (!members) {
       return NextResponse.json(
         { error: "At least one member is required" },
@@ -198,20 +192,13 @@ export async function PUT(req: Request) {
         members: {
           set: members.map((user) => ({ id: user.id })),
         },
-      },
-      include: {
-        members: {
-          include: {
-            user: true,
-          },
-        },
-      },
+      }
     });
 
     const redisClient = await redis;
     const teamkeys = await redisClient.keys('teams:*');
     await redisClient.del(teamkeys);
-    return NextResponse.json(team, { status: 200 });
+    return NextResponse.json({ status: 200 });
   } catch (error) {
     console.error("Team update error:", error);
     return NextResponse.json(

@@ -51,34 +51,35 @@ export function CreateProjectDialog() {
     mentorIds: [] as string[], // Changed to array
   });
 
+  // Fetch teams
+  const fetchTeams = async () => {
+    const response = await fetch("/api/team");
+    const data = await response.json();
+    setTeams(data);
+  };
+
+  // Fetch repositories
+  const fetchRepos = async () => {
+    if (!session?.githubToken) return;
+    const response = await fetch(
+      "/api/github/repo?githubToken=" + session.githubToken
+    );
+    const data = await response.json();
+    setRepositories(data);
+  };
+  //Fetch mentors
+  const fetchMentors = async () => {
+    const response = await fetch("/api/mentor");
+    const data = await response.json();
+    setMentors(data);
+  };
   useEffect(() => {
-    // Fetch teams
-    const fetchTeams = async () => {
-      const response = await fetch("/api/team");
-      const data = await response.json();
-      setTeams(data);
-    };
-
-    // Fetch repositories
-    const fetchRepos = async () => {
-      if (!session?.githubToken) return;
-      const response = await fetch("https://api.github.com/user/repos", {
-        headers: { Authorization: `Bearer ${session.githubToken}` },
-      });
-      const data = await response.json();
-      setRepositories(data);
-    };
-    //Fetch mentors
-    const fetchMentors = async () => {
-      const response = await fetch("/api/mentor");
-      const data = await response.json();
-      setMentors(data);
-    };
-
-    fetchTeams();
-    fetchRepos();
-    fetchMentors();
-  }, [session]);
+    if (open) {
+      fetchTeams();
+      fetchRepos();
+      fetchMentors();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +103,7 @@ export function CreateProjectDialog() {
       console.error("Failed to create project:", error);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -146,11 +148,17 @@ export function CreateProjectDialog() {
                 <SelectValue placeholder="Select repository" />
               </SelectTrigger>
               <SelectContent>
-                {repositories.map((repo) => (
-                  <SelectItem key={repo.full_name} value={repo.full_name}>
-                    {repo.name}
+                {repositories ? (
+                  repositories.map((repo) => (
+                    <SelectItem key={repo.full_name} value={repo.full_name}>
+                      {repo.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="No repositories found">
+                    No repositories found
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>

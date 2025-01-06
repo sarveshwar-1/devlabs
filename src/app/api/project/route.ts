@@ -6,7 +6,7 @@ const deleteCashe = (mentorIds: string[]) => {
   mentorIds.forEach(async (id) => {
     await redis.del(`projects:${id}`);
   });
-  
+
 }
 export async function GET() {
   const redisClient = await redis;
@@ -29,45 +29,36 @@ export async function GET() {
   const projects = await prisma.project.findMany({
     where: {
       OR: [
-        {mentor:{some:{id:session.user.id}}},
+        { mentor: { some: { id: session.user.id } } },
         { team: { teamLeaderId: session.user.id } },
         { team: { members: { some: { id: session.user.id } } } },
       ]
     },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      repository: true,
+      status: true,
       team: {
-        include: {
-          teamLeader: {
-            include: {
-              user: {
-                select: {
-                  name: true,
-                }
-              }
-            }
-          },
-          members: {
-            include: {
-              user: {
-                select: {
-                  name: true,
-                }
-              }
-            }
-          }
+        select: {
+          id: true,
+          name: true,
         }
       },
       mentor: {
-        include: {
+        select: {
           user: {
             select: {
+              id: true,
               name: true,
             }
           }
         }
-      },
+      }
     }
   });
+
   await redisClient.setex(cacheKey, 1800, JSON.stringify(projects));
   return NextResponse.json(projects);
 }
@@ -115,7 +106,7 @@ export async function POST(req: Request) {
     await deleteCashe(mentorIds);
     return NextResponse.json({ status: 201 });
   } catch (error) {
-    console.error('Project creation error:', error);
+    console.error('Project creation error:', error.message);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
@@ -185,9 +176,15 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    // First check if project exists
     const project = await prisma.project.findUnique({
-      where: { id }
+      where: { id },
+      select: {
+        mentor: {
+          select: {
+            id: true
+          }
+        }
+      }
     });
 
     if (!project) {
@@ -197,7 +194,6 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Then delete tasks and project
     await prisma.task.deleteMany({
       where: { projectid: id }
     });
@@ -207,13 +203,14 @@ export async function DELETE(req: Request) {
     });
 
     await redisClient.del('projects:' + session.user.id);
+    console.log('project.mentor:', project.mentor);
     await deleteCashe(project.mentor.map((m) => m.id));
     return NextResponse.json({ message: 'Project deleted successfully' });
 
   } catch (error) {
     console.error('Error deleting project:', error);
     return NextResponse.json(
-      { error: 'Failed to delete project' },
+      { error: error.message },
       { status: 500 }
     );
   }

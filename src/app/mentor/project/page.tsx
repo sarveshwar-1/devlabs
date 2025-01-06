@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {useRouter}from 'next/navigation'
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -28,7 +28,7 @@ type Mentor = {
     id: string;
     name: string;
   };
-}
+};
 type TeamMember = {
   user: {
     name: string;
@@ -46,7 +46,6 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-  
     key: keyof Project;
     direction: "asc" | "desc";
   }>({ key: "title", direction: "asc" });
@@ -70,7 +69,6 @@ export default function Page() {
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key])
@@ -153,20 +151,9 @@ export default function Page() {
               <TableCell
                 onClick={(e) => {
                   e.stopPropagation();
-                }
-              }>
-                  <EditProjectDialog
-                    project={project}
-                    onProjectUpdated={() => {
-                      // Refetch projects after update
-                      const fetchProjects = async () => {
-                        const response = await fetch("/api/project");
-                        const data = await response.json();
-                        setProjects(data);
-                      };
-                      fetchProjects();
-                    }}
-                  />
+                }}
+              >
+                <EditProjectDialog project={project} />
               </TableCell>
             </TableRow>
           ))}

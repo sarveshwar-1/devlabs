@@ -1,5 +1,5 @@
 "use client";
-
+import TeamMembersModal from "./team-member-modals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,14 +20,27 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { RefreshCw } from "lucide-react";
+interface Team {
+  id: number;
+  name: string;
+  description?: string;
+  joinCode: string;
+  teamLeaderId: string;
+  members: {
+    id: number;
+    name: string;
+  }[];
+}
 
 export default function TeamsPage() {
   const { data: session } = useSession();
-  const [teams, setTeams] = useState([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
 
   const fetchTeams = async () => {
     try {
@@ -110,14 +123,12 @@ export default function TeamsPage() {
           </Button>
         </div>
       </div>
-
       <Input
         placeholder="Search teams..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-sm mb-6"
       />
-
       <Table>
         <TableHeader>
           <TableRow>
@@ -129,7 +140,14 @@ export default function TeamsPage() {
         </TableHeader>
         <TableBody>
           {filteredTeams.map((team) => (
-            <TableRow key={team.id}>
+            <TableRow
+              key={team.id}
+              className="cursor-pointer hover:bg-gray-500"
+              onClick={() => {
+                setSelectedTeamForMembers(team);
+                setIsMembersModalOpen(true);
+              }}
+            >
               <TableCell>
                 <TooltipProvider>
                   <Tooltip>
@@ -171,12 +189,16 @@ export default function TeamsPage() {
           ))}
         </TableBody>
       </Table>
-
       <TeamModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         team={selectedTeam}
         onSuccess={fetchTeams}
+      />
+      <TeamMembersModal
+        open={isMembersModalOpen}
+        onOpenChange={setIsMembersModalOpen}
+        team={selectedTeamForMembers}
       />
     </div>
   );

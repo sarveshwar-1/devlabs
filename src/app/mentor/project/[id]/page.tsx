@@ -18,8 +18,6 @@ interface Commit {
   user: string;
   message: string;
   timestamp: string;
-  additions: number;
-  deletions: number;
 }
 
 interface Contributor {
@@ -95,40 +93,13 @@ function Page({ params }: { params: { id: string } }) {
   const projectId = params.id;
 
   useEffect(() => {
-    const exampleTasks: Task[] = [
-      {
-        id: "1",
-        title: "Implement User Authentication",
-        description:
-          "Add JWT-based authentication system with login/signup flows",
-        dueDate: "2024-12-31T15:00:00",
-        status: "IN_PROGRESS",
-      },
-      {
-        id: "2",
-        title: "Database Schema Review",
-        description:
-          "Review and optimize current database schema for better performance",
-        dueDate: "2024-12-29T12:00:00",
-        status: "PENDING",
-      },
-      {
-        id: "3",
-        title: "Frontend Bug Fixes",
-        description: "Fix reported UI bugs in the dashboard component",
-        dueDate: "2024-12-28T17:00:00",
-        status: "COMPLETED",
-      },
-      {
-        id: "4",
-        title: "API Documentation",
-        description: "Update API documentation with new endpoints and examples",
-        dueDate: "2025-01-02T10:00:00",
-        status: "PENDING",
-      },
-    ];
-    setTasks(exampleTasks);
-  }, []);
+    const fetchTasks = async () => {
+      const response = await fetch(`/api/tasks/${projectId}`);
+      const data = await response.json();
+      setTasks(data.tasks);
+    };
+    fetchTasks();
+  }, [projectId]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -160,8 +131,6 @@ function Page({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchWithAuth(url: string) {
       const giturl = `https://api.github.com/repos/${url}`;
-      console.log("githubtoken", project?.githubtoken);
-      console.log(giturl);
       const response = await fetch(giturl, {
         headers: {
           Authorization: `Bearer ${project?.githubtoken}`,
@@ -183,20 +152,12 @@ function Page({ params }: { params: { id: string } }) {
         setRepoName(repoData.name);
 
         const events = await fetchWithAuth(`${repository}/commits`);
-        const commitsData: Commit[] = await Promise.all(
-          events.map(async (event: Commit) => {
-            const commitUrl = event.url.split("repos/")[1];
-            const tempdata = await fetchWithAuth(commitUrl);
-            return {
-              user: tempdata.commit.author.name,
-              message: tempdata.commit.message,
-              timestamp: tempdata.commit.author.date,
-              additions: tempdata.stats.additions,
-              deletions: tempdata.stats.deletions,
-            };
-          })
-        );
-
+        const commitsData: Commit[] = events.map((event: Commit) => ({
+          user: event.commit.author.name,
+          message: event.commit.message,
+          timestamp: event.commit.author.date,
+          url: event.url,
+        }));
         setCommits(commitsData);
 
         const contributorsData: Contributor[] = await fetchWithAuth(
@@ -410,10 +371,19 @@ function Page({ params }: { params: { id: string } }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-500">
                 <Award className="w-5 h-5 text-emerald-500" />
-                Mentor
+                Github
               </CardTitle>
             </CardHeader>
-            <CardContent>{/* Mentor content */}</CardContent>
+            <CardContent>
+              <a
+                href={"https://github.com/" + repository}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-emerald-500 hover:text-emerald-600 transition-colors text-lg font-medium"
+              >
+                Repository Link : {project?.title}
+              </a>
+            </CardContent>
           </Card>
 
           <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
