@@ -20,14 +20,24 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Jointeam from "@/components/team/join-team";
-
+interface Team {
+  id: number;
+  name: string;
+  description?: string;
+  joinCode: string;
+  teamLeaderId: string;
+  freezed: boolean;
+  members: {
+    id: number;
+    name: string;
+  }[];
+}
 export default function TeamsPage() {
   const { data: session } = useSession();
-  const [teams, setTeams] = useState([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchTeams = async () => {
     try {
@@ -43,6 +53,7 @@ export default function TeamsPage() {
   useEffect(() => {
     fetchTeams();
   }, []);
+  console.log(teams.map((team)=>team.feeeze))
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this team?")) return;
@@ -128,7 +139,7 @@ export default function TeamsPage() {
               <TableCell>{team.description}</TableCell>
               <TableCell>{team.members.length}</TableCell>
               <TableCell className="flex gap-2">
-                {team.teamLeaderId === session?.user?.id && (
+                {(team.teamLeaderId === session?.user?.id && !team.freezed) ?
                   <>
                     <Button
                       variant="outline"
@@ -148,7 +159,7 @@ export default function TeamsPage() {
                       Delete
                     </Button>
                   </>
-                )}
+                : null}
               </TableCell>
             </TableRow>
           ))}

@@ -123,6 +123,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
+      window.location.reload();
 
       setOpen(false);
     } catch (error) {
@@ -143,6 +144,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
+      window.location.reload();
     } catch (error) {
       console.error("Failed to delete project:", error);
     }

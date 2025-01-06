@@ -19,13 +19,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Jointeam from "@/components/team/join-team";
 interface Team {
   id: number;
   name: string;
   description?: string;
   joinCode: string;
   teamLeaderId: string;
+  freezed: boolean;
   members: {
     id: number;
     name: string;
@@ -33,14 +33,12 @@ interface Team {
 }
 
 export default function TeamsPage() {
-  const { data: session } = useSession();
   const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
-
   const fetchTeams = async () => {
     try {
       const res = await fetch("/api/team");
@@ -55,38 +53,32 @@ export default function TeamsPage() {
   useEffect(() => {
     fetchTeams();
   }, []);
-
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this team?")) return;
-
+  const handleFreeze = async (teamid: string) => {
+    const updatedTeams = teams.map((team) => {
+      if (team.id === teamid) {
+        return { ...team, freezed: !team.freezed };
+      }
+      return team;
+    });
+    setTeams(updatedTeams);
     try {
-      const res = await fetch("/api/team", {
-        method: "DELETE",
+      await fetch(`/api/team/freeze?teamid=${teamid}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ 
+          freezed: updatedTeams.find((team) => team.id === teamid)?.freezed 
+        }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to delete team");
-      }
-
-      await fetchTeams();
-      // You might want to add a toast notification here for success
     } catch (error) {
-      console.error("Error deleting team:", error);
-      alert(error.message);
-      // You might want to add a toast notification here for error
+      console.error("Error freezing team");
     }
-  };
+  }
 
-  const filteredTeams = teams.filter(
-    (team) =>
-      team.name.toLowerCase().includes(search.toLowerCase()) ||
-      team.description?.toLowerCase().includes(search.toLowerCase())
+  const filteredTeams = teams.filter((team) =>
+    (team.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (team.description || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -145,27 +137,16 @@ export default function TeamsPage() {
               <TableCell>{team.description}</TableCell>
               <TableCell>{team.members.length}</TableCell>
               <TableCell className="flex gap-2">
-                {team.teamLeaderId === session?.user?.id && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTeam(team);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(team.id)}
-                    >
-                      Delete
-                    </Button>
-                  </>
-                )}
+                <Button 
+                  onClick={(e) => {
+                  e.stopPropagation();
+                  handleFreeze(team.id);
+                  }}
+                  variant={team.freezed ? "destructive" : "ghost"}
+                  size="sm"
+                >
+                  {team.freezed ? "Unfreeze" : "Freeze"}
+                </Button>
               </TableCell>
             </TableRow>
           ))}
