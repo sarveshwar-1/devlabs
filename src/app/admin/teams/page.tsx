@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import TeamMembersModal from "@/components/team/team-member-modals";
 import { TeamModal } from "@/components/team/team-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Snowflake } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,11 +23,12 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 interface Team {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   joinCode: string;
   teamLeaderId: string;
+  freezed: boolean;
   members: {
     id: number;
     name: string;
@@ -43,16 +44,17 @@ export default function TeamsPage() {
   const [selectedTeamForMembers, setSelectedTeamForMembers] =
     useState<Team | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isGloballyFrozen, setIsGloballyFrozen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setMounted(true);
-    fetchTeams();
-  }, []);
-
-  const fetchTeams = async () => {
+  // Memoize fetchTeams to prevent unnecessary recreations
+  const fetchTeams = useCallback(async () => {
     try {
       const res = await fetch("/api/team");
+      if (!res.ok) {
+        throw new Error("Failed to fetch teams");
+      }
       const data = await res.json();
       setTeams(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -64,17 +66,130 @@ export default function TeamsPage() {
         variant: "destructive",
       });
     }
+  }, [toast]);
+
+  // Handle successful team creation/update
+  const handleTeamSuccess = useCallback(async () => {
+    await fetchTeams();
+    setIsModalOpen(false);
+    toast({
+      title: "Success",
+      description: `Team ${selectedTeam ? "updated" : "created"} successfully`,
+    });
+  }, [fetchTeams, selectedTeam, toast]);
+
+  useEffect(() => {
+    setMounted(true);
+    checkGlobalFreezeStatus();
+    fetchTeams();
+  }, [fetchTeams]);
+
+  const checkGlobalFreezeStatus = async () => {
+    try {
+      const res = await fetch("/api/team/global-freeze");
+      if (!res.ok) {
+        throw new Error("Failed to check global freeze status");
+      }
+      const { isGloballyFrozen } = await res.json();
+      setIsGloballyFrozen(isGloballyFrozen);
+    } catch (error) {
+      console.error("Error checking global freeze status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check global freeze status",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = async (teamId: string) => {
+  const handleGlobalFreeze = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     try {
-      const res = await fetch(`/api/team?teamid=${teamId}`, {
-        method: "DELETE",
+      const res = await fetch("/api/team/global-freeze", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          globallyFrozen: !isGloballyFrozen,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to delete team");
+      if (!res.ok) throw new Error("Failed to update global freeze status");
 
-      fetchTeams();
+      const { teams: updatedTeams, isGloballyFrozen: newFreezeStatus } =
+        await res.json();
+      setTeams(updatedTeams);
+      setIsGloballyFrozen(newFreezeStatus);
+
+      toast({
+        title: "Success",
+        description: `Teams ${
+          newFreezeStatus ? "frozen" : "unfrozen"
+        } successfully`,
+      });
+    } catch (error) {
+      console.error("Error updating global freeze status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update global freeze status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFreeze = async (teamId: string) => {
+    try {
+      const res = await fetch(`/api/team/freeze?teamid=${teamId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          freezed: !teams.find((team) => team.id === teamId)?.freezed,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update team freeze status");
+
+      await fetchTeams(); // Fetch fresh data instead of optimistic update
+      toast({
+        title: "Success",
+        description: "Team status updated successfully",
+      });
+    } catch (error) {
+      console.error("Error freezing team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update team status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this team?")) return;
+
+    try {
+      const res = await fetch("/api/team", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete team");
+      }
+
+      await fetchTeams();
       toast({
         title: "Success",
         description: "Team deleted successfully",
@@ -83,7 +198,7 @@ export default function TeamsPage() {
       console.error("Error deleting team:", error);
       toast({
         title: "Error",
-        description: "Failed to delete team",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -108,6 +223,21 @@ export default function TeamsPage() {
             Teams
           </h1>
           <div className="flex gap-4">
+            <Button
+              onClick={handleGlobalFreeze}
+              disabled={isLoading}
+              className={`${
+                isGloballyFrozen
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              } text-white transition-all duration-200 transform hover:scale-102 
+              shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <Snowflake
+                className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              />
+              {isGloballyFrozen ? "Global Unfreeze" : "Global Freeze"}
+            </Button>
             <Button
               onClick={() => {
                 setSelectedTeam(null);
@@ -199,6 +329,18 @@ export default function TeamsPage() {
                       className="flex gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <Button
+                        onClick={() => handleFreeze(team.id)}
+                        variant={team.freezed ? "destructive" : "ghost"}
+                        size="sm"
+                        className={`transform hover:scale-105 transition-all duration-200 ${
+                          team.freezed
+                            ? "hover:bg-red-600"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                      >
+                        {team.freezed ? "Unfreeze" : "Freeze"}
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

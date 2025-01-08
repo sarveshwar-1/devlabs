@@ -30,6 +30,26 @@ model User {
     Mentor Mentor[]
 
     Mentee Mentee[]
+
+    Admin Admin[]
+}
+
+model GlobalSettings {
+    id              Int      @id @default(1)
+    globalTeamFreeze Boolean @default(false)
+    updatedAt       DateTime @unique @default(now())
+}
+
+model GlobalProj {
+    id              Int      @id @default(1)
+    globalProjFreeze Boolean @default(false)
+    updatedAt DateTime @unique @default(now())
+}
+
+model Admin {
+    id       String  @id @default(cuid())
+    user User   @relation(fields: [id], references: [id])
+
 }
 
 model Mentee {
@@ -51,6 +71,7 @@ model Mentor {
 enum Role {
     MENTOR
     MENTEE
+    ADMIN
 }
 
 model Project {
@@ -65,6 +86,7 @@ model Project {
     updatedAt   DateTime @updatedAt
     isactive    Boolean  @default(true)
     mentor      Mentor[]
+    freezed     Boolean?   @default(false)
 
     team   Team   @relation(fields: [teamId], references: [id])
     teamId String

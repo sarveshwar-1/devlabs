@@ -20,6 +20,7 @@ type Project = {
   description?: string;
   repository: string;
   status: string;
+  freezed: boolean;
   team: Team;
   mentor: Mentor[];
 };
@@ -52,7 +53,6 @@ export default function Page() {
   }>({ key: "title", direction: "asc" });
 
   const router = useRouter();
-
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -157,7 +157,11 @@ export default function Page() {
                   e.stopPropagation();
                 }}
               >
-                <EditProjectDialog project={project} />
+                {!project.freezed ? (
+                  <>
+                    <EditProjectDialog project={project} />
+                  </>
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

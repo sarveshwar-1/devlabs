@@ -19,7 +19,7 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-type UserRole = "MENTOR" | "MENTEE";
+type UserRole = "MENTOR" | "MENTEE" | "ADMIN";
 
 const navItemsByRole: Record<UserRole, NavItem[]> = {
   MENTOR: [
@@ -33,6 +33,11 @@ const navItemsByRole: Record<UserRole, NavItem[]> = {
     { name: "Projects", href: "/mentee/project", icon: BookOpen },
     { name: "Teams", href: "/mentee/teams", icon: FileText },
     { name: "Blog", href: "/mentee/blogs", icon: Cloudy },
+  ],
+  ADMIN: [
+    { name: "Home", href: "/admin", icon: Home },
+    { name: "Projects", href: "/admin/project", icon: BookOpen },
+    { name: "Teams", href: "/admin/teams", icon: FileText },
   ],
 };
 
