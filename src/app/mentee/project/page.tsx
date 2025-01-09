@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { CreateProjectDialog } from "@/components/project/create-project-dialog";
 import { EditProjectDialog } from "@/components/project/edit-project-dialog";
+import { useToast } from "@/components/ui/use-toast";
 
 type Project = {
   id: number;
@@ -24,12 +25,14 @@ type Project = {
   team: Team;
   mentor: Mentor[];
 };
+
 type Mentor = {
   user: {
     id: string;
     name: string;
   };
 };
+
 type TeamMember = {
   user: {
     name: string;
@@ -53,6 +56,7 @@ export default function Page() {
   }>({ key: "title", direction: "asc" });
 
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -65,10 +69,15 @@ export default function Page() {
         setProjects(data);
       } catch (error) {
         console.error("Failed to fetch projects:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch projects",
+          variant: "destructive",
+        });
       }
     };
     fetchProjects();
-  }, []);
+  }, [toast]);
 
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -90,6 +99,10 @@ export default function Page() {
           ? "desc"
           : "asc",
     });
+  };
+
+  const handleRowClick = (projectId: number) => {
+    router.push(`/mentee/project/${projectId}`);
   };
 
   return (
@@ -126,19 +139,24 @@ export default function Page() {
             </TableHead>
             <TableHead>Repository</TableHead>
             <TableHead>Team</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedProjects.map((project) => (
             <TableRow
               key={project.id}
-              onClick={() => {
-                router.push(`/mentee/project/${project.id}`);
-              }}
+              onClick={() => handleRowClick(project.id)}
+              className="cursor-pointer"
             >
-              <TableCell>{project.title}</TableCell>
               <TableCell>
-                {project.mentor.map((user) => user.user.name)}
+                {project.title}
+                {project.freezed && (
+                  <span className="ml-2 text-sm text-gray-500">(Frozen)</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {project.mentor.map((user) => user.user.name).join(", ")}
               </TableCell>
               <TableCell>{project.status}</TableCell>
               <TableCell>
@@ -147,6 +165,7 @@ export default function Page() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {project.repository}
                 </a>
@@ -158,10 +177,10 @@ export default function Page() {
                 }}
               >
                 {!project.freezed ? (
-                  <>
-                    <EditProjectDialog project={project} />
-                  </>
-                ) : null}
+                  <EditProjectDialog project={project} />
+                ) : (
+                  <span className="text-sm text-gray-500">Frozen by admin</span>
+                )}
               </TableCell>
             </TableRow>
           ))}

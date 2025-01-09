@@ -12,12 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Search } from "lucide-react";
+import { Search, Snowflake } from "lucide-react";
 
 type Project = {
-  id: number;
+  id: string;
   title: string;
   description?: string;
   repository: string;
@@ -62,6 +61,73 @@ export default function Page() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const checkGlobalFreezeStatus = async () => {
+    try {
+      const res = await fetch("/api/project/global-freeze");
+      if (!res.ok) {
+        throw new Error("Failed to check global freeze status");
+      }
+      const { isGloballyFrozen } = await res.json();
+      setIsGloballyFrozen(isGloballyFrozen);
+    } catch (error) {
+      console.error("Error checking global freeze status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check global freeze status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGlobalFreeze = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/project/global-freeze", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ProjFrozen: !isGloballyFrozen,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update global freeze status");
+
+      const data = await res.json();
+
+      // Check if data.projects exists and is an array before updating state
+      if (Array.isArray(data.projs)) {
+        setProjects(data.projs);
+      } else {
+        // If the API doesn't return projects, fetch them again
+        fetchProjects();
+      }
+
+      // Update freeze status if it exists in the response
+      if (typeof data.isGloballyFrozen === "boolean") {
+        setIsGloballyFrozen(data.isGloballyFrozen);
+      }
+
+      toast({
+        title: "Success",
+        description: `Projects ${
+          !isGloballyFrozen ? "frozen" : "unfrozen"
+        } successfully`,
+      });
+    } catch (error) {
+      console.error("Error updating global freeze status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update global freeze status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch("/api/project");
@@ -69,7 +135,11 @@ export default function Page() {
         throw new Error("Failed to fetch projects");
       }
       const data = await response.json();
-      setProjects(data);
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        throw new Error("Invalid data format received");
+      }
     } catch (error) {
       console.error("Failed to fetch projects:", error);
       toast({
@@ -82,10 +152,11 @@ export default function Page() {
 
   useEffect(() => {
     setMounted(true);
+    checkGlobalFreezeStatus();
     fetchProjects();
   }, [fetchProjects]);
 
-  const handleFreeze = async (projectId: number) => {
+  const handleFreeze = async (projectId: string) => {
     try {
       const updatedFreezedState = !projects.find(
         (project) => project.id === projectId
@@ -134,7 +205,7 @@ export default function Page() {
     }
   };
 
-  const filteredProjects = projects.filter((project) =>
+  const filteredProjects = projects?.filter((project) =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -171,17 +242,34 @@ export default function Page() {
         </div>
 
         {/* Search Section */}
-        <div className="relative max-w-md mb-8 animate-fade-in-up">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 
-                     text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
-                     focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
-                     transition-all duration-200"
-          />
+        <div className="flex justify-between items-center gap-4 mb-8 animate-fade-in-up">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 
+                       text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
+                       transition-all duration-200"
+            />
+          </div>
+          <Button
+            onClick={handleGlobalFreeze}
+            disabled={isLoading}
+            className={`${
+              isGloballyFrozen
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white transition-all duration-200 transform hover:scale-102 
+            shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            <Snowflake
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
+            {isGloballyFrozen ? "Global Unfreeze" : "Global Freeze"}
+          </Button>
         </div>
 
         {/* Table Section */}
@@ -237,7 +325,10 @@ export default function Page() {
                     {project.title}
                   </TableCell>
                   <TableCell className="text-gray-600 dark:text-gray-300">
-                    {project.mentor.map((user) => user.user.name).join(", ")}
+                    {/* {project.mentor.map((ment) => ment.user.name).join(", ")} */}
+                    {project.mentor && project.mentor.length > 0
+                      ? project.mentor.map((ment) => ment.user.name).join(", ")
+                      : "No mentors assigned"}
                   </TableCell>
                   <TableCell className="text-gray-600 dark:text-gray-300">
                     {project.status}
@@ -273,7 +364,6 @@ export default function Page() {
                       >
                         {project.freezed ? "Unfreeze" : "Freeze"}
                       </Button>
-                      <EditProjectDialog project={project} />
                     </div>
                   </TableCell>
                 </TableRow>

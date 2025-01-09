@@ -6,16 +6,14 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user.email) {
-      return NextResponse.json(
-        { error: "Not Authorised" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Not Authorised" }, { status: 401 });
     }
 
     const mentors = await prisma.mentor.findMany({
       include: {
         user: {
           select: {
+            id: true,
             name: true,
           },
         },

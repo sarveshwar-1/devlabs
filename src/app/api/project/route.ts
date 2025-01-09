@@ -46,6 +46,7 @@ export async function GET() {
         },
         mentor: {
           select: {
+            id: true,
             user: {
               select: {
                 id: true,
@@ -77,6 +78,8 @@ export async function GET() {
         },
         mentor: {
           select: {
+            id: true,
+
             user: {
               select: {
                 id: true,
