@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FolderGit, ListTodo, Github, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { title } from "process";
 
 const useTaskPriority = () => {
   const getPriority = (dueDate: Date) => {
@@ -19,7 +19,7 @@ const useTaskPriority = () => {
     return "Low";
   };
 
-  const getUrgencyColor = (dueDate) => {
+  const getUrgencyColor = (dueDate: Date) => {
     const priority = getPriority(dueDate);
 
     switch (priority) {
@@ -74,6 +74,11 @@ export default function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const { getPriority, getUrgencyColor } = useTaskPriority();
+  const router = useRouter();
+
+  const RedirectTask = (taskid: string) => {
+    router.push("/mentee/task/" + taskid);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, x: -20 },
@@ -241,6 +246,7 @@ export default function Page() {
                       <div
                         key={task.id}
                         className={`p-4 rounded-lg border transition-all duration-300 hover:translate-x-1 ${urgencyColor.light} ${urgencyColor.dark}`}
+                        onClick={() => RedirectTask(task.id)}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-medium">{task.title}</h3>

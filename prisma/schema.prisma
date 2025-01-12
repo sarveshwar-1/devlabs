@@ -35,21 +35,20 @@ model User {
 }
 
 model GlobalSettings {
-    id              Int      @id @default(1)
-    globalTeamFreeze Boolean @default(false)
-    updatedAt       DateTime @unique @default(now())
+    id               Int      @id @default(1)
+    globalTeamFreeze Boolean  @default(false)
+    updatedAt        DateTime @unique @default(now())
 }
 
 model GlobalProj {
-    id              Int      @id @default(1)
-    globalProjFreeze Boolean @default(false)
-    updatedAt DateTime @unique @default(now())
+    id               Int      @id @default(1)
+    globalProjFreeze Boolean  @default(false)
+    updatedAt        DateTime @unique @default(now())
 }
 
 model Admin {
-    id       String  @id @default(cuid())
+    id   String @id @default(cuid())
     user User   @relation(fields: [id], references: [id])
-
 }
 
 model Mentee {
@@ -86,7 +85,7 @@ model Project {
     updatedAt   DateTime @updatedAt
     isactive    Boolean  @default(true)
     mentor      Mentor[]
-    freezed     Boolean?   @default(false)
+    freezed     Boolean? @default(false)
 
     team   Team   @relation(fields: [teamId], references: [id])
     teamId String
@@ -117,7 +116,7 @@ model Team {
     semester     String?
     Project      Project[]
     Mentee       Mentee[]
-    freezed      Boolean?   @default(false)
+    freezed      Boolean?  @default(false)
 
     @@index([joinCode])
 }
@@ -131,6 +130,8 @@ model Task {
     dueDate     DateTime
     grade       Int?
     remarks     String?
+    file         String?
+    images      String[]
 
     project   Project @relation(fields: [projectid], references: [id])
     projectid String

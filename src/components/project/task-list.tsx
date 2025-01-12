@@ -1,9 +1,9 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EditTaskDialog } from "../tasks/edit-task-dialog";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
-  Clock,
   AlertCircle,
   ChevronRight,
   CalendarDays,
@@ -30,6 +30,10 @@ interface TaskListProps {
 export function TaskList({ tasks: tasksProps}: TaskListProps) {
   const [activeTaskId, setActiveTaskId] = React.useState<string | null>(null);
   const tasks = Array.isArray(tasksProps) ? tasksProps : tasksProps.tasks || [];
+  const router = useRouter();
+  const RedirectTask = (taskid: string) => {
+    router.push("/mentor/task/" + taskid);
+  };
 
   const getStatusColor = (status: Status) => {
     switch (status) {
@@ -121,6 +125,7 @@ export function TaskList({ tasks: tasksProps}: TaskListProps) {
                 )}
                 whileHover={{ scale: 1.02, translateX: 8 }}
                 onClick={(e) => handleTaskClick(task.id, e)}
+                onDoubleClick={() => RedirectTask(task.id)}
                 layout
               >
                 <motion.div

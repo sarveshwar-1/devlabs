@@ -184,4 +184,5 @@ export async function downloadFile(fileName: string, bucketName: string): Promis
     }
 }
 
+
 export default minioClient;
