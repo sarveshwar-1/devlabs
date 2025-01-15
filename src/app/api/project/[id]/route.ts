@@ -1,12 +1,12 @@
-import { NextResponse , NextRequest} from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
-import {auth} from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
-export async function GET(request:NextRequest,{params}: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const projectId = params.id;
-    console.log('projectId:', projectId);
+    console.log(projectId)
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,7 +18,6 @@ export async function GET(request:NextRequest,{params}: { params: { id: string }
 
     const redisClient = await redis;
     const cacheKey = `project:${projectId}`;
-
     // Try to get from cache
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
@@ -47,6 +46,6 @@ export async function GET(request:NextRequest,{params}: { params: { id: string }
 
     return NextResponse.json(project);
   } catch (error: any) {
-    return NextResponse.json({ error: "Failed to fetch project" }, { status: 500 });
+    return NextResponse.json({ error:error.message}, { status: 500 });
   }
 }

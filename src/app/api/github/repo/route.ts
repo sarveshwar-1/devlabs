@@ -48,8 +48,6 @@ export async function GET(req: NextRequest) {
         // if (cachedData) {
         //     return NextResponse.json(JSON.parse(cachedData));
         // }
-        console.log('githubToken:', githubToken)
-        console.log('finalurl:', finalurl)
         const response = await fetch(`https://api.github.com/user/repos${finalurl}`, {
             headers: {
                 Authorization: `Bearer ${githubToken}`,

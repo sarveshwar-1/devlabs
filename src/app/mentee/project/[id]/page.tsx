@@ -121,7 +121,6 @@ function Page({ params }: { params: { id: string } }) {
     const fetchProject = async () => {
       const response = await fetch("/api/project/" + projectId);
       const data = await response.json();
-      console.log(data);
       setProject(data);
       setRepository(data.repository);
     };

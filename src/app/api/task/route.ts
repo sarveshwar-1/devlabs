@@ -16,18 +16,16 @@ export async function GET(req: NextRequest) {
     }
 
     if (fetchImages === 'true') {
-        const imagePattern = `${id}-img`;
-        const images = await prisma.task.findMany({
+        const task = await prisma.task.findUnique({
             where: {
-                id: {
-                    startsWith: imagePattern
-                }
+                id: id
             },
             select: {
-                file: true
+                images: true
             }
         });
-        return NextResponse.json({ images: images.map(img => img.file) });
+        
+        return NextResponse.json({ images: task?.images || [] });
     }
 
     const file = await downloadFile(id, "devlabs");
@@ -39,8 +37,8 @@ export async function POST(req: NextRequest) {
         if (!session?.user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        const { file, filename, fileType, bucketName, folderName } = await req.json();
-        console.log(file, filename, fileType, bucketName);
+        const { file, filename, fileType, bucketName, folderName,taskId } = await req.json();
+        console.log( filename, fileType, 'bucketname',bucketName,folderName,taskId);
         if (!file) {
             return NextResponse.json(
                 { error: "No file found in request" },
@@ -64,29 +62,32 @@ export async function POST(req: NextRequest) {
             await createFolder(bucketName, folderName);
             const filenamewithfolder = `${folderName}/${filename}`;
             const img = await uploadFile(fileBuffer, filenamewithfolder, fileType, bucketName);
+            
+            // Use upsert instead of update
             await prisma.task.update({
                 where: {
-                    id: filename,
+                    id: taskId,
                 },
+
                 data: {
                     images: {
                         push: img
                     }
                 },
-            })
-
-
+            });
+            return NextResponse.json({ url: img });
+        } else {
+            const url = await uploadFile(fileBuffer, filename, fileType, bucketName);
+            await prisma.task.update({
+                where: {
+                    id: filename,
+                },
+                data: {
+                    file: url
+                }
+            });
+            return NextResponse.json({ url });
         }
-        const url = await uploadFile(fileBuffer, filename, fileType, bucketName);
-        await prisma.task.update({
-            where: {
-                id: filename,
-            },
-            data: {
-                file: url,
-            },
-        })
-        return NextResponse.json({ url }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json(
             { error: error.message },

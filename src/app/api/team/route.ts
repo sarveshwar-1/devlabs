@@ -1,10 +1,26 @@
 import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 
-export async function GET() {
+export async function GET(request:NextRequest) {
   try {
+    const teamid = request.nextUrl.searchParams.get("teamid");
+    if (teamid) {
+      const team = await prisma.team.findUnique({
+        where: {
+          id: teamid,
+        },
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      return NextResponse.json(team, { status: 200 });
+    }
     const session = await auth();
     const redisClient = await redis;
     if (!session?.user.email) {
@@ -156,10 +172,6 @@ export async function POST(req: Request) {
         },
       },
     });
-    console.log(
-      "Found users:",
-      users.map((u) => u.id)
-    );
     if (users.length !== memberIds.length || users.length < 0) {
       console.log(NextResponse);
       return NextResponse.json(
@@ -169,7 +181,6 @@ export async function POST(req: Request) {
     }
 
     const teamCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    console.log("teamCode:", teamCode);
 
     // If teamLeader is null, use the first user in the members list as the leader
     const finalTeamLeader = teamLeader || users[0];
@@ -178,7 +189,6 @@ export async function POST(req: Request) {
     if (teamLeader !== null) {
       memberIds.push(session.user.id);
     }
-    console.log("Updated memberIds after adding leader:", memberIds);
     const globalSettings = await prisma.globalSettings.findFirst({
       where: { id: 1 },
     });

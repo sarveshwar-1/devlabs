@@ -226,7 +226,6 @@ export async function DELETE(req: Request) {
     });
 
     await redisClient.del("projects:" + session.user.id);
-    console.log("project.mentor:", project.mentor);
     await deleteCashe(project.mentor.map((m) => m.id));
     return NextResponse.json({ message: "Project deleted successfully" });
   } catch (error) {

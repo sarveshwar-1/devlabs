@@ -12,6 +12,8 @@ import { Users, Calendar, Award, Book } from "lucide-react";
 import { Status } from "@prisma/client";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface Commit {
   url: string;
@@ -91,6 +93,10 @@ function Page({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
+  const router = useRouter();
+  const handleEvaluate = () => {
+    router.push(`/mentor/evaluation/${projectId}`);
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -121,7 +127,6 @@ function Page({ params }: { params: { id: string } }) {
     const fetchProject = async () => {
       const response = await fetch("/api/project/" + projectId);
       const data = await response.json();
-      console.log(data);
       setProject(data);
       setRepository(data.repository);
     };
@@ -393,7 +398,11 @@ function Page({ params }: { params: { id: string } }) {
                 Marks
               </CardTitle>
             </CardHeader>
-            <CardContent>{/* Marks content */}</CardContent>
+            <CardContent>
+              <Button onClick={handleEvaluate} className="w-full">
+                Evaluate
+              </Button>
+            </CardContent>
           </Card>
         </motion.div>
       </motion.div>
