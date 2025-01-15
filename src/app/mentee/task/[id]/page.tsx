@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Buffer } from "buffer";
 import Image from "next/image";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor, { type TextAreaTextApi } from "@uiw/react-md-editor";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 function Page({ params: { id } }: { params: { id: string } }) {
-  const [value, setValue] = useState("**Hello world!!!**");
+  const [value, setValue] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const editorRef = useRef<TextAreaTextApi | null>(null);
 
   const handleSave = async () => {
     try {
@@ -68,7 +69,7 @@ function Page({ params: { id } }: { params: { id: string } }) {
         if (!res.ok) throw new Error("Failed to upload image");
         const url = await res.json();
         setImages((prev) => [...prev, url]);
-        setSidebarOpen(true); // Open sidebar when new image is uploaded
+        setSidebarOpen(true);
       } catch (error) {
         console.error("Failed to upload image:", error);
       }
@@ -78,25 +79,36 @@ function Page({ params: { id } }: { params: { id: string } }) {
   };
 
   const insertImageToEditor = (url: string, index: number) => {
-    const imageMarkdown = `![Image ${index + 1}](${url})`;
-    const textArea = document.querySelector("textarea");
+    console.log("clicked");
+    const imageMarkdown = `\n![Image ${index + 1}](${url})\n`;
+    console.log("Inserting image:", imageMarkdown);
 
-    if (textArea) {
-      const start = textArea.selectionStart;
-      const end = textArea.selectionEnd;
-      const newValue =
-        value.substring(0, start) +
-        "\n" +
-        imageMarkdown +
-        "\n" +
-        value.substring(end);
-      setValue(newValue);
+    // If we have access to the editor API, use it
+    if (editorRef.current) {
+      const editor = editorRef.current;
+      const pos = editor.getSelection();
+      editor.replaceSelection(imageMarkdown);
+      editor.focus();
     } else {
-      setValue((prev) => prev + "\n" + imageMarkdown + "\n");
+      // Fallback: modify the value directly
+      setValue((prev) => prev + imageMarkdown);
     }
   };
 
   useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        const response = await fetch(`/api/task?id=${id}`);
+        if (!response.ok) throw new Error("Failed to fetch task");
+        const text = await response.text();
+        setValue(text);
+      } catch (error) {
+        console.error("Failed to fetch task:", error);
+      }
+    };
+
+    fetchTask();
+    // Existing image fetching code can remain here
     const fetchImages = async () => {
       try {
         const response = await fetch(`/api/task?id=${id}&images=true`);
@@ -115,13 +127,17 @@ function Page({ params: { id } }: { params: { id: string } }) {
   return (
     <div className="flex h-[calc(100vh-64px)] bg-gray-100 dark:bg-gray-900">
       <div className="flex-1 flex flex-col p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md mb-4 flex flex-col h-full">
+        <div className="h-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <MDEditor
             value={value}
             onChange={setValue}
-            className="h-full w-full"
-            style={{ height: "100%" }}
             preview="edit"
+            className="h-full !min-h-full"
+            textareaProps={{
+              onFocus: (e, api) => {
+                editorRef.current = api;
+              },
+            }}
           />
         </div>
 
@@ -169,17 +185,21 @@ function Page({ params: { id } }: { params: { id: string } }) {
                 key={index}
                 className="group relative bg-gray-50 dark:bg-gray-700 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
-                <Image
-                  src={url}
-                  alt={`Uploaded Image ${index + 1}`}
-                  width={200}
-                  height={200}
-                  className="w-full h-auto rounded cursor-pointer object-cover"
+                <button
                   onClick={() => insertImageToEditor(url, index)}
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                  <p className="text-white text-sm">Click to insert</p>
-                </div>
+                  className="w-full p-0 border-0 bg-transparent cursor-pointer"
+                >
+                  <Image
+                    src={url}
+                    alt={`Uploaded Image ${index + 1}`}
+                    width={200}
+                    height={200}
+                    className="w-full h-auto rounded object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                    <p className="text-white text-sm">Click to insert</p>
+                  </div>
+                </button>
               </div>
             ))}
           </div>
