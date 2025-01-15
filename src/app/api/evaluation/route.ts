@@ -1,278 +1,326 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from '@/lib/db/prismadb';
+import { prisma } from "@/lib/db/prismadb";
 import { auth } from "@/lib/auth";
 import { z } from "zod"; // For input validation
 
 // Types for our responses
 type ApiResponse<T> = {
-    success: boolean;
-    data?: T;
-    error?: string;
+  success: boolean;
+  data?: T;
+  error?: string;
 };
 
 // Validation schema for evaluation scores
 const ScoreSchema = z.object({
-    regularUpdates: z.number().min(0).max(100),
-    viva: z.number().min(0).max(100),
-    content: z.number().min(0).max(100),
+  regularUpdates: z.number().min(0).max(100),
+  viva: z.number().min(0).max(100),
+  content: z.number().min(0).max(100),
 });
 
 const CreateEvaluationSchema = z.object({
-    projectId: z.string(),
-    stage: z.enum(["Review1", "Review2", "Final_Review"]),
-    menteeId: z.string(),
-    scores: ScoreSchema,
-    comments: z.string().optional().nullable(), // Changed to make comments optional and allow null
+  projectId: z.string(),
+  stage: z.enum(["Review1", "Review2", "Final_Review"]),
+  menteeId: z.string(),
+  scores: ScoreSchema,
+  comments: z.string().optional().nullable(), // Changed to make comments optional and allow null
 });
 
 // GET - Fetch evaluations (with filtering options)
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Unauthorized'
-            }, { status: 401 });
-        }
-
-        const searchParams = request.nextUrl.searchParams;
-        const projectId = searchParams.get('projectId');
-        const stage = searchParams.get('stage');
-        const menteeId = searchParams.get('menteeId');
-
-        if (!projectId) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Project ID is required'
-            }, { status: 400 });
-        }
-
-        const evaluations = await prisma.evaluation.findMany({
-            where: {
-                projectId,
-                stage: stage as any || undefined,
-                menteeId: menteeId || undefined,
-                mentorId: session.user.id,
-            },
-            include: {
-                scores: true,
-                mentee: {
-                    include: {
-                        user: {
-                            select: {
-                                name: true,
-                                email: true,
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Fixed: renamed 'eval' to 'evaluation'
-        const sanitizedEvaluations = evaluations.map(evaluation => ({
-            ...evaluation,
-            mentee: {
-                ...evaluation.mentee,
-                name: evaluation.mentee?.user?.name || 'Unknown User'
-            }
-        }));
-
-        return NextResponse.json<ApiResponse<typeof sanitizedEvaluations>>({
-            success: true,
-            data: sanitizedEvaluations
-        });
-    } catch (error) {
-        console.error('GET Evaluation Error:', error);
-        return NextResponse.json<ApiResponse<null>>({
-            success: false,
-            error: 'Failed to fetch evaluations'
-        }, { status: 500 });
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Unauthorized",
+        },
+        { status: 401 }
+      );
     }
+
+    const searchParams = request.nextUrl.searchParams;
+    const projectId = searchParams.get("projectId");
+    const stage = searchParams.get("stage");
+    const menteeId = searchParams.get("menteeId");
+
+    if (!projectId) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Project ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    const evaluations = await prisma.evaluation.findMany({
+      where: {
+        projectId,
+        stage: (stage as any) || undefined,
+        menteeId: menteeId || undefined,
+        mentorId: session.user.id,
+      },
+      include: {
+        scores: true,
+        mentee: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Fixed: renamed 'eval' to 'evaluation'
+    const sanitizedEvaluations = evaluations.map((evaluation) => ({
+      ...evaluation,
+      mentee: {
+        ...evaluation.mentee,
+        name: evaluation.mentee?.user?.name || "Unknown User",
+      },
+    }));
+
+    return NextResponse.json<ApiResponse<typeof sanitizedEvaluations>>({
+      success: true,
+      data: sanitizedEvaluations,
+    });
+  } catch (error) {
+    console.error("GET Evaluation Error:", error);
+    return NextResponse.json<ApiResponse<null>>(
+      {
+        success: false,
+        error: "Failed to fetch evaluations",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 // POST - Create new evaluation
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Unauthorized'
-            }, { status: 401 });
-        }
-
-        const body = await request.json();
-        const validatedData = CreateEvaluationSchema.parse(body);
-
-        // Check if evaluation already exists
-        const existingEvaluation = await prisma.evaluation.findFirst({
-            where: {
-                projectId: validatedData.projectId,
-                stage: validatedData.stage,
-                menteeId: validatedData.menteeId,
-            }
-        });
-
-        if (existingEvaluation) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Evaluation already exists for this stage'
-            }, { status: 409 });
-        }
-
-        // Create evaluation with scores in a transaction
-        const evaluation = await prisma.$transaction(async (tx) => {
-            const newEvaluation = await tx.evaluation.create({
-                data: {
-                    projectId: validatedData.projectId,
-                    stage: validatedData.stage,
-                    menteeId: validatedData.menteeId,
-                    mentorId: session.user.id,
-                    comments: validatedData.comments,
-                }
-            });
-
-            const scores = await tx.score.create({
-                data: {
-                    evaluationId: newEvaluation.id,
-                    ...validatedData.scores,
-                    total: Object.values(validatedData.scores).reduce((a, b) => a + b, 0)
-                }
-            });
-
-            return { ...newEvaluation, scores };
-        });
-
-        return NextResponse.json<ApiResponse<typeof evaluation>>({
-            success: true,
-            data: evaluation
-        }, { status: 201 });
-    } catch (error) {
-        console.error('POST Evaluation Error:', error);
-        if (error instanceof z.ZodError) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Invalid input data'
-            }, { status: 400 });
-        }
-        return NextResponse.json<ApiResponse<null>>({
-            success: false,
-            error: 'Failed to create evaluation'
-        }, { status: 500 });
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Unauthorized",
+        },
+        { status: 401 }
+      );
     }
+
+    const body = await request.json();
+    const validatedData = CreateEvaluationSchema.parse(body);
+
+    // Check if evaluation already exists
+    const existingEvaluation = await prisma.evaluation.findFirst({
+      where: {
+        projectId: validatedData.projectId,
+        stage: validatedData.stage,
+        menteeId: validatedData.menteeId,
+      },
+    });
+
+    if (existingEvaluation) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Evaluation already exists for this stage",
+        },
+        { status: 409 }
+      );
+    }
+
+    // Create evaluation with scores in a transaction
+    const evaluation = await prisma.$transaction(async (tx) => {
+      const newEvaluation = await tx.evaluation.create({
+        data: {
+          projectId: validatedData.projectId,
+          stage: validatedData.stage,
+          menteeId: validatedData.menteeId,
+          mentorId: session.user.id,
+          comments: validatedData.comments,
+        },
+      });
+
+      const scores = await tx.score.create({
+        data: {
+          evaluationId: newEvaluation.id,
+          ...validatedData.scores,
+          total: Object.values(validatedData.scores).reduce((a, b) => a + b, 0),
+        },
+      });
+
+      return { ...newEvaluation, scores };
+    });
+
+    return NextResponse.json<ApiResponse<typeof evaluation>>(
+      {
+        success: true,
+        data: evaluation,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("POST Evaluation Error:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Invalid input data",
+        },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json<ApiResponse<null>>(
+      {
+        success: false,
+        error: "Failed to create evaluation",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 // PUT - Update evaluation
 export async function PUT(request: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Unauthorized'
-            }, { status: 401 });
-        }
-
-        const evaluationId = request.nextUrl.searchParams.get('id');
-        if (!evaluationId) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Evaluation ID is required'
-            }, { status: 400 });
-        }
-
-        const body = await request.json();
-        const validatedData = ScoreSchema.extend({
-            comments: z.string().optional(),
-        }).parse(body);
-
-        // Update evaluation and scores in a transaction
-        const updatedEvaluation = await prisma.$transaction(async (tx) => {
-            const evaluation = await tx.evaluation.update({
-                where: {
-                    id: evaluationId,
-                    mentorId: session.user.id // Ensure mentor owns the evaluation
-                },
-                data: {
-                    comments: validatedData.comments,
-                }
-            });
-
-            const scores = await tx.score.update({
-                where: { evaluationId },
-                data: {
-                    regularUpdates: validatedData.regularUpdates,
-                    viva: validatedData.viva,
-                    content: validatedData.content,
-                    total: validatedData.regularUpdates + validatedData.viva + validatedData.content
-                }
-            });
-
-            return { ...evaluation, scores };
-        });
-
-        return NextResponse.json<ApiResponse<typeof updatedEvaluation>>({
-            success: true,
-            data: updatedEvaluation
-        });
-    } catch (error) {
-        console.error('PUT Evaluation Error:', error);
-        if (error instanceof z.ZodError) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Invalid input data'
-            }, { status: 400 });
-        }
-        return NextResponse.json<ApiResponse<null>>({
-            success: false,
-            error: 'Failed to update evaluation'
-        }, { status: 500 });
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Unauthorized",
+        },
+        { status: 401 }
+      );
     }
+
+    const evaluationId = request.nextUrl.searchParams.get("id");
+    if (!evaluationId) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Evaluation ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const validatedData = ScoreSchema.extend({
+      comments: z.string().optional(),
+    }).parse(body);
+
+    // Update evaluation and scores in a transaction
+    const updatedEvaluation = await prisma.$transaction(async (tx) => {
+      const evaluation = await tx.evaluation.update({
+        where: {
+          id: evaluationId,
+          mentorId: session.user.id, // Ensure mentor owns the evaluation
+        },
+        data: {
+          comments: validatedData.comments,
+        },
+      });
+
+      const scores = await tx.score.update({
+        where: { evaluationId },
+        data: {
+          regularUpdates: validatedData.regularUpdates,
+          viva: validatedData.viva,
+          content: validatedData.content,
+          total:
+            validatedData.regularUpdates +
+            validatedData.viva +
+            validatedData.content,
+        },
+      });
+
+      return { ...evaluation, scores };
+    });
+
+    return NextResponse.json<ApiResponse<typeof updatedEvaluation>>({
+      success: true,
+      data: updatedEvaluation,
+    });
+  } catch (error) {
+    console.error("PUT Evaluation Error:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Invalid input data",
+        },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json<ApiResponse<null>>(
+      {
+        success: false,
+        error: "Failed to update evaluation",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 // DELETE - Remove evaluation
 export async function DELETE(request: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Unauthorized'
-            }, { status: 401 });
-        }
-
-        const evaluationId = request.nextUrl.searchParams.get('id');
-        if (!evaluationId) {
-            return NextResponse.json<ApiResponse<null>>({
-                success: false,
-                error: 'Evaluation ID is required'
-            }, { status: 400 });
-        }
-
-        // Delete evaluation and associated scores in a transaction
-        await prisma.$transaction(async (tx) => {
-            await tx.score.delete({
-                where: { evaluationId }
-            });
-
-            await tx.evaluation.delete({
-                where: {
-                    id: evaluationId,
-                    mentorId: session.user.id // Ensure mentor owns the evaluation
-                }
-            });
-        });
-
-        return NextResponse.json<ApiResponse<null>>({
-            success: true
-        });
-    } catch (error) {
-        console.error('DELETE Evaluation Error:', error);
-        return NextResponse.json<ApiResponse<null>>({
-            success: false,
-            error: 'Failed to delete evaluation'
-        }, { status: 500 });
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Unauthorized",
+        },
+        { status: 401 }
+      );
     }
+
+    const evaluationId = request.nextUrl.searchParams.get("id");
+    if (!evaluationId) {
+      return NextResponse.json<ApiResponse<null>>(
+        {
+          success: false,
+          error: "Evaluation ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Delete evaluation and associated scores in a transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.score.delete({
+        where: { evaluationId },
+      });
+
+      await tx.evaluation.delete({
+        where: {
+          id: evaluationId,
+          mentorId: session.user.id, // Ensure mentor owns the evaluation
+        },
+      });
+    });
+
+    return NextResponse.json<ApiResponse<null>>({
+      success: true,
+    });
+  } catch (error) {
+    console.error("DELETE Evaluation Error:", error);
+    return NextResponse.json<ApiResponse<null>>(
+      {
+        success: false,
+        error: "Failed to delete evaluation",
+      },
+      { status: 500 }
+    );
+  }
 }

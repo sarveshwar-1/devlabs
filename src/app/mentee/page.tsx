@@ -127,13 +127,16 @@ export default function Page() {
 
           if (tasks && Array.isArray(tasks)) {
             for (let j = 0; j < tasks.length; j++) {
-              if (tasks[j].status.toLowerCase() === "pending") {
+              if (
+                tasks[j].status.toLowerCase() === "pending" ||
+                tasks[j].status.toLowerCase() === "ongoing"
+              ) {
                 allTasks.push({
                   id: tasks[j].id,
                   title: tasks[j].title,
                   description: tasks[j].description,
                   dueDate: new Date(tasks[j].dueDate).toISOString(),
-                  status: "PENDING",
+                  status: tasks[j].status,
                   projectName: projects[i].title,
                 });
               }

@@ -12,6 +12,7 @@ import { Users, Calendar, Award, Book } from "lucide-react";
 import { Status } from "@prisma/client";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import StudentMarks from "@/components/project/scores";
 
 interface Commit {
   url: string;
@@ -254,7 +255,6 @@ function Page({ params }: { params: { id: string } }) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CreateTaskDialog projectId={projectId} />
                 <div className="mt-4">
                   <ScrollArea className="h-[380px] pr-4">
                     <TaskList tasks={tasks} />
@@ -368,31 +368,16 @@ function Page({ params }: { params: { id: string } }) {
 
           <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-500">
-                <Award className="w-5 h-5 text-emerald-500" />
-                Github
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <a
-                href={"https://github.com/" + repository}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-emerald-500 hover:text-emerald-600 transition-colors text-lg font-medium"
-              >
-                Repository Link : {project?.title}
-              </a>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-            <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-500">
                 <Award className="w-5 h-5 text-amber-500" />
                 Marks
               </CardTitle>
             </CardHeader>
-            <CardContent>{/* Marks content */}</CardContent>
+            <CardContent>
+              {user && (
+                <StudentMarks projectId={projectId} studentId={user.id} />
+              )}
+            </CardContent>
           </Card>
         </motion.div>
       </motion.div>
