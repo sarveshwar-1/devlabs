@@ -3,17 +3,23 @@ import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 import { auth } from "@/lib/auth";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const projectId = params.id;
-    console.log(projectId)
+    console.log(projectId);
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (!projectId) {
-      return NextResponse.json({ error: "Project ID required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Project ID required" },
+        { status: 400 }
+      );
     }
 
     const redisClient = await redis;
@@ -28,7 +34,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        team: true,
+        team: {
+          include: {
+            members: true,
+          },
+        },
         mentor: {
           include: {
             user: true,
@@ -46,6 +56,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(project);
   } catch (error: any) {
-    return NextResponse.json({ error:error.message}, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

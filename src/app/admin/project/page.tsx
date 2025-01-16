@@ -319,7 +319,7 @@ export default function Page() {
                             hover:bg-gray-50 dark:hover:bg-gray-900
                             transition-all duration-200 animate-fade-in-up`}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  onClick={() => router.push(`/mentee/project/${project.id}`)}
+                  onClick={() => router.push(`/admin/project/${project.id}`)}
                 >
                   <TableCell className="text-black dark:text-white font-medium">
                     {project.title}
