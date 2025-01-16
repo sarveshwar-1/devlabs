@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 type Mentor = {
   id: string;
@@ -79,6 +80,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     mentorIds: project.mentor.map((m) => m.id), // Use mentor.id instead of m.user.id
     isPrivate: project.isPrivate || false,
   });
+  const router = useRouter();
 
   useEffect(() => {
     if (open) {
@@ -128,7 +130,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
-      window.location.reload();
+      router.reload();
 
       setOpen(false);
     } catch (error) {
@@ -149,7 +151,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-      window.location.reload();
+      router.reload();
     } catch (error) {
       console.error("Failed to delete project:", error);
     }

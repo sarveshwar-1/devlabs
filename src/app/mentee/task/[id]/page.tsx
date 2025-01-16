@@ -79,18 +79,12 @@ function Page({ params: { id } }: { params: { id: string } }) {
   };
 
   const insertImageToEditor = (url: string, index: number) => {
-    console.log("clicked");
-    const imageMarkdown = `\n![Image ${index + 1}](${url})\n`;
-    console.log("Inserting image:", imageMarkdown);
-
-    // If we have access to the editor API, use it
     if (editorRef.current) {
       const editor = editorRef.current;
       const pos = editor.getSelection();
       editor.replaceSelection(imageMarkdown);
       editor.focus();
     } else {
-      // Fallback: modify the value directly
       setValue((prev) => prev + imageMarkdown);
     }
   };

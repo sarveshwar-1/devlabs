@@ -9,11 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { useRouter } from "next/navigation";
 function Jointeam() {
-    const [open, setOpen] = useState(false);
-    const [joincode, setJoincode] = useState("");
-    const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [joincode, setJoincode] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!joincode) {
@@ -27,9 +28,9 @@ function Jointeam() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ joincode }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         setError(data.error || "Failed to join team");
         return;
@@ -37,7 +38,7 @@ function Jointeam() {
 
       setOpen(false);
       setJoincode("");
-      window.location.reload(); // Refresh to show updated teams
+      router.reload(); // Refresh to show updated teams
     } catch (error) {
       setError("Failed to join team");
       console.error("Failed to join team:", error);
@@ -56,7 +57,7 @@ function Jointeam() {
         <div className="space-y-4">
           <Label>
             Join Code
-            <Input 
+            <Input
               value={joincode}
               onChange={(e) => {
                 setJoincode(e.target.value);
