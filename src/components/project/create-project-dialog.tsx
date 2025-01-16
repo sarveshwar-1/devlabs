@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useRouter } from "next/navigation";
 type Team = {
   id: number;
   name: string;
@@ -50,7 +50,7 @@ export function CreateProjectDialog() {
     teamId: "",
     mentorIds: [] as string[], // Changed to array
   });
-
+  const router = useRouter();
   // Fetch teams
   const fetchTeams = async () => {
     const response = await fetch("/api/team");
@@ -97,13 +97,12 @@ export function CreateProjectDialog() {
 
       if (response.ok) {
         setOpen(false);
-        window.location.reload();
+        router.reload();
       }
     } catch (error) {
       console.error("Failed to create project:", error);
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

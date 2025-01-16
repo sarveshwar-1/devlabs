@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 export function CreateTaskDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
     status: "PENDING" as string, // Explicitly type as const to match enum
   });
   const [error, setError] = useState("");
-
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -65,7 +66,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
         dueDate: "",
         status: "PENDING",
       });
-      window.location.reload();
+      router.reload();
     } catch (error) {
       console.error("Failed to create task: ", error);
       setError(
