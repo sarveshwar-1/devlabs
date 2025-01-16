@@ -1,255 +1,283 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import TeamMembersModal from "@/components/team/team-member-modals";
+import { TeamModal } from "@/components/team/team-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { X } from "lucide-react";
+import { Search, Plus } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
-interface User {
-  id: string;
+interface Team {
+  id: number;
   name: string;
-  email: string;
+  description?: string;
+  joinCode: string;
+  teamLeaderId: string;
+  members: {
+    id: number;
+    name: string;
+  }[];
 }
 
-interface TeamDialogProps {
-  team?: any; // Add proper type for existing team data
-  mode?: "create" | "update";
-  onSuccess?: () => void;
-}
-
-export function CreateTeamDialog({
-  team,
-  mode = "create",
-  onSuccess,
-}: TeamDialogProps) {
-  const { data: session } = useSession();
-  const [teamMembers, setTeamMembers] = useState<User[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [teamData, setTeamData] = useState({
-    name: team?.name || "",
-    description: team?.description || "",
-    class: team?.class || "",
-    semester: team?.semester || "",
-  });
+export default function TeamsPage() {
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] =
+    useState<Team | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Set current user as default member
-    if (session?.user && mode === "create") {
-      setTeamMembers([
-        {
-          id: session.user.id,
-          name: session.user.name || "",
-          email: session.user.email || "",
-        },
-      ]);
-    }
+    setMounted(true);
+    fetchTeams();
+  }, []);
 
-    if (team && mode === "update") {
-      setTeamMembers(team.members.map((m: any) => m.user));
-    }
-  }, [session, team, mode]);
-
-  const searchUsers = async (query: string) => {
-    if (query.length < 2) return;
+  const fetchTeams = async () => {
     try {
-      const response = await fetch(`/api/users/search?query=${query}`);
-      const { users } = await response.json(); // Destructure users from response
-      setSearchResults(
-        users.filter(
-          (user: User) => !teamMembers.find((member) => member.id === user.id)
-        )
-      );
+      const res = await fetch("/api/team");
+      const data = await res.json();
+      setTeams(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Failed to search users:", error);
-      setSearchResults([]);
+      console.error("Error fetching teams:", error);
+      setTeams([]);
+      toast({
+        title: "Error",
+        description: "Failed to fetch teams",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleSubmit = async () => {
+  const handleDelete = async (teamId: string) => {
     try {
-      if (!teamData.name.trim()) {
-        toast.error("Team name is required");
-        return;
-      }
-
-      if (!teamData.class.trim()) {
-        toast.error("Class is required");
-        return;
-      }
-
-      if (!teamData.semester.trim()) {
-        toast.error("Semester is required");
-        return;
-      }
-
-      if (teamMembers.length < 1) {
-        toast.error("At least one team member is required");
-        return;
-      }
-
-      const endpoint = "/api/team";
-      const method = mode === "create" ? "POST" : "PUT";
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: team?.id,
-          name: teamData.name.trim(),
-          description: teamData.description.trim(),
-          class: teamData.class.trim(),
-          semester: teamData.semester.trim(),
-          memberIds: teamMembers.map((member) => member.id),
-        }),
+      const res = await fetch(`/api/team?teamid=${teamId}`, {
+        method: "DELETE",
       });
 
-      const data = await response.json();
+      if (!res.ok) throw new Error("Failed to delete team");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to save team");
-      }
-
-      toast.success(
-        `Team ${mode === "create" ? "created" : "updated"} successfully`
-      );
-      onSuccess?.();
-      setTeamData({ name: "", description: "", class: "", semester: "" });
-      setTeamMembers([]);
-    } catch (error: any) {
-      console.error("Submit error:", error);
-      toast.error(error.message || "Failed to save team");
+      fetchTeams();
+      toast({
+        title: "Success",
+        description: "Team deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team",
+        variant: "destructive",
+      });
     }
   };
 
+  const filteredTeams = teams.filter(
+    (team) =>
+      (team.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (team.description || "").toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="mt-5 mb-5">
-          {mode === "create" ? "Create Team" : "Update Team"}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Create New Team" : "Update Team"}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Input
-              placeholder="Team Name"
-              value={teamData.name}
-              onChange={(e) =>
-                setTeamData({ ...teamData, name: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Input
-              placeholder="Class"
-              value={teamData.class}
-              onChange={(e) =>
-                setTeamData({ ...teamData, class: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Input
-              placeholder="Semester"
-              value={teamData.semester}
-              onChange={(e) =>
-                setTeamData({ ...teamData, semester: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Textarea
-              placeholder="Team Description"
-              value={teamData.description}
-              onChange={(e) =>
-                setTeamData({ ...teamData, description: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Input
-              placeholder="Search members by name or email..."
-              value={searchQuery}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSearchQuery(value);
-                if (value.length >= 2) {
-                  searchUsers(value);
-                } else {
-                  setSearchResults([]);
-                }
+    <div
+      className={`min-h-screen bg-white dark:bg-black transition-colors duration-300 ${
+        mounted ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-8 animate-fade-in">
+          <h1 className="text-3xl font-bold text-black dark:text-white tracking-tight">
+            Teams
+          </h1>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => {
+                setSelectedTeam(null);
+                setIsModalOpen(true);
               }}
-            />
-
-            {searchQuery.length >= 2 &&
-              (searchResults.length > 0 ? (
-                <div className="border rounded-md p-2 max-h-48 overflow-y-auto">
-                  {searchResults.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex justify-between items-center p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        setTeamMembers([...teamMembers, user]);
-                        setSearchQuery("");
-                        setSearchResults([]);
-                      }}
-                    >
-                      <span>{user.name}</span>
-                      <span className="text-sm text-gray-500">
-                        {user.email}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500 p-2">No users found</div>
-              ))}
-
-            {teamMembers.map((member) => (
-              <div key={member.id} className="flex items-center gap-2">
-                <div className="flex-1">
-                  <span>{member.name}</span>
-                  <span className="text-sm text-gray-500 ml-2">
-                    {member.email}
-                  </span>
-                </div>
-                {member.id !== session?.user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setTeamMembers(
-                        teamMembers.filter((m) => m.id !== member.id)
-                      );
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
+              className="bg-black hover:bg-gray-800 text-white dark:bg-white dark:text-black 
+                       dark:hover:bg-gray-200 transition-all duration-200 transform hover:scale-102 
+                       shadow-sm hover:shadow-md"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Team
+            </Button>
           </div>
-
-          <Button onClick={handleSubmit}>
-            {mode === "create" ? "Create Team" : "Update Team"}
-          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Search Section */}
+        <div className="relative max-w-md mb-8 animate-fade-in-up">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Search teams..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 
+                     text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                     focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
+                     transition-all duration-200"
+          />
+        </div>
+
+        {/* Table Section */}
+        <div
+          className="rounded-xl border border-gray-200 dark:border-gray-800 
+                       shadow-sm hover:shadow-md transition-shadow duration-300
+                       animate-fade-in-up delay-100"
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                <TableHead className="text-black dark:text-white font-semibold">
+                  Name
+                </TableHead>
+                <TableHead className="text-black dark:text-white font-semibold">
+                  Description
+                </TableHead>
+                <TableHead className="text-black dark:text-white font-semibold">
+                  Members
+                </TableHead>
+                <TableHead className="text-black dark:text-white font-semibold">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTeams.map((team, index) => (
+                <TableRow
+                  key={team.id}
+                  className={`cursor-pointer border-gray-200 dark:border-gray-800 
+                            hover:bg-gray-50 dark:hover:bg-gray-900
+                            transition-all duration-200 animate-fade-in-up`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  onClick={() => {
+                    setSelectedTeamForMembers(team);
+                    setIsMembersModalOpen(true);
+                  }}
+                >
+                  <TableCell className="text-black dark:text-white font-medium">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="cursor-help hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                          {team.name}
+                        </TooltipTrigger>
+                        <TooltipContent
+                          className="bg-white dark:bg-black text-black dark:text-white 
+                                                border border-gray-200 dark:border-gray-800 shadow-lg"
+                        >
+                          <p>Join Code: {team.joinCode}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+                  <TableCell className="text-gray-600 dark:text-gray-300">
+                    {team.description}
+                  </TableCell>
+                  <TableCell className="text-gray-600 dark:text-gray-300">
+                    {team.members.length}
+                  </TableCell>
+                  <TableCell>
+                    <div
+                      className="flex gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTeam(team);
+                          setIsModalOpen(true);
+                        }}
+                        className="transform hover:scale-105 transition-all duration-200"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(team.id)}
+                        className="transform hover:scale-105 transition-all duration-200"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {filteredTeams.length === 0 && (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 animate-fade-in">
+              <p>
+                No teams found. Try adjusting your search or create a new team.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      <TeamModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        team={selectedTeam}
+        onSuccess={fetchTeams}
+      />
+      <TeamMembersModal
+        open={isMembersModalOpen}
+        onOpenChange={setIsMembersModalOpen}
+        team={selectedTeamForMembers}
+      />
+
+      {/* Animations */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .animate-fade-in-up {
+          animation: fadeInUp 0.5s ease-out forwards;
+        }
+      `}</style>
+    </div>
   );
 }

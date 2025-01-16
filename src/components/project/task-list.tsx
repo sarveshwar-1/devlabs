@@ -1,15 +1,18 @@
+"use client";
+
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EditTaskDialog } from "../tasks/edit-task-dialog";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
-  Clock,
   AlertCircle,
   ChevronRight,
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Status } from "@prisma/client";
+import { useSession } from "next-auth/react";
 
 interface Task {
   id: string;
@@ -27,9 +30,15 @@ interface TaskListProps {
   user?: any;
 }
 
-export function TaskList({ tasks: tasksProps}: TaskListProps) {
+export function TaskList({ tasks: tasksProps }: TaskListProps) {
   const [activeTaskId, setActiveTaskId] = React.useState<string | null>(null);
+  const { data: session } = useSession();
   const tasks = Array.isArray(tasksProps) ? tasksProps : tasksProps.tasks || [];
+  const router = useRouter();
+
+  const RedirectTask = (taskid: string, role1: string) => {
+    router.push("/" + role1 + "/task/" + taskid);
+  };
 
   const getStatusColor = (status: Status) => {
     switch (status) {
@@ -121,6 +130,9 @@ export function TaskList({ tasks: tasksProps}: TaskListProps) {
                 )}
                 whileHover={{ scale: 1.02, translateX: 8 }}
                 onClick={(e) => handleTaskClick(task.id, e)}
+                onDoubleClick={() =>
+                  RedirectTask(task.id, session?.user.role.toLowerCase())
+                }
                 layout
               >
                 <motion.div
@@ -164,8 +176,9 @@ export function TaskList({ tasks: tasksProps}: TaskListProps) {
                               {
                                 <EditTaskDialog
                                   task={task}
+                                  userRole={session?.user.role}
                                   onTaskUpdated={() => {
-                                    window.location.reload();
+                                    router.refresh();
                                   }}
                                 />
                               }

@@ -11,8 +11,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { CreateProjectDialog } from "@/components/project/create-project-dialog";
-import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 
 type Project = {
   id: number;
@@ -97,7 +95,6 @@ export default function Page() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <CreateProjectDialog />
       </div>
 
       <Table>
@@ -152,9 +149,7 @@ export default function Page() {
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
-              >
-                <EditProjectDialog project={project} />
-              </TableCell>
+              ></TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -22,9 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 type Mentor = {
-  id: string; // This is the mentor id directly
+  id: string;
   user: {
     id: string;
     name: string;
@@ -76,9 +77,10 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     description: project.description || "",
     repository: project.repository,
     teamId: project.team.id,
-    mentorIds: project.mentor.map((m: Mentor) => m.id), // Use mentor.id instead of mentor.user.id
+    mentorIds: project.mentor.map((m) => m.id), // Use mentor.id instead of m.user.id
     isPrivate: project.isPrivate || false,
   });
+  const router = useRouter();
 
   useEffect(() => {
     if (open) {
@@ -93,7 +95,6 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
           "/api/github/repo?githubToken=" + session.githubToken
         );
         const data = await response.json();
-        console.log(data);
         setRepositories(data);
       };
       const fetchMentors = async () => {
@@ -106,7 +107,13 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       fetchRepos();
       fetchMentors();
     }
-  }, [open]);
+  }, [open, session?.githubToken]);
+
+  // Helper function to get mentor name by ID
+  const getMentorName = (mentorId: string) => {
+    const mentor = mentors.find((m) => m.id === mentorId);
+    return mentor ? mentor.user.name : "Select mentor";
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -123,7 +130,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
-      window.location.reload();
+      router.reload();
 
       setOpen(false);
     } catch (error) {
@@ -144,7 +151,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-      window.location.reload();
+      router.reload();
     } catch (error) {
       console.error("Failed to delete project:", error);
     }
@@ -152,6 +159,19 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      <div style={{ display: "none" }}>
+        <pre>
+          {JSON.stringify(
+            {
+              projectMentors: project.mentor,
+              currentMentors: mentors,
+              formDataMentorIds: formData.mentorIds,
+            },
+            null,
+            2
+          )}
+        </pre>
+      </div>
       <div className="flex space-x-2">
         <DialogTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -199,20 +219,17 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select repository" />
+                <SelectValue placeholder="Select repository">
+                  {repositories.find((r) => r.full_name === formData.repository)
+                    ?.name || formData.repository}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {repositories ? (
-                  repositories.map((repo) => (
-                    <SelectItem key={repo.full_name} value={repo.full_name}>
-                      {repo.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="No repositories found">
-                    No repositories found
+                {repositories.map((repo) => (
+                  <SelectItem key={repo.full_name} value={repo.full_name}>
+                    {repo.name}
                   </SelectItem>
-                )}
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -226,7 +243,10 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select team" />
+                <SelectValue placeholder="Select team">
+                  {teams.find((t) => t.id === formData.teamId)?.name ||
+                    "Select team"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {teams.map((team) => (
@@ -252,14 +272,18 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select mentor" />
+                      <SelectValue placeholder="Select mentor">
+                        {getMentorName(mentorId)}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {mentors.map((mentor) => (
-                        <SelectItem key={mentor.id} value={mentor.id}>
-                          {mentor.user.name}
-                        </SelectItem>
-                      ))}
+                      {mentors.map((mentor) => {
+                        return (
+                          <SelectItem key={mentor.id} value={mentor.id}>
+                            {mentor.user.name}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                   <Button

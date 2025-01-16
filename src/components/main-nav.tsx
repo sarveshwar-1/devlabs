@@ -19,20 +19,22 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-type UserRole = "MENTOR" | "MENTEE";
+type UserRole = "MENTOR" | "MENTEE" | "ADMIN";
 
 const navItemsByRole: Record<UserRole, NavItem[]> = {
   MENTOR: [
-    { name: "Home", href: "/mentor", icon: Home },
     { name: "Projects", href: "/mentor/project", icon: BookOpen },
     { name: "Teams", href: "/mentor/teams", icon: FileText },
-    { name: "Blog", href: "/mentor/blogs", icon: Cloudy },
   ],
   MENTEE: [
     { name: "Home", href: "/mentee", icon: Home },
     { name: "Projects", href: "/mentee/project", icon: BookOpen },
     { name: "Teams", href: "/mentee/teams", icon: FileText },
-    { name: "Blog", href: "/mentee/blogs", icon: Cloudy },
+  ],
+  ADMIN: [
+    { name: "Home", href: "/admin", icon: Home },
+    { name: "Projects", href: "/admin/project", icon: BookOpen },
+    { name: "Teams", href: "/admin/teams", icon: FileText },
   ],
 };
 
@@ -47,21 +49,6 @@ export function MainNav() {
       setNavItems(navItemsByRole[role]);
     }
   }, [session]);
-
-  if (status === "loading") {
-    return (
-      <div className="fixed top-14 left-0 flex h-[calc(100vh-3.5rem)] w-20 flex-col z-20 bg-background border-r shadow-md transition-all duration-300 ease-in-out">
-        <div className="flex flex-col items-center gap-4 mt-6">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="w-14 h-14 rounded-xl animate-pulse bg-muted"
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   if (!navItems.length) return null;
 

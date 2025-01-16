@@ -1,10 +1,26 @@
 import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 
-export async function GET() {
+export async function GET(request:NextRequest) {
   try {
+    const teamid = request.nextUrl.searchParams.get("teamid");
+    if (teamid) {
+      const team = await prisma.team.findUnique({
+        where: {
+          id: teamid,
+        },
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      return NextResponse.json(team, { status: 200 });
+    }
     const session = await auth();
     const redisClient = await redis;
     if (!session?.user.email) {
@@ -17,12 +33,15 @@ export async function GET() {
         }
       );
     }
-    const cacheKey = 'teams:' + session.user.id;
-    const CashedData = await redisClient.get(cacheKey);
-    if (CashedData) {
-      return NextResponse.json(JSON.parse(CashedData));
+
+    const cacheKey = "teams:" + session.user.id;
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(JSON.parse(cachedData));
     }
-    if (session?.user?.role === 'MENTOR') {
+
+    // Handle ADMIN access - can see all teams
+    if (session?.user?.role === "ADMIN") {
       const teams = await prisma.team.findMany({
         include: {
           members: {
@@ -35,15 +54,27 @@ export async function GET() {
       await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
       return NextResponse.json(teams, { status: 200 });
     }
-    if (session?.user?.role === 'MENTEE') {
+
+    // Handle MENTOR access - can only see teams with their mentored projects
+    if (session?.user?.role === "MENTOR") {
+      const mentor = await prisma.mentor.findFirst({
+        where: {
+          id: session.user.id,
+        },
+      });
+
       const teams = await prisma.team.findMany({
         where: {
-          OR: [
-            { teamLeaderId: session.user.id },
-            { members: { some: { id: session.user.id } } },
-          ]
-        }
-        ,
+          Project: {
+            some: {
+              mentor: {
+                some: {
+                  id: mentor?.id,
+                },
+              },
+            },
+          },
+        },
         include: {
           members: {
             include: {
@@ -51,10 +82,36 @@ export async function GET() {
             },
           },
         },
-      })
+      });
+
       await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
       return NextResponse.json(teams, { status: 200 });
     }
+
+    // Handle MENTEE access - can only see their own teams
+    if (session?.user?.role === "MENTEE") {
+      const teams = await prisma.team.findMany({
+        where: {
+          OR: [
+            { teamLeaderId: session.user.id },
+            { members: { some: { id: session.user.id } } },
+          ],
+        },
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      await redisClient.setex(cacheKey, 3600, JSON.stringify(teams));
+      return NextResponse.json(teams, { status: 200 });
+    }
+
+    // If role is not recognized, return unauthorized
+    return NextResponse.json({ error: "Invalid role" }, { status: 401 });
   } catch (error) {
     console.error("Team fetch error:", error);
     return NextResponse.json(
@@ -67,6 +124,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await auth();
+
     if (!session?.user.email) {
       return NextResponse.json(
         {
@@ -78,8 +136,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, memberIds, class: className, semester } = await req.json();
-    if (!memberIds) {
+    const { name, description, memberIds } = await req.json();
+
+    console.log("Validation checks:", {
+      hasMemberIds: !!memberIds,
+      memberIdsLength: memberIds?.length,
+      hasName: !!name,
+    });
+
+    if (!memberIds || memberIds.length === 0) {
       return NextResponse.json(
         { error: "At least one member is required" },
         { status: 400 }
@@ -88,6 +153,7 @@ export async function POST(req: Request) {
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
+
     const teamLeader = await prisma.mentee.findFirst({
       where: {
         user: {
@@ -95,7 +161,8 @@ export async function POST(req: Request) {
         },
       },
     });
-    memberIds.push(session.user.id);
+    console.log("Found team leader:", teamLeader);
+
     const users = await prisma.mentee.findMany({
       where: {
         user: {
@@ -105,34 +172,49 @@ export async function POST(req: Request) {
         },
       },
     });
-
-
     if (users.length !== memberIds.length || users.length < 0) {
-      return NextResponse.json({ error: "memberIds not found" }, { status: 400 });
+      console.log(NextResponse);
+      return NextResponse.json(
+        { error: "memberIds not found" },
+        { status: 400 }
+      );
     }
+
     const teamCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    console.log('teamCode:', teamCode);
+
+    // If teamLeader is null, use the first user in the members list as the leader
+    const finalTeamLeader = teamLeader || users[0];
+
+    // Only add session user to members if they are the team leader
+    if (teamLeader !== null) {
+      memberIds.push(session.user.id);
+    }
+    const globalSettings = await prisma.globalSettings.findFirst({
+      where: { id: 1 },
+    });
     const team = await prisma.team.create({
       data: {
         name,
         description,
-        class: className,
-        semester,
         teamLeader: {
           connect: {
-            id: teamLeader?.id,
+            id: finalTeamLeader.id,
           },
         },
         members: {
           connect: users.map((user) => ({ id: user.id })),
         },
         joinCode: teamCode,
-      }
+        freezed: globalSettings?.globalTeamFreeze,
+      },
     });
 
     // Invalidate cache after creating new team
     const redisClient = await redis;
-    await redisClient.del('teams:' + session.user.id);
+    const teamKeys = await redisClient.keys("teams:*");
+    if (teamKeys.length > 0) {
+      await redisClient.del(teamKeys);
+    }
     return NextResponse.json({ status: 201 });
   } catch (error) {
     console.error("Team creation error:", error);
@@ -156,7 +238,14 @@ export async function PUT(req: Request) {
       );
     }
 
-    const { id, name, description, memberIds, class: className, semester } = await req.json();
+    const {
+      id,
+      name,
+      description,
+      memberIds,
+      class: className,
+      semester,
+    } = await req.json();
     if (!memberIds) {
       return NextResponse.json(
         { error: "At least one member is required" },
@@ -168,7 +257,7 @@ export async function PUT(req: Request) {
         user: {
           id: {
             in: memberIds,
-          }
+          },
         },
       },
     });
@@ -196,11 +285,11 @@ export async function PUT(req: Request) {
         members: {
           set: members.map((user) => ({ id: user.id })),
         },
-      }
+      },
     });
 
     const redisClient = await redis;
-    const teamkeys = await redisClient.keys('teams:*');
+    const teamkeys = await redisClient.keys("teams:*");
     await redisClient.del(teamkeys);
     return NextResponse.json({ status: 200 });
   } catch (error) {
@@ -215,10 +304,7 @@ export async function DELETE(req: Request) {
   try {
     const session = await auth();
     if (!session?.user.email) {
-      return NextResponse.json(
-        { error: "Not Authorised" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Not Authorised" }, { status: 401 });
     }
 
     const { id } = await req.json();
@@ -242,20 +328,19 @@ export async function DELETE(req: Request) {
     });
 
     const redisClient = await redis;
-    const teamkeys = await redisClient.keys('teams:*');
+    const teamkeys = await redisClient.keys("teams:*");
     await redisClient.del(teamkeys);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Team deletion error:", error);
-    if (error.code === 'P2003') {
+    if (error.code === "P2003") {
       return NextResponse.json(
-        { error: "Delete The projects associated with the team before deleting" },
+        {
+          error: "Delete The projects associated with the team before deleting",
+        },
         { status: 404 }
       );
     }
-    return NextResponse.json(
-      { error: error.code },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.code }, { status: 500 });
   }
 }

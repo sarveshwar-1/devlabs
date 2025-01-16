@@ -68,8 +68,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { id, title, description, status, dueDate } = await req.json();
-    const date = new Date(dueDate);
-    const due = date.toISOString();
     const task = await prisma.task.update({
       where: {
         id,
@@ -78,7 +76,7 @@ export async function PUT(req: NextRequest) {
         title,
         description,
         status,
-        dueDate: due,
+        dueDate,
       },
     });
 
@@ -86,7 +84,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ task }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { error: error?.message?.toString() || "Failed to update task" },
+      { error: "Failed to update task" },
       { status: 500 }
     );
   }

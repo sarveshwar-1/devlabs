@@ -36,9 +36,14 @@ interface Task {
 interface EditTaskDialogProps {
   task: Task;
   onTaskUpdated: () => void;
+  userRole: "MENTEE" | "other";
 }
 
-export function EditTaskDialog({ task, onTaskUpdated }: EditTaskDialogProps) {
+export function EditTaskDialog({
+  task,
+  onTaskUpdated,
+  userRole,
+}: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: task.title,
@@ -46,6 +51,27 @@ export function EditTaskDialog({ task, onTaskUpdated }: EditTaskDialogProps) {
     dueDate: task.dueDate,
     status: task.status,
   });
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      const response = await fetch(`/api/tasks`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...task,
+          status: newStatus,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update task status");
+
+      onTaskUpdated();
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,6 +116,23 @@ export function EditTaskDialog({ task, onTaskUpdated }: EditTaskDialogProps) {
       console.error("Failed to delete task:", error);
     }
   };
+
+  if (userRole === "MENTEE") {
+    return (
+      <div className="flex items-center space-x-2">
+        <Select value={task.status} onValueChange={handleStatusChange}>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="ONGOING">Ongoing</SelectItem>
+            <SelectItem value="COMPLETED">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
 
   return (
     <>

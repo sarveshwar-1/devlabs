@@ -6,7 +6,7 @@ export async function middleware(req: Request) {
   const { pathname, origin } = req.nextUrl;
 
   const absolute = (path: string) => `${origin}${path}`;
-  if (pathname=="/auth/register") {
+  if (pathname == "/auth/register") {
     return NextResponse.next();
   }
 
@@ -19,8 +19,8 @@ export async function middleware(req: Request) {
       return NextResponse.redirect(absolute("/mentor"));
     }
     return NextResponse.redirect(absolute("/mentee"));
-  } 
-    
+  }
+
   return NextResponse.next();
 }
 

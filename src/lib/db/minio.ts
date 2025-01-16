@@ -112,9 +112,9 @@ export async function createFolder(folderName: string, bucketName: string) {
     try {
         const bucketExists = await minioClient.bucketExists(bucketName);
         if (!bucketExists) {
-            throw new Error('Bucket does not exist');
+            await minioClient.makeBucket(bucketName, 'us-east-1');
         }
-        
+
         // Sanitize folder name
         const sanitizedName = sanitizeFolderName(folderName);
         if (!sanitizedName) {
@@ -123,7 +123,7 @@ export async function createFolder(folderName: string, bucketName: string) {
 
         // Ensure folder name ends with slash
         const folderPath = sanitizedName.endsWith('/') ? sanitizedName : `${sanitizedName}/`;
-        
+
         // Create an empty object with folder name
         await minioClient.putObject(bucketName, folderPath, Buffer.from(''));
         return true;
@@ -183,5 +183,6 @@ export async function downloadFile(fileName: string, bucketName: string): Promis
         throw error;
     }
 }
+
 
 export default minioClient;

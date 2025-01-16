@@ -13,7 +13,7 @@ model User {
     email    String  @unique
     role     Role    @default(MENTEE)
     phoneNo  String?
-    rollNo   String?
+    rollNo   String? @unique
     image    String?
     password String
 
@@ -30,6 +30,25 @@ model User {
     Mentor Mentor[]
 
     Mentee Mentee[]
+
+    Admin Admin[]
+}
+
+model GlobalSettings {
+    id               Int      @id @default(1)
+    globalTeamFreeze Boolean  @default(false)
+    updatedAt        DateTime @unique @default(now())
+}
+
+model GlobalProj {
+    id               Int      @id @default(1)
+    globalProjFreeze Boolean  @default(false)
+    updatedAt        DateTime @unique @default(now())
+}
+
+model Admin {
+    id   String @id @default(cuid())
+    user User   @relation(fields: [id], references: [id])
 }
 
 model Mentee {
@@ -39,6 +58,8 @@ model Mentee {
     Team      Team[]
     leadTeams Team[] @relation(name: "TeamLeader")
     teams     Team[] @relation(name: "TeamMembers")
+
+    evaluations Evaluation[] // Changed from Evaluations to Evaluation to match your schema
 }
 
 model Mentor {
@@ -46,13 +67,49 @@ model Mentor {
     user User   @relation(fields: [id], references: [id])
 
     Project Project[]
+
+    evaluations Evaluation[]  // Changed name to be more descriptive and match schema
 }
 
 enum Role {
     MENTOR
     MENTEE
+    ADMIN
 }
 
+enum EvaluationStage {
+    Review1
+    Review2
+    Final_Review
+}
+model Evaluation {
+    id             String          @id @default(cuid())
+    project        Project         @relation(fields: [projectId], references: [id])
+    projectId      String
+    stage          EvaluationStage
+    scores         Score?          
+    comments       String?
+    evaluatedAt    DateTime        @default(now())
+    evaluator      Mentor          @relation(fields: [mentorId], references: [id])
+    mentorId       String
+    mentee         Mentee          @relation(fields: [menteeId], references: [id])
+    menteeId       String
+
+    @@unique([projectId, stage, menteeId])  // Prevent duplicate evaluations
+    @@index([projectId, stage])             // Common query pattern
+}
+
+model Score {
+    id             String     @id @default(cuid())
+    evaluation     Evaluation @relation(fields: [evaluationId], references: [id])
+    evaluationId   String     @unique
+    regularUpdates Float      @default(0)
+    viva           Float      @default(0)
+    content        Float      @default(0)
+    total          Float      @default(0)
+
+    @@index([evaluationId])
+}
 model Project {
     id          String   @id @default(cuid())
     title       String
@@ -65,11 +122,15 @@ model Project {
     updatedAt   DateTime @updatedAt
     isactive    Boolean  @default(true)
     mentor      Mentor[]
+    freezed     Boolean? @default(false)
 
     team   Team   @relation(fields: [teamId], references: [id])
     teamId String
 
     Task Task[]
+
+    evaluations  Evaluation[]
+    currentStage EvaluationStage @default(Review1)
 
     ProjectReport ProjectReport[]
 }
@@ -95,8 +156,7 @@ model Team {
     semester     String?
     Project      Project[]
     Mentee       Mentee[]
-    freezed      Boolean?   @default(false)
-
+    freezed      Boolean?  @default(false)
     @@index([joinCode])
 }
 
@@ -109,9 +169,10 @@ model Task {
     dueDate     DateTime
     grade       Int?
     remarks     String?
-
-    project   Project @relation(fields: [projectid], references: [id])
-    projectid String
+    file        String?
+    images      String[]
+    project     Project  @relation(fields: [projectid], references: [id])
+    projectid   String
 }
 
 model ProjectReport {
