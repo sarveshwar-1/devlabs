@@ -130,11 +130,14 @@ export default function Page() {
   };
   const fetchProjects = useCallback(async () => {
     try {
+      console.log("Fetching projects...");
       const response = await fetch("/api/project");
+      console.log("Response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch projects");
       }
       const data = await response.json();
+      console.log("Fetched data:", data);
       if (Array.isArray(data)) {
         setProjects(data);
       } else {

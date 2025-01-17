@@ -2,14 +2,15 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 import { auth } from "@/lib/auth";
+import { console } from "inspector";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log("HI");
     const projectId = params.id;
-    console.log(projectId);
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,14 +22,17 @@ export async function GET(
         { status: 400 }
       );
     }
-
+    console.log("HI1");
     const redisClient = await redis;
+    console.log("HI2");
     const cacheKey = `project:${projectId}`;
+    console.log("HI3");
     // Try to get from cache
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       return NextResponse.json(JSON.parse(cachedData));
     }
+    console.log("HI4");
 
     // If not in cache, fetch from database
     const project = await prisma.project.findUnique({
@@ -36,7 +40,16 @@ export async function GET(
       include: {
         team: {
           include: {
-            members: true,
+            members: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
           },
         },
         mentor: {

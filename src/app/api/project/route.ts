@@ -62,37 +62,41 @@ export async function GET() {
   }
 
   if (session?.user?.role === "ADMIN") {
-    const projects = await prisma.project.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        repository: true,
-        status: true,
-        freezed: true,
-        team: {
-          select: {
-            id: true,
-            name: true,
+    try {
+      const projects = await prisma.project.findMany({
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          repository: true,
+          status: true,
+          freezed: true,
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
-        },
-        mentor: {
-          select: {
-            id: true,
-
-            user: {
-              select: {
-                id: true,
-                name: true,
+          mentor: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    await redisClient.setex(cacheKey, 1800, JSON.stringify(projects));
-    return NextResponse.json(projects);
+      await redisClient.setex(cacheKey, 1800, JSON.stringify(projects));
+      return NextResponse.json(projects);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 }
 export async function POST(req: Request) {

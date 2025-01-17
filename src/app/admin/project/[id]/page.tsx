@@ -11,8 +11,10 @@ import {
   Github,
   ExternalLink,
   Clock,
+  Star,
   Layout,
   GraduationCap,
+  TrendingUp,
 } from "lucide-react";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,6 +82,19 @@ const containerVariants = {
   },
 };
 
+const scoreCardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: index * 0.1,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
+};
+
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -124,6 +139,7 @@ function Page({ params }: { params: { id: string } }) {
     const fetchProject = async () => {
       const response = await fetch("/api/project/" + projectId);
       const data = await response.json();
+      console.log(data);
       setProject(data);
       setRepository(data.repository);
       setRepoName(data.repository.split("/").pop());
@@ -310,32 +326,65 @@ function Page({ params }: { params: { id: string } }) {
           </TabsContent>
 
           <TabsContent value="scores">
-            <motion.div variants={itemVariants}>
-              <Card className="bg-white dark:bg-gray-800 shadow-md">
-                <CardHeader className="border-b dark:border-gray-700">
-                  <CardTitle className="flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5" />
-                    Team Performance
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Card className="bg-white dark:bg-gray-800 shadow-lg border-none">
+                <CardHeader className="border-b dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <GraduationCap className="w-6 h-6 text-purple-500" />
+                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      Team Performance Dashboard
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 gap-6">
-                    {project?.team?.members?.map((member) => (
-                      <Card
+                    {project?.team?.members?.map((member, index) => (
+                      <motion.div
                         key={member.id}
-                        className="bg-gray-50 dark:bg-gray-900"
+                        variants={scoreCardVariants}
+                        custom={index}
                       >
-                        <CardHeader>
-                          {console.log(member)}
-                          <CardTitle>{member.user.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <StudentMarks
-                            projectId={projectId}
-                            studentId={member.user.id}
-                          />
-                        </CardContent>
-                      </Card>
+                        <Card className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                          <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                                  <Users className="w-5 h-5 text-white" />
+                                </div>
+                                <CardTitle>{member.user.name}</CardTitle>
+                              </div>
+                              <motion.div
+                                initial={{ rotate: -180, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                transition={{
+                                  duration: 0.5,
+                                  delay: index * 0.1,
+                                }}
+                              >
+                                <Star className="w-6 h-6 text-yellow-500" />
+                              </motion.div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-6">
+                            <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                  Performance Score
+                                </p>
+                                <TrendingUp className="w-4 h-4 text-blue-500" />
+                              </div>
+                              <StudentMarks
+                                projectId={projectId}
+                                studentId={member.id}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
                     ))}
                   </div>
                 </CardContent>

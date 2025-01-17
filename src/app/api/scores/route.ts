@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     const evaluations = await prisma.evaluation.findMany({
       where: {
         projectId,
-        menteeId: session.user.id, // Ensure the mentee making the request is authorized
+        menteeId: menteeId, // Ensure the mentee making the request is authorized
       },
       include: {
         scores: true,
@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
           include: {
             user: {
               select: {
+                id: true,
                 name: true,
                 email: true,
               },

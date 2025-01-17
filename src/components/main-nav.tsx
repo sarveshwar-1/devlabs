@@ -32,7 +32,6 @@ const navItemsByRole: Record<UserRole, NavItem[]> = {
     { name: "Teams", href: "/mentee/teams", icon: FileText },
   ],
   ADMIN: [
-    { name: "Home", href: "/admin", icon: Home },
     { name: "Projects", href: "/admin/project", icon: BookOpen },
     { name: "Teams", href: "/admin/teams", icon: FileText },
   ],

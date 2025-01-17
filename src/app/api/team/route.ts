@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
-import { NextResponse,NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 
-export async function GET(request:NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const teamid = request.nextUrl.searchParams.get("teamid");
     if (teamid) {
@@ -188,6 +188,7 @@ export async function POST(req: Request) {
     // Only add session user to members if they are the team leader
     if (teamLeader !== null) {
       memberIds.push(session.user.id);
+      users.push(teamLeader);
     }
     const globalSettings = await prisma.globalSettings.findFirst({
       where: { id: 1 },
