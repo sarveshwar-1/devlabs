@@ -138,17 +138,19 @@ export async function POST(req: Request) {
 
     const { name, description, memberIds } = await req.json();
 
-    console.log("Validation checks:", {
-      hasMemberIds: !!memberIds,
-      memberIdsLength: memberIds?.length,
-      hasName: !!name,
-    });
+    if (session.user.role !== "MENTEE") {
+      console.log("Validation checks:", {
+        hasMemberIds: !!memberIds,
+        memberIdsLength: memberIds?.length,
+        hasName: !!name,
+      });
 
-    if (!memberIds || memberIds.length === 0) {
-      return NextResponse.json(
-        { error: "At least one member is required" },
-        { status: 400 }
-      );
+      if (!memberIds || memberIds.length === 0) {
+        return NextResponse.json(
+          { error: "At least one member is required" },
+          { status: 400 }
+        );
+      }
     }
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });

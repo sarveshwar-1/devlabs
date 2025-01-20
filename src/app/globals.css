@@ -42,13 +42,13 @@ body {
   }
 
   .dark {
-    --background: 0 0% 0%; /* Near Black */
+    --background: 0 0% 3%; /* Near Black */
     --foreground: 0 0% 100%0%; /* Near White */
     --card: 0 0% 15%; /* Dark Gray */
     --card-foreground: 0 0% 90%; /* Near White */
     --popover: 0 0% 15%;
     --popover-foreground: 0 0% 90%;
-    --primary: 0 0% 20%; /* Dark Gray */
+    --primary: 0 0% 3%; /* Dark Gray */
     --primary-foreground: 0 0% 90%; /* Near White */
     --secondary: 0 0% 20%; /* Dark Gray */
     --secondary-foreground: 0 0% 90%; /* Near White */
