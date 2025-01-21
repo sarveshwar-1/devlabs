@@ -9,6 +9,7 @@ const nextConfig = {
         pathname: "/",
       },
     ],
+    domains: ["172.17.9.74"],
   },
   eslint: {
     ignoreDuringBuilds: true,
