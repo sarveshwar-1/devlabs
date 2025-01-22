@@ -13,7 +13,7 @@ model User {
     email    String  @unique
     role     Role    @default(MENTEE)
     phoneNo  String?
-    rollNo   String? @unique
+    rollNo   String @unique
     image    String?
     password String
 
