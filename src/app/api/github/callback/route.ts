@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         });
 
         const tokenData = await tokenResponse.json();
+        console.log('GitHub token data:', tokenData);
         
         if (tokenData.access_token) {
             // Update user with GitHub token

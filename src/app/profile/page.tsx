@@ -12,7 +12,7 @@ import { Pencil, User, Upload, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import ImageCropper from "./_components/image-cropper";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Github } from "lucide-react";
 
@@ -38,9 +38,8 @@ interface GitHubRepo {
 export default function UserProfilePage() {
   const { data: session } = useSession();
   const { toast } = useToast();
-
-  // get an optional search query
-  const search = new URLSearchParams(window.location.search).get("profile");
+  const searchParams = useSearchParams();
+  const search = searchParams.get("profile");
   const router = useRouter();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -122,7 +121,7 @@ export default function UserProfilePage() {
     };
 
     fetchUser();
-  }, [session, toast]);
+  }, [session, toast, search]);
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -283,7 +282,9 @@ export default function UserProfilePage() {
 
   const handleGitHubConnect = async () => {
     // Store current URL to return after GitHub auth
-    sessionStorage.setItem("githubReturnTo", window.location.href);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem("githubReturnTo", window.location.href);
+    }
 
     // Redirect to GitHub OAuth flow
     const response = await fetch("/api/github/auth");
