@@ -28,9 +28,7 @@ model User {
     isActive           Boolean  @default(true)
 
     Mentor Mentor[]
-
     Mentee Mentee[]
-
     Admin Admin[]
 }
 

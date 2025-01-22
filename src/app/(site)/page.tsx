@@ -2,10 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { Rocket, Zap, Sparkles, ArrowRight } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const router = useRouter();
+  const RedirectLogin = () => {
+    router.push('/auth/login')
+  }
 
   useEffect(() => {
     setIsVisible(true);
@@ -118,7 +123,8 @@ export default function Page() {
             isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
-          <button className="bg-gradient-to-r from-purple-500 to-purple-700 dark:from-purple-500 dark:to-pink-500 text-white px-8 py-4 rounded-full font-semibold hover:from-purple-600 hover:to-purple-800 dark:hover:from-purple-600 dark:hover:to-pink-600 transition-all duration-500 transform hover:scale-102 flex items-center mx-auto gap-2 group shadow-lg hover:shadow-xl">
+          <button className="bg-gradient-to-r from-purple-500 to-purple-700 dark:from-purple-500 dark:to-pink-500 text-white px-8 py-4 rounded-full font-semibold hover:from-purple-600 hover:to-purple-800 dark:hover:from-purple-600 dark:hover:to-pink-600 transition-all duration-500 transform hover:scale-102 flex items-center mx-auto gap-2 group shadow-lg hover:shadow-xl"
+          onClick={RedirectLogin}>
             Get Started
             <ArrowRight className="transition-transform duration-500 group-hover:translate-x-1" />
           </button>

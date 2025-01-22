@@ -124,14 +124,13 @@ function Page({ params }: { params: { id: string } }) {
   }, [projectId]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 lg:p-8">
+    <div className="min-h-screen">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         className="max-w-7xl mx-auto space-y-6"
       >
-        {/* Header with Project Stats */}
         <motion.div
           variants={itemVariants}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -276,7 +275,7 @@ function Page({ params }: { params: { id: string } }) {
                     <Clock className="w-5 h-5" />
                     Project Tasks
                   </CardTitle>
-                  <CreateTaskDialog projectId={projectId} />
+                  {/* <CreateTaskDialog projectId={projectId} /> */}
                 </div>
               </CardHeader>
               <CardContent className="p-6">

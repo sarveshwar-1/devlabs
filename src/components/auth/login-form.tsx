@@ -39,7 +39,9 @@ export function LoginForm() {
         if (data.role === "MENTEE") {
           router.push("/mentee");
         } else if (data.role === "MENTOR") {
-          router.push("/mentor");
+          router.push("/mentor/project");
+        } else if (data.role === "ADMIN") {
+          router.push("/admin/project");
         } else {
           router.push("/");
         }

@@ -233,8 +233,6 @@ function Page({ params }: { params: { id: string } }) {
               </CardContent>
             </Card>
           </motion.div>
-
-          {/* Tasks Section */}
           <motion.div variants={fadeInUp} className="lg:col-span-3">
             <Card className="hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-xl">
               <CardHeader className="border-b border-gray-100 dark:border-gray-700">
