@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.email) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    console.log('redirect uri', `${process.env.NEXT_PUBLIC_APP_URL}/api/github/callback`);
+
     const params = new URLSearchParams({
         client_id: process.env.GITHUB_CLIENT_ID!,
         redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/github/callback`,
