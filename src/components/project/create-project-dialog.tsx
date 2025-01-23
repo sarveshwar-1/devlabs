@@ -94,10 +94,11 @@ export function CreateProjectDialog() {
           mentorIds: formData.mentorIds,
         }),
       });
+      console.log("response", response);
 
       if (response.ok) {
         setOpen(false);
-        router.reload();
+        router.refresh();
       }
     } catch (error) {
       console.error("Failed to create project:", error);

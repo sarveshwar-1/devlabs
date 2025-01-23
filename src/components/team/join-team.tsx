@@ -38,7 +38,7 @@ function Jointeam() {
 
       setOpen(false);
       setJoincode("");
-      router.reload(); // Refresh to show updated teams
+      router.refresh(); // Refresh to show updated teams
     } catch (error) {
       setError("Failed to join team");
       console.error("Failed to join team:", error);
