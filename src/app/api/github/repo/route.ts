@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
         // if (cachedData) {
         //     return NextResponse.json(JSON.parse(cachedData));
         // }
+        console.log('finalurl', finalurl);
         const response = await fetch(`https://api.github.com/user/repos${finalurl}`, {
             headers: {
                 Authorization: `Bearer ${githubToken}`,
@@ -57,9 +58,9 @@ export async function GET(req: NextRequest) {
         // await redisClient.setex(cacheKey, 3600, JSON.stringify(data)); // Cache for 1 hour
         return NextResponse.json(data);
     } catch (error) {
-        console.error('GitHub API Error:', error.message);
+        console.error('GitHub API Error:', error);
         return NextResponse.json(
-            { error: "Failed to fetch from GitHub" },
+            { error: error.message },
             { status: 500 }
         );
     }
