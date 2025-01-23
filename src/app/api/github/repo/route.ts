@@ -76,15 +76,33 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "No GitHub token available" }, { status: 401 });
         }
 
-        const response = await fetchWithRetry('https://api.github.com/user/repos', {
+        // Optimize GitHub API request with query parameters
+        const apiUrl = new URL('https://api.github.com/user/repos');
+        apiUrl.searchParams.append('per_page', '100'); // Get max repos per page
+        apiUrl.searchParams.append('sort', 'updated'); // Sort by recently updated
+        apiUrl.searchParams.append('visibility', 'all'); // Get both public and private repos
+        apiUrl.searchParams.append('affiliation', 'owner,collaborator'); // Get only repos user owns or collaborates on
+
+        const response = await fetchWithRetry(apiUrl.toString(), {
             headers: {
-                'Authorization': `Bearer ${githubToken}`
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Devlabs-App',
+                // Request only specific fields
+                'X-GitHub-Api-Version': '2022-11-28',
             },
-            next: { revalidate: 60 }, // Cache for 60 seconds
+            next: { revalidate: 60 },
         });
 
-        const data = await response.json();
-        return NextResponse.json(data);
+        const fullData = await response.json();
+        
+        // Only return necessary fields
+        const simplifiedData = fullData.map((repo: any) => ({
+            name: repo.name,
+            full_name: repo.full_name,
+        }));
+
+        return NextResponse.json(simplifiedData);
     } catch (error) {
         console.error('GitHub API Error:', error);
         
