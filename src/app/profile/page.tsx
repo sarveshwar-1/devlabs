@@ -282,7 +282,7 @@ export default function UserProfilePage() {
 
   const handleGitHubConnect = async () => {
     // Store current URL to return after GitHub auth
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       sessionStorage.setItem("githubReturnTo", window.location.href);
     }
 
@@ -393,7 +393,9 @@ export default function UserProfilePage() {
               <TabsList className="mb-4">
                 <TabsTrigger value="details">User Details</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="github">GitHub</TabsTrigger>
+                {session?.user.role === "MENTEE" && (
+                  <TabsTrigger value="github">GitHub</TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="details">
@@ -473,64 +475,66 @@ export default function UserProfilePage() {
                   </Button>
                 </form>
               </TabsContent>
-              <TabsContent value="github">
-                <div className="space-y-4">
-                  {session?.githubToken ? (
-                    repos.length > 0 ? (
-                      <div className="grid gap-4">
-                        {repos.map((repo) => (
-                          <Card key={repo.id}>
-                            <CardContent className="p-4">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h3 className="font-semibold">
-                                    <a
-                                      href={repo.html_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="hover:underline"
-                                    >
-                                      {repo.name}
-                                    </a>
-                                  </h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    {repo.description || "No description"}
-                                  </p>
+              {session?.user.role === "MENTEE" && (
+                <TabsContent value="github">
+                  <div className="space-y-4">
+                    {session?.githubToken ? (
+                      repos.length > 0 ? (
+                        <div className="grid gap-4">
+                          {repos.map((repo) => (
+                            <Card key={repo.id}>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="font-semibold">
+                                      <a
+                                        href={repo.html_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:underline"
+                                      >
+                                        {repo.name}
+                                      </a>
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {repo.description || "No description"}
+                                    </p>
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {repo.language && (
+                                      <span className="mr-4">
+                                        {repo.language}
+                                      </span>
+                                    )}
+                                    ⭐ {repo.stargazers_count}
+                                  </div>
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                  {repo.language && (
-                                    <span className="mr-4">
-                                      {repo.language}
-                                    </span>
-                                  )}
-                                  ⭐ {repo.stargazers_count}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>No repositories found</p>
+                      )
                     ) : (
-                      <p>No repositories found</p>
-                    )
-                  ) : (
-                    <div className="text-center p-8">
-                      <Github className="mx-auto h-8 w-8 mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">
-                        Connect GitHub Account
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        Link your GitHub account to access and display your
-                        repositories
-                      </p>
-                      <Button onClick={handleGitHubConnect} className="gap-2">
-                        <Github className="h-4 w-4" />
-                        Connect GitHub Account
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
+                      <div className="text-center p-8">
+                        <Github className="mx-auto h-8 w-8 mb-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold mb-2">
+                          Connect GitHub Account
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Link your GitHub account to access and display your
+                          repositories
+                        </p>
+                        <Button onClick={handleGitHubConnect} className="gap-2">
+                          <Github className="h-4 w-4" />
+                          Connect GitHub Account
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </CardContent>
         </Card>
