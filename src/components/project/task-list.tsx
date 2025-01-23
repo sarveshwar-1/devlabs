@@ -178,7 +178,9 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
                                   task={task}
                                   userRole={session?.user.role}
                                   onTaskUpdated={() => {
-                                    router.refresh();
+                                    setTimeout(() => {
+                                      router.refresh();
+                                    }, 500);
                                   }}
                                 />
                               }

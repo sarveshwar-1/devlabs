@@ -45,7 +45,7 @@ export function LoginForm() {
         } else {
           router.push("/");
         }
-        router.refresh();
+        setTimeout(() => { router.refresh() },500);
       }
     } catch (error) {
       setError("An unexpected error occurred");

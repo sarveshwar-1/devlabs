@@ -66,7 +66,9 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
         dueDate: "",
         status: "PENDING",
       });
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
     } catch (error) {
       console.error("Failed to create task: ", error);
       setError(

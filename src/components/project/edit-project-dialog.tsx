@@ -130,7 +130,9 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
       setOpen(false);
     } catch (error) {
       console.error("Failed to update project:", error);
@@ -150,7 +152,9 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
     } catch (error) {
       console.error("Failed to delete project:", error);
     }

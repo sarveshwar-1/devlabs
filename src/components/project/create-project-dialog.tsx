@@ -98,7 +98,9 @@ export function CreateProjectDialog() {
 
       if (response.ok) {
         setOpen(false);
-        router.refresh();
+        setTimeout(() => {
+          router.refresh();
+        }, 500);
       }
     } catch (error) {
       console.error("Failed to create project:", error);
