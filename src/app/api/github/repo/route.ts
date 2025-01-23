@@ -4,6 +4,36 @@ import { prisma } from "@/lib/db/prismadb";
 
 export const dynamic = 'force-dynamic'; // Add this line to handle dynamic requests
 
+const TIMEOUT_DURATION = 30000; // 30 seconds
+const MAX_RETRIES = 3;
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES) {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
+
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`GitHub API error: ${response.status}`);
+        }
+
+        return response;
+    } catch (error) {
+        if (retries > 0 && (error.name === 'AbortError' || error.name === 'TypeError')) {
+            console.log(`Retrying... ${retries} attempts remaining`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+            return fetchWithRetry(url, options, retries - 1);
+        }
+        throw error;
+    }
+}
+
 export async function GET(req: NextRequest) {
     try {
         const session = await auth();
@@ -12,7 +42,6 @@ export async function GET(req: NextRequest) {
         }
 
         const params = new URL(req.nextUrl).searchParams;
-        const urlParam = params.get('url');
         const projectId = params.get('projectId');
         let githubToken = params.get('githubToken');
 
@@ -40,42 +69,19 @@ export async function GET(req: NextRequest) {
             });
             githubToken = project?.team?.teamLeader?.user?.githubToken || githubToken;
         }
-        if (!githubToken) {
-            githubToken = session.user.githubToken || null;
-        }
+        
+        githubToken = githubToken || session.user.githubToken;
 
         if (!githubToken) {
             return NextResponse.json({ error: "No GitHub token available" }, { status: 401 });
         }
 
-        // Construct the GitHub API URL
-        const apiUrl = urlParam 
-            ? `https://api.github.com${urlParam}` 
-            : 'https://api.github.com/user/repos';
-
-        console.log('Fetching from GitHub API:', apiUrl);
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-        const response = await fetch(apiUrl, {
+        const response = await fetchWithRetry('https://api.github.com/user/repos', {
             headers: {
-                'Authorization': `Bearer ${githubToken}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'User-Agent': 'Devlabs-App', // Required by GitHub API
+                'Authorization': `Bearer ${githubToken}`
             },
-            signal: controller.signal,
             next: { revalidate: 60 }, // Cache for 60 seconds
         });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-                `GitHub API error: ${response.status} - ${errorData.message || response.statusText}`
-            );
-        }
 
         const data = await response.json();
         return NextResponse.json(data);
@@ -85,7 +91,7 @@ export async function GET(req: NextRequest) {
         // Handle specific error types
         if (error.name === 'AbortError') {
             return NextResponse.json(
-                { error: 'GitHub API request timed out' },
+                { error: 'GitHub API request timed out after multiple retries' },
                 { status: 504 }
             );
         }
@@ -99,4 +105,3 @@ export async function GET(req: NextRequest) {
         );
     }
 }
-
