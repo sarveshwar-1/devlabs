@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { redis } from "@/lib/db/redis";
 import { prisma } from "@/lib/db/prismadb";
+
+export const dynamic = 'force-dynamic'; // Add this line to handle dynamic requests
 
 export async function GET(req: NextRequest) {
     try {
@@ -54,23 +55,46 @@ export async function GET(req: NextRequest) {
 
         console.log('Fetching from GitHub API:', apiUrl);
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         const response = await fetch(apiUrl, {
             headers: {
                 'Authorization': `Bearer ${githubToken}`,
                 'Accept': 'application/vnd.github.v3+json',
-            }
+                'User-Agent': 'Devlabs-App', // Required by GitHub API
+            },
+            signal: controller.signal,
+            next: { revalidate: 60 }, // Cache for 60 seconds
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error(`GitHub API responded with status ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+                `GitHub API error: ${response.status} - ${errorData.message || response.statusText}`
+            );
         }
 
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
         console.error('GitHub API Error:', error);
+        
+        // Handle specific error types
+        if (error.name === 'AbortError') {
+            return NextResponse.json(
+                { error: 'GitHub API request timed out' },
+                { status: 504 }
+            );
+        }
+
         return NextResponse.json(
-            { error: error.message || 'Failed to fetch repositories' },
+            { 
+                error: 'Failed to fetch repositories',
+                details: error.message 
+            },
             { status: 500 }
         );
     }
