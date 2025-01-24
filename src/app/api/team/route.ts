@@ -136,7 +136,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, memberIds } = await req.json();
+    const { name, description, memberIds, maxMembers } = await req.json();
+    if (maxMembers < memberIds.length + 1) { 
+      return NextResponse.json(
+        { error: "Max members should be greater than the number of members" },
+        { status: 400 }
+      );
+    }
+    const duplicate_team = await prisma.team.findFirst({
+      where: {
+        name,
+      },
+    });
+    if (duplicate_team) {
+      return NextResponse.json(
+        { error: "Team with this name already exists" },
+        { status: 400 }
+      );
+    }
 
     if (session.user.role !== "MENTEE") {
       console.log("Validation checks:", {
@@ -208,6 +225,7 @@ export async function POST(req: Request) {
           connect: users.map((user) => ({ id: user.id })),
         },
         joinCode: teamCode,
+        maxMembers,
         freezed: globalSettings?.globalTeamFreeze,
       },
     });
@@ -248,6 +266,7 @@ export async function PUT(req: Request) {
       memberIds,
       class: className,
       semester,
+      maxMembers,
     } = await req.json();
     if (!memberIds) {
       return NextResponse.json(
@@ -277,14 +296,21 @@ export async function PUT(req: Request) {
     if (members.length !== members.length || members.length < 0) {
       return NextResponse.json({ error: "Members not found" }, { status: 400 });
     }
+    if (!(maxMembers >= members.length)) {
+      return NextResponse.json(
+        { error: "Max members should be greater than or equal to the number of members" },
+        { status: 400 }
+      );
+    }
 
-    const team = await prisma.team.update({
+    await prisma.team.update({
       where: { id: id },
       data: {
         name,
         description,
         class: className,
         semester,
+        maxMembers,
         members: {
           set: members.map((user) => ({ id: user.id })),
         },

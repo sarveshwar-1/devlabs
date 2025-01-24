@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState, useEffect } from "react";
-import { TeamModal } from "./team-modal";
+import { TeamModal } from "@/components/team/team-modal";
 import { useSession } from "next-auth/react";
 import {
   Tooltip,
