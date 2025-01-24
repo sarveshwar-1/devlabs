@@ -99,7 +99,7 @@ export function CreateProjectDialog() {
       if (response.ok) {
         setOpen(false);
         setTimeout(() => {
-          router.refresh();
+          window.location.reload();
         }, 500);
       }
     } catch (error) {

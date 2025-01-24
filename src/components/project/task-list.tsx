@@ -177,11 +177,6 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
                                 <EditTaskDialog
                                   task={task}
                                   userRole={session?.user.role}
-                                  onTaskUpdated={() => {
-                                    setTimeout(() => {
-                                      router.refresh();
-                                    }, 500);
-                                  }}
                                 />
                               }
                             </div>

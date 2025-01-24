@@ -2,19 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 
 export async function POST(req: NextRequest) {
-    const { name,email, password,rollNo,role  } = await req.json();
+  const { name, email, password, rollNo, role } = await req.json();
+  console.log(name,email,password,rollNo,role);
   if (!email || !password) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (existingUser) {
+      return NextResponse.json({
+        error: "User alreadyexists",
+      }, { status: 400 });
+    }
+
     const user = await prisma.user.create({
-        data: {
-            name,
+      data: {
+        name,
         email,
         password,
         rollNo,
-            role,
+        role,
       },
     });
     if (role === "MENTOR") {

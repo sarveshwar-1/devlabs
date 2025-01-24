@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -35,15 +36,10 @@ interface Task {
 
 interface EditTaskDialogProps {
   task: Task;
-  onTaskUpdated: () => void;
   userRole: "MENTEE" | "other";
 }
 
-export function EditTaskDialog({
-  task,
-  onTaskUpdated,
-  userRole,
-}: EditTaskDialogProps) {
+export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: task.title,
@@ -51,6 +47,7 @@ export function EditTaskDialog({
     dueDate: task.dueDate,
     status: task.status,
   });
+  const router = useRouter();
 
   const handleStatusChange = async (newStatus: string) => {
     try {
@@ -66,8 +63,7 @@ export function EditTaskDialog({
       });
 
       if (!response.ok) throw new Error("Failed to update task status");
-
-      onTaskUpdated();
+      window.location.reload();
     } catch (error) {
       console.error("Failed to update task status:", error);
     }
@@ -89,7 +85,7 @@ export function EditTaskDialog({
 
       if (!response.ok) throw new Error("Failed to update task");
 
-      onTaskUpdated();
+      window.location.reload();
       setOpen(false);
     } catch (error) {
       console.error("Failed to update task:", error);
@@ -109,8 +105,8 @@ export function EditTaskDialog({
       });
 
       if (!response.ok) throw new Error("Failed to delete task");
-
-      onTaskUpdated();
+      window.location.reload();
+      
       setOpen(false);
     } catch (error) {
       console.error("Failed to delete task:", error);
