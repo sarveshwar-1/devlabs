@@ -58,24 +58,24 @@ export default function Page() {
   const router = useRouter();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch("/api/project");
-        if (!response.ok) {
-          throw new Error("Failed to fetch projects");
-        }
-        const data = await response.json();
-        setProjects(data);
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch projects",
-          variant: "destructive",
-        });
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch("/api/project");
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
       }
-    };
+      const data = await response.json();
+      setProjects(data);
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch projects",
+        variant: "destructive",
+      });
+    }
+  };
+  useEffect(() => {
     fetchProjects();
   }, [toast]);
 
@@ -114,7 +114,7 @@ export default function Page() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <CreateProjectDialog />
+        <CreateProjectDialog fetchProjects ={fetchProjects}/>
       </div>
 
       <Table>

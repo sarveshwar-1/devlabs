@@ -130,9 +130,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
-      setTimeout(() => {
         window.location.reload();
-      }, 500);
       setOpen(false);
     } catch (error) {
       console.error("Failed to update project:", error);
@@ -152,9 +150,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-      setTimeout(() => {
         window.location.reload();
-      }, 500);
     } catch (error) {
       console.error("Failed to delete project:", error);
     }

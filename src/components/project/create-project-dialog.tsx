@@ -37,7 +37,7 @@ type Mentor = {
   };
 };
 
-export function CreateProjectDialog() {
+export function CreateProjectDialog({ fetchProjects } : { fetchProjects: () => void }) {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -98,9 +98,8 @@ export function CreateProjectDialog() {
 
       if (response.ok) {
         setOpen(false);
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        fetchProjects();
+        // router.refresh();
       }
     } catch (error) {
       console.error("Failed to create project:", error);
