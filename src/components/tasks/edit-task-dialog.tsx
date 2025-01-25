@@ -106,7 +106,7 @@ export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
 
       if (!response.ok) throw new Error("Failed to delete task");
       window.location.reload();
-      
+
       setOpen(false);
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -115,18 +115,23 @@ export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
 
   if (userRole === "MENTEE") {
     return (
-      <div className="flex items-center space-x-2">
-        <Select value={task.status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="ONGOING">Ongoing</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Button
+        variant="outline"
+        className={`
+       ${
+         task.status === "COMPLETED"
+           ? "border-green-500 text-green-500 hover:bg-green-50"
+           : "border-yellow-500 text-yellow-500 hover:bg-yellow-50"
+       }
+     `}
+        onClick={() =>
+          handleStatusChange(
+            task.status === "PENDING" ? "COMPLETED" : "PENDING"
+          )
+        }
+      >
+        {task.status === "COMPLETED" ? "Completed" : "Mark as Completed"}
+      </Button>
     );
   }
 

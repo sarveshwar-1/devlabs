@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Search, Snowflake } from "lucide-react";
+import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 
 type Project = {
   id: string;
@@ -355,6 +356,7 @@ export default function Page() {
                       className="flex gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <EditProjectDialog project={project} />
                       <Button
                         onClick={() => handleFreeze(project.id)}
                         variant={project.freezed ? "destructive" : "ghost"}

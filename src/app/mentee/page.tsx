@@ -15,6 +15,7 @@ import {
   ArrowUpRight,
   Calendar,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 // Keep existing interfaces
 interface Mentor {
@@ -116,6 +117,7 @@ const useTaskPriority = () => {
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { data: session, status } = useSession();
   const [taskStats, setTaskStats] = useState({
     total: 0,
     completed: 0,
@@ -196,8 +198,8 @@ export default function Dashboard() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Mentee Dashboard
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-gray-100">
+            Welcome {session?.user?.name ?? ""} !
           </h1>
           <div className="flex items-center space-x-2">
             <Calendar className="w-5 h-5 text-gray-500" />

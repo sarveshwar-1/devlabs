@@ -8,8 +8,9 @@ import {
   Home,
   BookOpen,
   FileText,
+  CircleUser,
+  Users,
   type LucideIcon,
-  Cloudy,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -34,6 +35,8 @@ const navItemsByRole: Record<UserRole, NavItem[]> = {
   ADMIN: [
     { name: "Projects", href: "/admin/project", icon: BookOpen },
     { name: "Teams", href: "/admin/teams", icon: FileText },
+    { name: "Students", href: "/admin/mentees", icon: Users },
+    { name: "Faculty", href: "/admin/mentors", icon: CircleUser },
   ],
 };
 

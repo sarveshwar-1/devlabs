@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
   Calendar,
@@ -60,12 +60,26 @@ interface Task {
   status: string;
 }
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
+const containerVariants = {
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
+    transition: {
+      delayChildren: 0.2,
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
     y: 0,
-    transition: { duration: 0.5 },
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
   },
 };
 
@@ -119,10 +133,14 @@ function Page({ params }: { params: { id: string } }) {
       <motion.div
         initial="hidden"
         animate="visible"
+        variants={containerVariants}
         className="max-w-7xl mx-auto space-y-8"
       >
         {/* Header Section */}
-        <motion.div variants={fadeInUp} className="flex flex-col gap-2">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col gap-2 text-center"
+        >
           <h1 className="text-5xl font-bold bg-gradient-to-r from-violet-500 to-indigo-500 text-transparent bg-clip-text">
             {repoName || "Loading..."}
           </h1>
@@ -131,12 +149,15 @@ function Page({ params }: { params: { id: string } }) {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div
+          variants={containerVariants}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
           {/* Project Details Card */}
-          <motion.div variants={fadeInUp} className="lg:col-span-2">
-            <Card className="hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-xl">
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader className="border-b border-gray-100 dark:border-gray-700">
-                <CardTitle className="flex items-center gap-3 text-2xl">
+                <CardTitle className="flex items-center justify-center gap-3 text-2xl">
                   <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
                     <Book className="w-6 h-6 text-violet-500" />
                   </div>
@@ -146,45 +167,52 @@ function Page({ params }: { params: { id: string } }) {
               <CardContent className="p-6">
                 <div className="grid gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                           Project Title
                         </h3>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="text-lg font-semibold mt-1 truncate">
                           {project?.title || "Loading..."}
                         </p>
                       </div>
-                      <div className="flex-1">
+                      <div>
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                           Team
                         </h3>
-                        <p className="text-lg font-semibold mt-1">
+                        <p className="text-lg font-semibold mt-1 truncate">
                           {project?.team?.name || "Loading..."}
                         </p>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Description
-                      </h3>
-                      <p className="mt-1 text-gray-800 dark:text-gray-200">
-                        {project?.description || "Loading..."}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Mentors
-                      </h3>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {project?.mentor?.map((ment) => (
-                          <span
-                            key={ment.id}
-                            className="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm"
-                          >
-                            {ment.user.name}
-                          </span>
-                        ))}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Description
+                        </h3>
+                        <p className="mt-1 text-gray-800 dark:text-gray-200 line-clamp-3">
+                          {project?.description || "Loading..."}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Mentors
+                        </h3>
+                        <AnimatePresence>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {project?.mentor?.map((ment, index) => (
+                              <motion.span
+                                key={ment.id}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm"
+                              >
+                                {ment.user.name}
+                              </motion.span>
+                            ))}
+                          </div>
+                        </AnimatePresence>
                       </div>
                     </div>
                   </div>
@@ -194,10 +222,10 @@ function Page({ params }: { params: { id: string } }) {
           </motion.div>
 
           {/* Quick Actions Card */}
-          <motion.div variants={fadeInUp}>
-            <Card className="hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-xl">
+          <motion.div variants={itemVariants} className="lg:col-span-1">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader className="border-b border-gray-100 dark:border-gray-700">
-                <CardTitle className="flex items-center gap-3">
+                <CardTitle className="flex items-center justify-center gap-3">
                   <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                     <Award className="w-5 h-5 text-emerald-500" />
                   </div>
@@ -206,8 +234,8 @@ function Page({ params }: { params: { id: string } }) {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={handleEvaluate}
@@ -221,8 +249,8 @@ function Page({ params }: { params: { id: string } }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <div className="flex items-center gap-3">
                     <Github className="w-5 h-5" />
@@ -233,8 +261,10 @@ function Page({ params }: { params: { id: string } }) {
               </CardContent>
             </Card>
           </motion.div>
-          <motion.div variants={fadeInUp} className="lg:col-span-3">
-            <Card className="hover:shadow-lg transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-xl">
+
+          {/* Tasks Card */}
+          <motion.div variants={itemVariants} className="lg:col-span-3">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader className="border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-3">
@@ -253,7 +283,7 @@ function Page({ params }: { params: { id: string } }) {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );
