@@ -22,27 +22,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash the default password
-    const defaultPassword = "user@123";
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-    // Bulk update passwords
-    const updatedMentors = await prisma.user.updateMany({
+    // Find mentees with their roll numbers
+    const mentees = await prisma.user.findMany({
       where: {
         id: {
           in: menteeIds,
         },
         role: "MENTEE",
       },
-      data: {
-        password: hashedPassword,
+      select: {
+        id: true,
+        rollNo: true,
       },
     });
+
+    // Bulk update passwords using roll numbers
+    const updatePromises = mentees.map(async (mentee) => {
+      const hashedPassword = await bcrypt.hash(mentee.rollNo, 10);
+      return prisma.user.update({
+        where: { id: mentee.id },
+        data: { password: hashedPassword },
+      });
+    });
+
+    const updatedMentors = await Promise.all(updatePromises);
 
     return NextResponse.json(
       {
         message: "Passwords reset successfully",
-        count: updatedMentors.count,
+        count: updatedMentors.length,
       },
       { status: 200 }
     );

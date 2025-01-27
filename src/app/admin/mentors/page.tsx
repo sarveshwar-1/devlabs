@@ -89,50 +89,6 @@ export default function MentorsPage() {
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedMentors.length === 0) {
-      toast({
-        title: "Error",
-        description: "No mentors selected",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/admin/mentors/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mentorIds: selectedMentors }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `${result.count} mentor(s) deleted`,
-        });
-        await fetchMentors(); // Refresh the list
-        setSelectedMentors([]);
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to delete mentors",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Network error. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleBulkResetPasswords = async () => {
     setIsPasswordResetDialogOpen(true);
   };
@@ -223,14 +179,6 @@ export default function MentorsPage() {
 
         {/* Bulk Action Buttons */}
         <div className="flex gap-4 mb-4 animate-fade-in-up">
-          <Button
-            variant="destructive"
-            onClick={handleBulkDelete}
-            disabled={selectedMentors.length === 0}
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Delete Selected Faculty
-          </Button>
           <Button
             variant="ghost"
             onClick={handleBulkResetPasswords}
@@ -354,8 +302,7 @@ export default function MentorsPage() {
                      animate-slide-up z-50"
         >
           <Check className="w-5 h-5 mr-2" />
-          Passwords reset successfully for Mentors{" "}
-          mentor(s)
+          Passwords reset successfully for Mentors mentor(s)
         </div>
       )}
 

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const projectId = searchParams.get("projectId");
-    const stage = searchParams.get("stage");
+    const stage = searchParams.get("stage"); // Explicitly get stage
     const menteeId = searchParams.get("menteeId");
 
     if (!projectId) {
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     const evaluations = await prisma.evaluation.findMany({
       where: {
         projectId,
-        stage: (stage as any) || undefined,
+        stage: stage as any, // Use exact stage matching
         menteeId: menteeId || undefined,
         mentorId: session.user.id,
       },
@@ -76,7 +76,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Fixed: renamed 'eval' to 'evaluation'
     const sanitizedEvaluations = evaluations.map((evaluation) => ({
       ...evaluation,
       mentee: {

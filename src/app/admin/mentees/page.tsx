@@ -89,50 +89,6 @@ export default function MenteesPage() {
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedMentees.length === 0) {
-      toast({
-        title: "Error",
-        description: "No mentees selected",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/admin/mentees/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ menteeIds: selectedMentees }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `${result.count} mentee(s) deleted`,
-        });
-        await fetchMentees(); // Refresh the list
-        setSelectedMentees([]);
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to delete mentees",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Network error. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleBulkResetPasswords = async () => {
     setIsPasswordResetDialogOpen(true);
   };
@@ -223,14 +179,6 @@ export default function MenteesPage() {
 
         {/* Bulk Action Buttons */}
         <div className="flex gap-4 mb-4 animate-fade-in-up">
-          <Button
-            variant="destructive"
-            onClick={handleBulkDelete}
-            disabled={selectedMentees.length === 0}
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Delete Selected Mentees
-          </Button>
           <Button
             variant="ghost"
             onClick={handleBulkResetPasswords}
@@ -324,7 +272,7 @@ export default function MenteesPage() {
             <DialogDescription>
               Are you sure you want to reset password for{" "}
               {selectedMentees.length} mentee(s)? Their new password will be set
-              to 'user@123'.
+              to their RollNo.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

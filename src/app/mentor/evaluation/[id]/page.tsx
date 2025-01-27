@@ -30,7 +30,7 @@ interface User {
 
 interface Mentee {
   id: string;
-  user?: User;  // Make user optional
+  user?: User; // Make user optional
   name?: string; // Add direct name field as fallback
 }
 
@@ -127,7 +127,9 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   // Modified evaluation fetch to initialize new evaluations if needed
   const fetchOrInitializeEvaluations = async () => {
     try {
-      const response = await fetch(`/api/evaluation?projectId=${id}`);
+      const response = await fetch(
+        `/api/evaluation?projectId=${id}&stage=${currentStage}`
+      );
       if (!response.ok) throw new Error("Failed to fetch evaluations");
       const { data } = await response.json();
 
@@ -137,7 +139,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       );
 
       // Create or get evaluations for all team members
-      const allEvaluations = projectMembers.map((member) => {
+      const stageEvaluations = projectMembers.map((member) => {
         const existing = existingEvaluations.get(member.id);
         if (existing) return existing;
 
@@ -160,7 +162,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
         };
       });
 
-      setEvaluations(allEvaluations);
+      setEvaluations(stageEvaluations);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch evaluations"
@@ -260,7 +262,11 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   };
 
   // Add this helper to get only the editable score fields
-  const editableScoreFields: (keyof Score)[] = ["regularUpdates", "viva", "content"];
+  const editableScoreFields: (keyof Score)[] = [
+    "regularUpdates",
+    "viva",
+    "content",
+  ];
 
   // Update the ScoreInput component to only show editable fields
   const ScoreInput = ({
@@ -344,7 +350,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
 
   // Update the name display with fallback
   const getMenteeName = (mentee: Mentee) => {
-    return mentee.user?.name || mentee.name || 'Unknown User';
+    return mentee.user?.name || mentee.name || "Unknown User";
   };
 
   const ScoringInterface = () => (
