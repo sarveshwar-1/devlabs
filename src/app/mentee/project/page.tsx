@@ -177,7 +177,7 @@ export default function Page() {
                 }}
               >
                 {!project.freezed ? (
-                  <EditProjectDialog project={project} />
+                  <EditProjectDialog project={project} fetchProject={fetchProjects}/>
                 ) : (
                   <span className="text-sm text-gray-500">Frozen by admin</span>
                 )}

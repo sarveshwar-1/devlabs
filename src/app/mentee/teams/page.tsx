@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Search, Plus } from "lucide-react";
 import Jointeam from "@/components/team/join-team";
+import { Alert } from "@/components/ui/alert";
 
 interface Team {
   id: number;
@@ -108,11 +109,7 @@ export default function TeamsPage() {
       });
     } catch (error) {
       console.error("Error deleting team:", error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      alert(error.message || "Failed to delete team");
     }
   };
 

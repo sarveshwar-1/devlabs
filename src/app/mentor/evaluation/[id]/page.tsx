@@ -55,7 +55,6 @@ interface Evaluation {
 
 const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStage, setCurrentStage] = useState<
     "Review1" | "Review2" | "Final_Review"
@@ -95,55 +94,66 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     return "text-red-500";
   };
 
-  // Add this function to fetch project details and team members
+  // Modify fetchProjectAndMembers to handle errors better
   const fetchProjectAndMembers = async () => {
     try {
-      setLoading(true);
-
-      // First fetch project details to get teamId
       const projectResponse = await fetch(`/api/project/${id}`);
-      if (!projectResponse.ok) throw new Error("Failed to fetch project");
+      if (!projectResponse.ok) {
+        throw new Error(`HTTP error! status: ${projectResponse.status}`);
+      }
       const projectData = await projectResponse.json();
+      
+      if (!projectData.teamId) {
+        throw new Error("Project data is missing teamId");
+      }
+
       setProjectDetails({
         teamId: projectData.teamId,
-        title: projectData.title,
+        title: projectData.title || "Untitled Project",
       });
 
-      // Then fetch team members using teamId
-      const teamResponse = await fetch(
-        `/api/team?teamid=${projectData.teamId}`
-      );
-      if (!teamResponse.ok) throw new Error("Failed to fetch team members");
+      const teamResponse = await fetch(`/api/team?teamid=${projectData.teamId}`);
+      if (!teamResponse.ok) {
+        throw new Error(`HTTP error! status: ${teamResponse.status}`);
+      }
       const teamData = await teamResponse.json();
+      
+      if (!teamData.members || !Array.isArray(teamData.members)) {
+        throw new Error("Invalid team members data");
+      }
+
       setProjectMembers(teamData.members);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch project details"
-      );
-      toast.error("Failed to fetch project details");
+      console.error("Error fetching data:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch project details");
     }
   };
 
-  // Modified evaluation fetch to initialize new evaluations if needed
+  // Modify fetchOrInitializeEvaluations for better error handling
   const fetchOrInitializeEvaluations = async () => {
+    if (!projectMembers.length) return;
+
     try {
       const response = await fetch(`/api/evaluation?projectId=${id}`);
-      if (!response.ok) throw new Error("Failed to fetch evaluations");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const { data } = await response.json();
 
-      // Create a map of existing evaluations by menteeId
+      // Initialize with empty evaluations if no data
+      const evaluationsData = Array.isArray(data) ? data : [];
+
       const existingEvaluations = new Map(
-        data.map((evaluation: Evaluation) => [evaluation.mentee.id, evaluation])
+        evaluationsData.map((evaluation: Evaluation) => [evaluation.mentee.id, evaluation])
       );
 
-      // Create or get evaluations for all team members
       const allEvaluations = projectMembers.map((member) => {
         const existing = existingEvaluations.get(member.id);
         if (existing) return existing;
 
-        // Return a new evaluation object for members without evaluations
+        // Create new evaluation for members without one
         return {
-          id: `temp_${member.id}`, // Will be replaced with real ID after creation
+          id: `temp_${member.id}`,
           projectId: id,
           stage: currentStage,
           mentee: member,
@@ -162,27 +172,23 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
 
       setEvaluations(allEvaluations);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch evaluations"
-      );
-      toast.error("Failed to fetch evaluations");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching evaluations:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch evaluations");
     }
   };
 
-  // Fetch evaluations
+  // Modify useEffect to ensure proper dependency tracking
   useEffect(() => {
-    if (!id) return;
-
-    fetchProjectAndMembers();
+    if (id) {
+      fetchProjectAndMembers();
+    }
   }, [id]);
 
   useEffect(() => {
-    if (!projectMembers.length) return;
-
-    fetchOrInitializeEvaluations();
-  }, [projectMembers, currentStage]);
+    if (projectMembers.length > 0) {
+      fetchOrInitializeEvaluations();
+    }
+  }, [projectMembers, currentStage, id]);
 
   const handleCommentChange = (evaluationId: string, comment: string) => {
     setComments((prev) => ({
@@ -283,7 +289,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     const percentage = (currentScore / maxScore) * 100;
 
     return (
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 round`ed-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <label className="capitalize text-gray-700 font-medium">
             {category}
@@ -616,8 +622,26 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // Add error display
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600 text-center">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              fetchProjectAndMembers();
+            }}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">

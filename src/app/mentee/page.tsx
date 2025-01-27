@@ -309,14 +309,12 @@ export default function Dashboard() {
                     return (
                       <div
                         key={task.id}
-                        onClick={() => router.push(`/mentee/task/${task.id}`)}
-                        className={`group relative p-4 rounded-lg ${colors.bg} border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-all duration-200`}
+                        className={`group relative p-4 rounded-lg ${colors.bg} border border-gray-200 dark:border-gray-700 transition-all duration-200`}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-medium text-gray-900 dark:text-gray-100">
                             {task.title}
                           </h3>
-                          <ArrowUpRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                           {task.description}
@@ -335,6 +333,20 @@ export default function Dashboard() {
                               Due: {new Date(task.dueDate).toLocaleDateString()}
                             </span>
                           </div>
+                        </div>
+                        <div className="flex justify-end mt-3 space-x-2">
+                          <button
+                            onClick={() => router.push(`/mentee/markdown/${task.id}`)}
+                            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Edit Markdown
+                          </button>
+                          <button
+                            onClick={() => router.push(`/mentee/file/${task.id}`)}
+                            className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          >
+                            Upload Files
+                          </button>
                         </div>
                       </div>
                     );

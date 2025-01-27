@@ -171,6 +171,7 @@ model Task {
     images      String[]
     project     Project  @relation(fields: [projectid], references: [id])
     projectid   String
+    files       String[]
 }
 
 model ProjectReport {
