@@ -55,6 +55,7 @@ type Project = {
 
 interface EditProjectDialogProps {
   project: Project;
+  fetchProject: () => void;
 }
 
 interface FormData {
@@ -66,7 +67,7 @@ interface FormData {
   isPrivate: boolean;
 }
 
-export function EditProjectDialog({ project }: EditProjectDialogProps) {
+export function EditProjectDialog({ project,fetchProject }: EditProjectDialogProps) {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -130,9 +131,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update project");
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      fetchProject()
       setOpen(false);
     } catch (error) {
       console.error("Failed to update project:", error);
@@ -152,9 +151,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to delete project");
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      fetchProject();
     } catch (error) {
       console.error("Failed to delete project:", error);
     }

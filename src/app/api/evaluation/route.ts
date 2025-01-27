@@ -22,10 +22,9 @@ const CreateEvaluationSchema = z.object({
   stage: z.enum(["Review1", "Review2", "Final_Review"]),
   menteeId: z.string(),
   scores: ScoreSchema,
-  comments: z.string().optional().nullable(), // Changed to make comments optional and allow null
+  comments: z.string().optional().nullable(), 
 });
 
-// GET - Fetch evaluations (with filtering options)
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();

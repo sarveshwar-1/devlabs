@@ -55,7 +55,6 @@ interface Evaluation {
 
 const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStage, setCurrentStage] = useState<
     "Review1" | "Review2" | "Final_Review"
@@ -95,18 +94,17 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     return "text-red-500";
   };
 
-  // Add this function to fetch project details and team members
+  // Modify fetchProjectAndMembers to handle errors better
   const fetchProjectAndMembers = async () => {
     try {
-      setLoading(true);
-
-      // First fetch project details to get teamId
       const projectResponse = await fetch(`/api/project/${id}`);
-      if (!projectResponse.ok) throw new Error("Failed to fetch project");
+      if (!projectResponse.ok) {
+        throw new Error(`HTTP error! status: ${projectResponse.status}`);
+      }
       const projectData = await projectResponse.json();
       setProjectDetails({
         teamId: projectData.teamId,
-        title: projectData.title,
+        title: projectData.title || "Untitled Project",
       });
 
       // Then fetch team members using teamId
@@ -124,8 +122,10 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     }
   };
 
-  // Modified evaluation fetch to initialize new evaluations if needed
+  // Modify fetchOrInitializeEvaluations for better error handling
   const fetchOrInitializeEvaluations = async () => {
+    if (!projectMembers.length) return;
+
     try {
       const response = await fetch(
         `/api/evaluation?projectId=${id}&stage=${currentStage}`
@@ -133,7 +133,9 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       if (!response.ok) throw new Error("Failed to fetch evaluations");
       const { data } = await response.json();
 
-      // Create a map of existing evaluations by menteeId
+      // Initialize with empty evaluations if no data
+      const evaluationsData = Array.isArray(data) ? data : [];
+
       const existingEvaluations = new Map(
         data.map((evaluation: Evaluation) => [evaluation.mentee.id, evaluation])
       );
@@ -143,9 +145,9 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
         const existing = existingEvaluations.get(member.id);
         if (existing) return existing;
 
-        // Return a new evaluation object for members without evaluations
+        // Create new evaluation for members without one
         return {
-          id: `temp_${member.id}`, // Will be replaced with real ID after creation
+          id: `temp_${member.id}`,
           projectId: id,
           stage: currentStage,
           mentee: member,
@@ -173,18 +175,18 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     }
   };
 
-  // Fetch evaluations
+  // Modify useEffect to ensure proper dependency tracking
   useEffect(() => {
-    if (!id) return;
-
-    fetchProjectAndMembers();
+    if (id) {
+      fetchProjectAndMembers();
+    }
   }, [id]);
 
   useEffect(() => {
-    if (!projectMembers.length) return;
-
-    fetchOrInitializeEvaluations();
-  }, [projectMembers, currentStage]);
+    if (projectMembers.length > 0) {
+      fetchOrInitializeEvaluations();
+    }
+  }, [projectMembers, currentStage, id]);
 
   const handleCommentChange = (evaluationId: string, comment: string) => {
     setComments((prev) => ({
@@ -289,7 +291,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     const percentage = (currentScore / maxScore) * 100;
 
     return (
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 round`ed-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <label className="capitalize text-gray-700 font-medium">
             {category}

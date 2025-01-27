@@ -89,12 +89,12 @@ function Page({ params }: { params: { id: string } }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
 
+  const fetchTasks = async () => {
+    const response = await fetch(`/api/tasks/${projectId}`);
+    const data = await response.json();
+    setTasks(data.tasks);
+  };
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await fetch(`/api/tasks/${projectId}`);
-      const data = await response.json();
-      setTasks(data.tasks);
-    };
     fetchTasks();
   }, [projectId]);
 
@@ -280,7 +280,7 @@ function Page({ params }: { params: { id: string } }) {
               </CardHeader>
               <CardContent className="p-6">
                 <ScrollArea className="h-[800px] pr-4">
-                  <TaskList tasks={tasks} />
+                  <TaskList tasks={tasks} fetchtasks={ fetchTasks} />
                 </ScrollArea>
               </CardContent>
             </Card>

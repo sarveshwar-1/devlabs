@@ -37,9 +37,10 @@ interface Task {
 interface EditTaskDialogProps {
   task: Task;
   userRole: "MENTEE" | "other";
+  fetchtasks: () => void;
 }
 
-export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
+export function EditTaskDialog({ task, userRole,fetchtasks}: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: task.title,
@@ -63,7 +64,7 @@ export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
       });
 
       if (!response.ok) throw new Error("Failed to update task status");
-      window.location.reload();
+      fetchtasks();
     } catch (error) {
       console.error("Failed to update task status:", error);
     }
@@ -85,7 +86,7 @@ export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
 
       if (!response.ok) throw new Error("Failed to update task");
 
-      window.location.reload();
+      fetchtasks();
       setOpen(false);
     } catch (error) {
       console.error("Failed to update task:", error);
@@ -103,10 +104,8 @@ export function EditTaskDialog({ task, userRole }: EditTaskDialogProps) {
         },
         body: JSON.stringify({ id: task.id }),
       });
-
       if (!response.ok) throw new Error("Failed to delete task");
-      window.location.reload();
-
+      fetchtasks();
       setOpen(false);
     } catch (error) {
       console.error("Failed to delete task:", error);

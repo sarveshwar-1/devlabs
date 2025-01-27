@@ -367,7 +367,7 @@ export async function DELETE(req: Request) {
         {
           error: "Delete The projects associated with the team before deleting",
         },
-        { status: 404 }
+        { status: 400 }
       );
     }
     return NextResponse.json({ error: error.code }, { status: 500 });

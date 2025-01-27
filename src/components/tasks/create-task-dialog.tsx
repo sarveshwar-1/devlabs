@@ -21,7 +21,13 @@ import { Textarea } from "@/components/ui/textarea";
 // } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 
-export function CreateTaskDialog({ projectId }: { projectId: string }) {
+export function CreateTaskDialog({
+  projectId,
+  fetchtasks,
+}: {
+  projectId: string;
+  fetchtasks: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -66,9 +72,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
         dueDate: "",
         status: "PENDING",
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      fetchtasks();
     } catch (error) {
       console.error("Failed to create task: ", error);
       setError(

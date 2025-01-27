@@ -112,14 +112,14 @@ function Page({ params }: { params: { id: string } }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
 
+  const fetchTasks = async () => {
+    const response = await fetch(`/api/tasks/${projectId}`);
+    const data = await response.json();
+    setTasks(data.tasks);
+  };
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await fetch(`/api/tasks/${projectId}`);
-      const data = await response.json();
-      setTasks(data.tasks);
-    };
     fetchTasks();
-  }, [projectId]);
+  }, [projectId,tasks]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -312,12 +312,12 @@ function Page({ params }: { params: { id: string } }) {
                         <Clock className="w-5 h-5" />
                         Project Tasks
                       </CardTitle>
-                      <CreateTaskDialog projectId={projectId} />
+                      <CreateTaskDialog projectId={projectId} fetchtaks={fetchTasks}  />
                     </div>
                   </CardHeader>
                   <CardContent className="p-6">
                     <ScrollArea className="h-[600px] pr-4">
-                      <TaskList tasks={tasks} />
+                      <TaskList tasks={tasks} fetchtasks={fetchTasks} />
                     </ScrollArea>
                   </CardContent>
                 </Card>
