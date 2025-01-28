@@ -170,8 +170,6 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
         err instanceof Error ? err.message : "Failed to fetch evaluations"
       );
       toast.error("Failed to fetch evaluations");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -624,7 +622,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
+  // Remove the loading check and keep only the error check
   if (error) return <div>Error: {error}</div>;
 
   return (
