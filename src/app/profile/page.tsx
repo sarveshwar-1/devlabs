@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import ImageCropper from "./_components/image-cropper";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { Github } from "lucide-react";
 
 interface UserData {
@@ -294,6 +294,46 @@ export default function UserProfilePage() {
     }
   };
 
+  const handleUnlinkGitHub = async () => {
+    if (!session?.user?.email) return;
+
+    try {
+      const response = await fetch('/api/github/unlink', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: session.user.email }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'GitHub account unlinked successfully',
+        });
+        setRepos([]);
+        // Sign out and back in to refresh the session
+        await signOut({ redirect: false });
+        await signIn('credentials', {
+          email: session.user.email,
+          redirect: false
+        });
+        router.refresh();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data.error,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to unlink GitHub account',
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -381,7 +421,7 @@ export default function UserProfilePage() {
             )}
             <div className="text-center">
               <h2 className="text-2xl font-semibold">{formData.name}</h2>
-              <p className="text-muted-foreground">{user.role}</p>
+              <p className="text-muted-foreground">{user?.role}</p>
             </div>
           </div>
         </div>
@@ -393,7 +433,7 @@ export default function UserProfilePage() {
               <TabsList className="mb-4">
                 <TabsTrigger value="details">User Details</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
-                {session?.user.role === "MENTEE" && (
+                {user?.role === "MENTEE" && (
                   <TabsTrigger value="github">GitHub</TabsTrigger>
                 )}
               </TabsList>
@@ -475,62 +515,28 @@ export default function UserProfilePage() {
                   </Button>
                 </form>
               </TabsContent>
-              {session?.user.role === "MENTEE" && (
+              {user?.role === "MENTEE" && (
                 <TabsContent value="github">
-                  <div className="space-y-4">
+                  <div className="text-center p-8">
                     {session?.githubToken ? (
-                      repos.length > 0 ? (
-                        <div className="grid gap-4">
-                          {repos.map((repo) => (
-                            <Card key={repo.id}>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="font-semibold">
-                                      <a
-                                        href={repo.html_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:underline"
-                                      >
-                                        {repo.name}
-                                      </a>
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground">
-                                      {repo.description || "No description"}
-                                    </p>
-                                  </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {repo.language && (
-                                      <span className="mr-4">
-                                        {repo.language}
-                                      </span>
-                                    )}
-                                    ⭐ {repo.stargazers_count}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No repositories found</p>
-                      )
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">Your GitHub account is currently linked</p>
+                        <Button onClick={handleUnlinkGitHub} variant="destructive" className="gap-2">
+                          <Github className="h-4 w-4" />
+                          Unlink GitHub Account
+                        </Button>
+                      </div>
                     ) : (
-                      <div className="text-center p-8">
+                      <>
                         <Github className="mx-auto h-8 w-8 mb-4 text-muted-foreground" />
                         <h3 className="text-lg font-semibold mb-2">
                           Connect GitHub Account
                         </h3>
-                        <p className="text-muted-foreground mb-4">
-                          Link your GitHub account to access and display your
-                          repositories
-                        </p>
+                        <p className="text-muted-foreground mb-4">Link your GitHub account to access and manage your repositories</p>
                         <Button onClick={handleGitHubConnect} className="gap-2">
-                          <Github className="h-4 w-4" />
-                          Connect GitHub Account
+                          <Github className="h-4 w-4" /> Connect GitHub Account
                         </Button>
-                      </div>
+                      </>
                     )}
                   </div>
                 </TabsContent>
