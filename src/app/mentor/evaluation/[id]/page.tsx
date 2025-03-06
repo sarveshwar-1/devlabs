@@ -76,6 +76,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       comments?: string;
     };
   }>({});
+  const [activeComments, setActiveComments] = useState<{ [key: string]: string }>({});
 
   const stages = {
     Review1: {
@@ -136,24 +137,15 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       const response = await fetch(
         `/api/evaluation?projectId=${id}&stage=${currentStage}`
       );
-      if (!response.ok) throw new Error("Failed to fetch evaluations");
       const { data } = await response.json();
 
-      // Initialize with empty evaluations if no data
-      const evaluationsData = Array.isArray(data) ? data : [];
-
-      const existingEvaluations = new Map(
-        data.map((evaluation: Evaluation) => [evaluation.mentee.id, evaluation])
-      );
-
-      // Create or get evaluations for all team members
       const stageEvaluations = projectMembers.map((member) => {
-        const existing = existingEvaluations.get(member.id);
-        if (existing) return existing;
+        const existing = data.find((e: Evaluation) =>
+          e.mentee.id === member.id && e.stage === currentStage
+        );
 
-        // Create new evaluation for members without one
-        return {
-          id: `temp_${member.id}`,
+        return existing || {
+          id: `${member.id}-${currentStage}`, // Stable temporary ID
           projectId: id,
           stage: currentStage,
           mentee: member,
@@ -441,7 +433,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       <div className="grid gap-6">
         {evaluations.map((evaluation) => (
           <div
-            key={evaluation.id}
+            key={`${evaluation.mentee.id}-${currentStage}`} // Stable key
             className="bg-white rounded-xl shadow-lg overflow-hidden"
           >
             <div className="p-6">
@@ -478,29 +470,51 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
               </div>
 
               {/* Update the comment box implementation */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                <label
+                  htmlFor={`comment-${evaluation.id}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Comments
                 </label>
                 <textarea
+                  id={`comment-${evaluation.id}`}
                   value={
-                    unsavedChanges[evaluation.id]?.comments ??
-                    evaluation.comments ??
-                    ""
+                    // First check if there's an active edit in progress
+                    activeComments[evaluation.id] !== undefined
+                      ? activeComments[evaluation.id]
+                      // Then check unsaved changes
+                      : unsavedChanges[evaluation.id]?.comments !== undefined
+                        ? unsavedChanges[evaluation.id].comments
+                        // Finally fall back to saved comments
+                        : evaluation.comments || ""
                   }
                   onChange={(e) => {
-                    const newComment = e.target.value;
-                    setUnsavedChanges((prev) => ({
+                    // Only update local state during typing for better performance
+                    setActiveComments(prev => ({
                       ...prev,
-                      [evaluation.id]: {
-                        scores: prev[evaluation.id]?.scores || {},
-                        comments: newComment,
-                      },
+                      [evaluation.id]: e.target.value
                     }));
                   }}
-                  placeholder="Add any comments about the evaluation..."
-                  className="w-full p-2 border rounded-lg min-h-[100px]"
+                  onBlur={(e) => {
+                    // Update unsavedChanges only when textarea loses focus
+                    const commentValue = activeComments[evaluation.id];
+                    if (commentValue !== undefined) {
+                      setUnsavedChanges(prev => ({
+                        ...prev,
+                        [evaluation.id]: {
+                          scores: prev[evaluation.id]?.scores || {},
+                          comments: commentValue,
+                        }
+                      }));
+                    }
+                  }}
+                  placeholder="Add any comments about the student's performance..."
+                  className="w-full p-3 border border-gray-300 rounded-lg min-h-[120px] text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition duration-200"
                 />
+                <p className="mt-2 text-xs text-gray-500">
+                  Add detailed feedback on strengths and areas for improvement.
+                </p>
               </div>
             </div>
           </div>
@@ -743,8 +757,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
         link.setAttribute("href", url);
         link.setAttribute(
           "download",
-          `project_evaluation_${currentStage}_${
-            new Date().toISOString().split("T")[0]
+          `project_evaluation_${currentStage}_${new Date().toISOString().split("T")[0]
           }.csv`
         );
         link.style.visibility = "hidden";

@@ -3,6 +3,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Button } from "@mui/material";
 import {
   Users,
   Calendar,
@@ -19,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import StudentMarks from "@/components/project/scores";
-import { Status } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 // Keeping interfaces the same
 interface Mentor {
@@ -88,6 +89,7 @@ function Page({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
+  const router = useRouter();
 
   const fetchTasks = async () => {
     const response = await fetch(`/api/tasks/${projectId}`);
@@ -171,23 +173,26 @@ function Page({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 shadow-md">
+            <Card className="bg-white dark:bg-gray-800 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Status
-                  </p>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {project?.isactive ? "Active" : "Inactive"}
-                  </h3>
-                </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <ExternalLink className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <Button
+                variant="contained" 
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                  onClick={
+                    () => {
+                      router.replace(`/mentee/pfile/${projectId}`);
+                    }
+                  }
+              >
+                Upload File
+              </Button>
               </div>
             </CardContent>
-          </Card>
+            </Card>
         </motion.div>
 
         {/* Main Content */}

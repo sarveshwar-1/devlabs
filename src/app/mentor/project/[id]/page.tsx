@@ -18,7 +18,6 @@ import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-
 interface Mentor {
   id: string;
   user: {
@@ -100,7 +99,7 @@ function Page({ params }: { params: { id: string } }) {
     setTasks(data.tasks);
   };
   useEffect(() => {
-    
+
     fetchTasks();
   }, [projectId]);
 
@@ -151,11 +150,11 @@ function Page({ params }: { params: { id: string } }) {
 
         <motion.div
           variants={containerVariants}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center justify-center "
         >
           {/* Project Details Card */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-lg">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-0 shadow-lg p-[3vh]">
               <CardHeader className="border-b border-gray-100 dark:border-gray-700">
                 <CardTitle className="flex items-center justify-center gap-3 text-2xl">
                   <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
@@ -244,6 +243,37 @@ function Page({ params }: { params: { id: string } }) {
                     Evaluate Project
                   </Button>
                 </motion.div>
+
+                {/* Add Download Files Button */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={() => {
+                      router.push(`/mentor/pfile/${projectId}`);
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-6 rounded-xl font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download Project Files
+                  </Button>
+                </motion.div>
+
                 <motion.a
                   href={`https://github.com/${project?.repository}`}
                   target="_blank"
@@ -278,7 +308,7 @@ function Page({ params }: { params: { id: string } }) {
               </CardHeader>
               <CardContent className="p-6">
                 <ScrollArea className="h-[400px] pr-4">
-                  <TaskList tasks={tasks} fetchtasks={ fetchTasks} />
+                  <TaskList tasks={tasks} fetchtasks={fetchTasks} />
                 </ScrollArea>
               </CardContent>
             </Card>
