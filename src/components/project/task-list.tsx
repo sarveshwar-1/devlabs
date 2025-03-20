@@ -25,6 +25,7 @@ interface Task {
 interface TaskListProps {
   tasks: Task[];
   onTaskSelect?: (task: Task) => void;
+  fetchtasks: () => void;
   selectedTaskId?: string;
   project?: any;
   user?: any;
@@ -37,7 +38,7 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
   const router = useRouter();
 
   const RedirectTask = (taskid: string, role1: string) => {
-    router.push("/" + role1 + "/task/" + taskid);
+    router.push("/" + role1 + "/markdown/" + taskid);
   };
 
   const getStatusColor = (status: Status) => {
@@ -159,7 +160,7 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
 
                   <AnimatePresence>
                     {isActive && (
-                      <motion.div
+                      <><motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
@@ -173,15 +174,10 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
                               <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-3">
                                 Task Details
                               </p>
-                              {
-                                <EditTaskDialog
-                                  task={task}
-                                  userRole={session?.user.role}
-                                  onTaskUpdated={() => {
-                                    router.refresh();
-                                  }}
-                                />
-                              }
+                              {<EditTaskDialog
+                                task={task}
+                                userRole={session?.user.role}
+                                fetchtasks={tasks.fetchtasks} />}
                             </div>
                             <p>{task.description}</p>
                             <p className="mt-2">
@@ -192,7 +188,14 @@ export function TaskList({ tasks: tasksProps }: TaskListProps) {
                             </p>
                           </div>
                         </div>
-                      </motion.div>
+                      </motion.div><div className="mt-4">
+                          <button
+                            onClick={() => router.push(`/mentor/file/${task.id}`)}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            View Submission
+                          </button>
+                        </div></>
                     )}
                   </AnimatePresence>
                 </div>

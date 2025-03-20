@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -35,15 +36,11 @@ interface Task {
 
 interface EditTaskDialogProps {
   task: Task;
-  onTaskUpdated: () => void;
   userRole: "MENTEE" | "other";
+  fetchtasks: () => void;
 }
 
-export function EditTaskDialog({
-  task,
-  onTaskUpdated,
-  userRole,
-}: EditTaskDialogProps) {
+export function EditTaskDialog({ task, userRole,fetchtasks}: EditTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: task.title,
@@ -51,6 +48,7 @@ export function EditTaskDialog({
     dueDate: task.dueDate,
     status: task.status,
   });
+  const router = useRouter();
 
   const handleStatusChange = async (newStatus: string) => {
     try {
@@ -66,8 +64,7 @@ export function EditTaskDialog({
       });
 
       if (!response.ok) throw new Error("Failed to update task status");
-
-      onTaskUpdated();
+      fetchtasks();
     } catch (error) {
       console.error("Failed to update task status:", error);
     }
@@ -89,7 +86,7 @@ export function EditTaskDialog({
 
       if (!response.ok) throw new Error("Failed to update task");
 
-      onTaskUpdated();
+      fetchtasks();
       setOpen(false);
     } catch (error) {
       console.error("Failed to update task:", error);
@@ -107,10 +104,8 @@ export function EditTaskDialog({
         },
         body: JSON.stringify({ id: task.id }),
       });
-
       if (!response.ok) throw new Error("Failed to delete task");
-
-      onTaskUpdated();
+      fetchtasks();
       setOpen(false);
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -119,18 +114,23 @@ export function EditTaskDialog({
 
   if (userRole === "MENTEE") {
     return (
-      <div className="flex items-center space-x-2">
-        <Select value={task.status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="ONGOING">Ongoing</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Button
+        variant="outline"
+        className={`
+       ${
+         task.status === "COMPLETED"
+           ? "border-green-500 text-green-500 hover:bg-green-50"
+           : "border-yellow-500 text-yellow-500 hover:bg-yellow-50"
+       }
+     `}
+        onClick={() =>
+          handleStatusChange(
+            task.status === "PENDING" ? "COMPLETED" : "PENDING"
+          )
+        }
+      >
+        {task.status === "COMPLETED" ? "Completed" : "Mark as Completed"}
+      </Button>
     );
   }
 

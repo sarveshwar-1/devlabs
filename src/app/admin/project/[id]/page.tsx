@@ -1,40 +1,48 @@
 "use client";
 
-import React, { use } from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CommitTree } from "@/components/project/tree";
-import { Pie, PieChart, Cell, Label, ResponsiveContainer } from "recharts";
-import { ChartTooltip } from "@/components/ui/chart";
+import {
+  Users,
+  Calendar,
+  Award,
+  Book,
+  Github,
+  ExternalLink,
+  Clock,
+  Star,
+  Layout,
+  GraduationCap,
+  TrendingUp,
+} from "lucide-react";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Calendar, Award, Book } from "lucide-react";
-import { Status } from "@prisma/client";
 import { TaskList } from "@/components/project/task-list";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import StudentMarks from "@/components/project/scores";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface Commit {
-  url: string;
-  user: string;
-  message: string;
-  timestamp: string;
-}
-
-interface Contributor {
-  login: string;
-  contributions: number;
-}
 interface Mentor {
   id: string;
+  user: { name: string };
+}
+
+interface TeamMember {
+  id: string;
   user: {
+    id: string;
     name: string;
   };
 }
+
 interface Team {
   id: string;
   name: string;
   description: string;
+  members: TeamMember[];
 }
+
 interface Project {
   id: string;
   title: string;
@@ -47,6 +55,7 @@ interface Project {
   isactive: boolean;
   githubtoken: string;
 }
+
 interface User {
   id: string;
   name: string;
@@ -62,52 +71,61 @@ interface Task {
   status: string;
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" },
-  },
-};
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
+      duration: 0.5,
       staggerChildren: 0.1,
     },
   },
 };
 
+const scoreCardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: index * 0.1,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3 },
+  },
+};
+
 function Page({ params }: { params: { id: string } }) {
-  const [commits, setCommits] = useState<Commit[]>([]);
-  const [contributors, setContributors] = useState<Contributor[]>([]);
   const [repoName, setRepoName] = useState<string | null>(null);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [repository, setRepository] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const projectId = params.id;
 
+  const fetchTasks = async () => {
+    const response = await fetch(`/api/tasks/${projectId}`);
+    const data = await response.json();
+    setTasks(data.tasks);
+  };
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await fetch(`/api/tasks/${projectId}`);
-      const data = await response.json();
-      setTasks(data.tasks);
-    };
     fetchTasks();
-  }, [projectId]);
+  }, [projectId,tasks]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch("/api/user");
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
+        if (!response.ok) throw new Error("Failed to fetch user data");
         const data = await response.json();
         setUser(data);
       } catch (error) {
@@ -121,280 +139,259 @@ function Page({ params }: { params: { id: string } }) {
     const fetchProject = async () => {
       const response = await fetch("/api/project/" + projectId);
       const data = await response.json();
+      console.log(data);
       setProject(data);
       setRepository(data.repository);
+      setRepoName(data.repository.split("/").pop());
     };
     fetchProject();
   }, [projectId]);
 
-  useEffect(() => {
-    async function fetchWithAuth(url: string) {
-      const giturl = `https://api.github.com/repos/${url}`;
-      const response = await fetch(giturl, {
-        headers: {
-          Authorization: `Bearer ${project?.githubtoken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch data");
-      }
-      return await response.json();
-    }
-    const fetchData = async () => {
-      if (!repository) {
-        return;
-      }
-
-      try {
-        const repoData = await fetchWithAuth(repository);
-        setRepoName(repoData.name);
-
-        const events = await fetchWithAuth(`${repository}/commits`);
-        const commitsData: Commit[] = events.map((event: Commit) => ({
-          user: event.commit.author.name,
-          message: event.commit.message,
-          timestamp: event.commit.author.date,
-          url: event.url,
-        }));
-        setCommits(commitsData);
-
-        const contributorsData: Contributor[] = await fetchWithAuth(
-          `${repository}/contributors`
-        );
-        setContributors(contributorsData);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, [repository, project]);
-
-  // chartData is already declared above
-
-  const COLORS = [
-    "#6366f1",
-    "#8b5cf6",
-    "#ec4899",
-    "#06b6d4",
-    "#10b981",
-    "#f59e0b",
-  ];
-
-  const onPieEnter = (_: MouseEvent, index: number) => {
-    setActiveIndex(index);
-  };
-
-  const onPieLeave = () => {
-    setActiveIndex(null);
-  };
-
-  const chartData = contributors.map((contributor) => ({
-    name: contributor.login,
-    value: contributor.contributions,
-  }));
   return (
-    <div className="p-6 min-h-screen bg-gradient-to-br from-white to-gray-100 dark:from-black dark:to-gray-900">
-      <motion.h1
-        className="text-4xl font-bold mb-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-transparent bg-clip-text"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {repoName ? repoName : "Loading..."}
-      </motion.h1>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 lg:p-8">
       <motion.div
-        className="grid grid-cols-6 gap-6"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
+        className="max-w-7xl mx-auto space-y-6"
       >
-        <motion.div className="col-span-2" variants={cardVariants}>
-          <div className="flex flex-col gap-5">
-            <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-indigo-500">
-                  <Book className="w-5 h-5 text-indigo-500" />
-                  Project Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col gap-2">
-                  <div>
-                    <span className="font-semibold">Title:</span>{" "}
-                    {project?.title || "loading"}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Description:</span>{" "}
-                    {project?.description || "loading"}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Repository:</span>{" "}
-                    {project?.repository || "loading"}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Team:</span>{" "}
-                    {project?.team?.name || "loading"}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Mentors:</span>{" "}
-                    {project?.mentor?.map((ment) => ment.user.name).join(", ")}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-500">
-                  <Calendar className="w-5 h-5 text-purple-500" />
-                  Upcoming Tasks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CreateTaskDialog projectId={projectId} />
-                <div className="mt-4">
-                  <ScrollArea className="h-[380px] pr-4">
-                    <TaskList tasks={tasks} />
-                  </ScrollArea>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
-
-        <motion.div className="col-span-2" variants={cardVariants}>
-          <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg h-[82vh]">
-            <ScrollArea className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-pink-500">
-                  <Users className="w-5 h-5 text-pink-500" />
-                  Working Tree
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CommitTree commits={commits} />
-              </CardContent>
-            </ScrollArea>
-          </Card>
-        </motion.div>
-
+        {/* Header with Project Stats */}
         <motion.div
-          className="flex flex-col col-span-2 gap-6"
-          variants={cardVariants}
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-4 gap-4"
         >
-          <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-cyan-500">
-                <Users className="w-5 h-5 text-cyan-500" />
-                Contributors
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <ChartTooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-white dark:bg-black p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800">
-                            <p className="font-medium">{payload[0].name}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {payload[0].value} contributions
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Pie
-                    data={chartData}
-                    innerRadius="60%"
-                    outerRadius="80%"
-                    paddingAngle={4}
-                    onMouseEnter={onPieEnter}
-                    onMouseLeave={onPieLeave}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                        opacity={
-                          activeIndex === null || activeIndex === index
-                            ? 1
-                            : 0.6
-                        }
-                        className="transition-opacity duration-300"
-                      />
-                    ))}
-                    <Label
-                      content={({ viewBox }) => {
-                        if (!viewBox) return null;
-                        const totalContributions = chartData.reduce(
-                          (sum, entry) => sum + entry.value,
-                          0
-                        );
-                        return (
-                          <g>
-                            <text
-                              x={viewBox.cx}
-                              y={viewBox.cy}
-                              textAnchor="middle"
-                              dominantBaseline="central"
-                              className="fill-black dark:fill-white text-3xl font-bold"
-                            >
-                              {totalContributions}
-                            </text>
-                            <text
-                              x={viewBox.cx}
-                              y={viewBox.cy + 25}
-                              textAnchor="middle"
-                              className="fill-gray-600 dark:fill-gray-400 text-sm"
-                            >
-                              Total Commits
-                            </text>
-                          </g>
-                        );
-                      }}
-                    />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+          <Card className="bg-white dark:bg-gray-800 shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Book className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Project
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {project?.title || "Loading..."}
+                  </h3>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-emerald-500">
-                <Award className="w-5 h-5 text-emerald-500" />
-                Github
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <a
-                href={"https://github.com/" + repository}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-emerald-500 hover:text-emerald-600 transition-colors text-lg font-medium"
-              >
-                Repository Link : {project?.title}
-              </a>
+          <Card className="bg-white dark:bg-gray-800 shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Team
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {project?.team?.name || "Loading..."}
+                  </h3>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-500">
-                <Award className="w-5 h-5 text-amber-500" />
-                Marks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>{/* Marks content */}</CardContent>
+          <Card className="bg-white dark:bg-gray-800 shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Github className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Repository
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {repoName || "Loading..."}
+                  </h3>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 shadow-md">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                  <Award className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Status
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {project?.isactive ? "Active" : "Inactive"}
+                  </h3>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="overview">Project Overview</TabsTrigger>
+            <TabsTrigger value="scores">Student Scores</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Project Details */}
+              <motion.div variants={itemVariants} className="space-y-6">
+                <Card className="bg-white dark:bg-gray-800 shadow-md">
+                  <CardHeader className="border-b dark:border-gray-700">
+                    <CardTitle className="flex items-center gap-2">
+                      <Book className="w-5 h-5" />
+                      Project Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Description
+                      </h3>
+                      <p className="mt-1 text-gray-900 dark:text-gray-100">
+                        {project?.description || "Loading..."}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Mentors
+                      </h3>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {project?.mentor?.map((ment) => (
+                          <span
+                            key={ment.id}
+                            className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                          >
+                            {ment.user.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 shadow-md">
+                  <CardHeader className="border-b dark:border-gray-700">
+                    <CardTitle className="flex items-center gap-2">
+                      <Github className="w-5 h-5" />
+                      Repository
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <motion.a
+                      href={`https://github.com/${project?.repository}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        View Repository
+                      </span>
+                      <ExternalLink className="w-4 h-4" />
+                    </motion.a>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Tasks Section */}
+              <motion.div variants={itemVariants} className="lg:col-span-2">
+                <Card className="bg-white dark:bg-gray-800 shadow-md h-full">
+                  <CardHeader className="border-b dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        Project Tasks
+                      </CardTitle>
+                      <CreateTaskDialog projectId={projectId} fetchtaks={fetchTasks}  />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <ScrollArea className="h-[600px] pr-4">
+                      <TaskList tasks={tasks} fetchtasks={fetchTasks} />
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="scores">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Card className="bg-white dark:bg-gray-800 shadow-lg border-none">
+                <CardHeader className="border-b dark:border-gray-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <GraduationCap className="w-6 h-6 text-purple-500" />
+                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      Team Performance Dashboard
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    {project?.team?.members?.map((member, index) => (
+                      <motion.div
+                        key={member.id}
+                        variants={scoreCardVariants}
+                        custom={index}
+                      >
+                        <Card className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                          <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                                  <Users className="w-5 h-5 text-white" />
+                                </div>
+                                <CardTitle>{member.user.name}</CardTitle>
+                              </div>
+                              <motion.div
+                                initial={{ rotate: -180, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                transition={{
+                                  duration: 0.5,
+                                  delay: index * 0.1,
+                                }}
+                              >
+                                <Star className="w-6 h-6 text-yellow-500" />
+                              </motion.div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-6">
+                            <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                  Performance Score
+                                </p>
+                                <TrendingUp className="w-4 h-4 text-blue-500" />
+                              </div>
+                              <StudentMarks
+                                projectId={projectId}
+                                studentId={member.id}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </motion.div>
     </div>
   );

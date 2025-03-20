@@ -16,16 +16,16 @@ import { X } from "lucide-react";
 export function TeamModal({ open, onOpenChange, team, onSuccess }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [maxMembers, setMaxMembers] = useState(team?.maxMembers || 4);
+  const [maxMembers, setMaxMembers] = useState(4);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
-
+  const [error, setError] = useState("");
   useEffect(() => {
     if (team) {
       setName(team.name);
       setDescription(team.description || "");
-      setMaxMembers(team.maxMembers || 4);
+      setMaxMembers(team.maxMembers);
       setSelectedMembers(
         team.members.map((m) => ({
           id: m.id,
@@ -33,6 +33,8 @@ export function TeamModal({ open, onOpenChange, team, onSuccess }) {
           email: m.user.email,
         }))
       );
+      console.log(team);
+      console.log(maxMembers);
     } else {
       setName("");
       setDescription("");
@@ -56,13 +58,15 @@ export function TeamModal({ open, onOpenChange, team, onSuccess }) {
         )
       );
     } catch (error) {
-      console.error("Failed to search users:", error);
+      setError("Failed to search users:");
       setSearchResults([]);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Clear previous errors
+    
     const method = team ? "PUT" : "POST";
     const body = {
       ...(team && { id: team.id }),
@@ -72,12 +76,20 @@ export function TeamModal({ open, onOpenChange, team, onSuccess }) {
       memberIds: selectedMembers.map((m) => m.id),
     };
 
-    await fetch("/api/team", {
+    const response = await fetch("/api/team", {
       method,
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
     });
 
+    const data = await response.json();
+    
+    if (!response.ok) {
+      setError(data.error || "Failed to create team");
+      return; // Don't close modal or call onSuccess
+    }
+
+    // Only if successful
     onSuccess();
     onOpenChange(false);
   };
@@ -176,6 +188,7 @@ export function TeamModal({ open, onOpenChange, team, onSuccess }) {
               ))}
             </div>
           </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full">
             {team ? "Update" : "Create"} Team
           </Button>

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { auth } from "@/lib/auth";
@@ -59,7 +61,7 @@ export async function GET(request: NextRequest) {
     const evaluations = await prisma.evaluation.findMany({
       where: {
         projectId,
-        menteeId: session.user.id, // Ensure the mentee making the request is authorized
+        menteeId: menteeId, // Ensure the mentee making the request is authorized
       },
       include: {
         scores: true,
@@ -76,6 +78,7 @@ export async function GET(request: NextRequest) {
           include: {
             user: {
               select: {
+                id: true,
                 name: true,
                 email: true,
               },

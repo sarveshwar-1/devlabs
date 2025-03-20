@@ -22,10 +22,9 @@ const CreateEvaluationSchema = z.object({
   stage: z.enum(["Review1", "Review2", "Final_Review"]),
   menteeId: z.string(),
   scores: ScoreSchema,
-  comments: z.string().optional().nullable(), // Changed to make comments optional and allow null
+  comments: z.string().optional().nullable(), 
 });
 
-// GET - Fetch evaluations (with filtering options)
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const projectId = searchParams.get("projectId");
-    const stage = searchParams.get("stage");
+    const stage = searchParams.get("stage"); // Explicitly get stage
     const menteeId = searchParams.get("menteeId");
 
     if (!projectId) {
@@ -57,12 +56,12 @@ export async function GET(request: NextRequest) {
     const evaluations = await prisma.evaluation.findMany({
       where: {
         projectId,
-        stage: (stage as any) || undefined,
+        stage: stage as any, // Use exact stage matching
         menteeId: menteeId || undefined,
         mentorId: session.user.id,
       },
       include: {
-        scores: true,
+        scores: true, // Always include scores
         mentee: {
           include: {
             user: {
@@ -76,12 +75,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Fixed: renamed 'eval' to 'evaluation'
+    // Transform the data to ensure scores are always present
     const sanitizedEvaluations = evaluations.map((evaluation) => ({
       ...evaluation,
       mentee: {
         ...evaluation.mentee,
         name: evaluation.mentee?.user?.name || "Unknown User",
+      },
+      scores: evaluation.scores || {
+        regularUpdates: 0,
+        viva: 0,
+        content: 0,
+        total: 0,
       },
     }));
 
@@ -192,12 +197,9 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json<ApiResponse<null>>(
-        {
-          success: false,
-          error: "Unauthorized",
-        },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -205,28 +207,61 @@ export async function PUT(request: NextRequest) {
     const evaluationId = request.nextUrl.searchParams.get("id");
     if (!evaluationId) {
       return NextResponse.json<ApiResponse<null>>(
-        {
-          success: false,
-          error: "Evaluation ID is required",
-        },
+        { success: false, error: "Evaluation ID is required" },
         { status: 400 }
       );
     }
 
     const body = await request.json();
+
+    const existingEvaluation = await prisma.evaluation.findUnique({
+      where: { id: evaluationId },
+      include: { scores: true }
+    });
+
+    if (!existingEvaluation?.scores) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: "Evaluation scores not found" },
+        { status: 404 }
+      );
+    }
+
+    // Ensure all score fields are present with fallbacks
+    const updatedScores = {
+      regularUpdates: typeof body.regularUpdates === 'number' ? body.regularUpdates : existingEvaluation.scores.regularUpdates,
+      viva: typeof body.viva === 'number' ? body.viva : existingEvaluation.scores.viva,
+      content: typeof body.content === 'number' ? body.content : existingEvaluation.scores.content,
+    };
+
+    // Validate the complete score object
     const validatedData = ScoreSchema.extend({
       comments: z.string().optional(),
-    }).parse(body);
+    }).parse({
+      ...updatedScores,
+      comments: body.comments,
+    });
 
     // Update evaluation and scores in a transaction
     const updatedEvaluation = await prisma.$transaction(async (tx) => {
       const evaluation = await tx.evaluation.update({
         where: {
           id: evaluationId,
-          mentorId: session.user.id, // Ensure mentor owns the evaluation
+          mentorId: session.user.id,
         },
         data: {
           comments: validatedData.comments,
+        },
+        include: {
+          mentee: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -236,10 +271,7 @@ export async function PUT(request: NextRequest) {
           regularUpdates: validatedData.regularUpdates,
           viva: validatedData.viva,
           content: validatedData.content,
-          total:
-            validatedData.regularUpdates +
-            validatedData.viva +
-            validatedData.content,
+          total: validatedData.regularUpdates + validatedData.viva + validatedData.content,
         },
       });
 

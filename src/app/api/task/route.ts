@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
                 images: true
             }
         });
-        
+
         return NextResponse.json({ images: task?.images || [] });
     }
 
@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
         if (!session?.user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        const { file, filename, fileType, bucketName, folderName,taskId } = await req.json();
-        console.log( filename, fileType, 'bucketname',bucketName,folderName,taskId);
+        const { file, filename, fileType, bucketName, folderName, taskId } = await req.json();
+        console.log (filename, fileType, 'bucketname', bucketName, folderName, taskId);
         if (!file) {
             return NextResponse.json(
                 { error: "No file found in request" },
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
             await createFolder(bucketName, folderName);
             const filenamewithfolder = `${folderName}/${filename}`;
             const img = await uploadFile(fileBuffer, filenamewithfolder, fileType, bucketName);
-            
+
             // Use upsert instead of update
             await prisma.task.update({
                 where: {

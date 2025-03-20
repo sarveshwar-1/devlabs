@@ -29,10 +29,14 @@ export async function PUT(req: NextRequest) {
     if (!team) {
       return NextResponse.json({ error: "Invalid join code" }, { status: 404 });
     }
+    if (team.maxMembers === team.members.length) {
+      return NextResponse.json({ error: "Team is full" }, { status: 400 });
+    }
     const isMember = team.members.some(member => member.id === session.user.id);
     if (isMember) {
       return NextResponse.json({ error: "Already a member of this team" }, { status: 400 });
     }
+
 
     const mentee = await prisma.mentee.findFirst({
       where: { id: session.user.id }

@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
-import { NextResponse,NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prismadb";
 import { redis } from "@/lib/db/redis";
 
-export async function GET(request:NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const teamid = request.nextUrl.searchParams.get("teamid");
     if (teamid) {
@@ -136,19 +136,38 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, description, memberIds } = await req.json();
-
-    console.log("Validation checks:", {
-      hasMemberIds: !!memberIds,
-      memberIdsLength: memberIds?.length,
-      hasName: !!name,
-    });
-
-    if (!memberIds || memberIds.length === 0) {
+    const { name, description, memberIds, maxMembers } = await req.json();
+    if (maxMembers < memberIds.length + 1) { 
       return NextResponse.json(
-        { error: "At least one member is required" },
+        { error: "Max members should be greater than the number of members" },
         { status: 400 }
       );
+    }
+    const duplicate_team = await prisma.team.findFirst({
+      where: {
+        name,
+      },
+    });
+    if (duplicate_team) {
+      return NextResponse.json(
+        { error: "Team with this name already exists" },
+        { status: 400 }
+      );
+    }
+
+    if (session.user.role !== "MENTEE") {
+      console.log("Validation checks:", {
+        hasMemberIds: !!memberIds,
+        memberIdsLength: memberIds?.length,
+        hasName: !!name,
+      });
+
+      if (!memberIds || memberIds.length === 0) {
+        return NextResponse.json(
+          { error: "At least one member is required" },
+          { status: 400 }
+        );
+      }
     }
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -188,6 +207,7 @@ export async function POST(req: Request) {
     // Only add session user to members if they are the team leader
     if (teamLeader !== null) {
       memberIds.push(session.user.id);
+      users.push(teamLeader);
     }
     const globalSettings = await prisma.globalSettings.findFirst({
       where: { id: 1 },
@@ -205,6 +225,7 @@ export async function POST(req: Request) {
           connect: users.map((user) => ({ id: user.id })),
         },
         joinCode: teamCode,
+        maxMembers,
         freezed: globalSettings?.globalTeamFreeze,
       },
     });
@@ -245,6 +266,7 @@ export async function PUT(req: Request) {
       memberIds,
       class: className,
       semester,
+      maxMembers,
     } = await req.json();
     if (!memberIds) {
       return NextResponse.json(
@@ -274,14 +296,21 @@ export async function PUT(req: Request) {
     if (members.length !== members.length || members.length < 0) {
       return NextResponse.json({ error: "Members not found" }, { status: 400 });
     }
+    if (!(maxMembers >= members.length)) {
+      return NextResponse.json(
+        { error: "Max members should be greater than or equal to the number of members" },
+        { status: 400 }
+      );
+    }
 
-    const team = await prisma.team.update({
+    await prisma.team.update({
       where: { id: id },
       data: {
         name,
         description,
         class: className,
         semester,
+        maxMembers,
         members: {
           set: members.map((user) => ({ id: user.id })),
         },
@@ -338,7 +367,7 @@ export async function DELETE(req: Request) {
         {
           error: "Delete The projects associated with the team before deleting",
         },
-        { status: 404 }
+        { status: 400 }
       );
     }
     return NextResponse.json({ error: error.code }, { status: 500 });

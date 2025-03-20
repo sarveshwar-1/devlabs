@@ -30,7 +30,7 @@ interface User {
 
 interface Mentee {
   id: string;
-  user?: User;  // Make user optional
+  user?: User; // Make user optional
   name?: string; // Add direct name field as fallback
 }
 
@@ -55,7 +55,6 @@ interface Evaluation {
 
 const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStage, setCurrentStage] = useState<
     "Review1" | "Review2" | "Final_Review"
@@ -71,6 +70,13 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     title: string;
   } | null>(null);
   const [comments, setComments] = useState<{ [key: string]: string }>({});
+  const [unsavedChanges, setUnsavedChanges] = useState<{
+    [key: string]: {
+      scores: Partial<Score>;
+      comments?: string;
+    };
+  }>({});
+  const [activeComments, setActiveComments] = useState<{ [key: string]: string }>({});
 
   const stages = {
     Review1: {
@@ -95,18 +101,17 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     return "text-red-500";
   };
 
-  // Add this function to fetch project details and team members
+  // Modify fetchProjectAndMembers to handle errors better
   const fetchProjectAndMembers = async () => {
     try {
-      setLoading(true);
-
-      // First fetch project details to get teamId
       const projectResponse = await fetch(`/api/project/${id}`);
-      if (!projectResponse.ok) throw new Error("Failed to fetch project");
+      if (!projectResponse.ok) {
+        throw new Error(`HTTP error! status: ${projectResponse.status}`);
+      }
       const projectData = await projectResponse.json();
       setProjectDetails({
         teamId: projectData.teamId,
-        title: projectData.title,
+        title: projectData.title || "Untitled Project",
       });
 
       // Then fetch team members using teamId
@@ -124,26 +129,23 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     }
   };
 
-  // Modified evaluation fetch to initialize new evaluations if needed
+  // Modify fetchOrInitializeEvaluations for better error handling
   const fetchOrInitializeEvaluations = async () => {
+    if (!projectMembers.length) return;
+
     try {
-      const response = await fetch(`/api/evaluation?projectId=${id}`);
-      if (!response.ok) throw new Error("Failed to fetch evaluations");
+      const response = await fetch(
+        `/api/evaluation?projectId=${id}&stage=${currentStage}`
+      );
       const { data } = await response.json();
 
-      // Create a map of existing evaluations by menteeId
-      const existingEvaluations = new Map(
-        data.map((evaluation: Evaluation) => [evaluation.mentee.id, evaluation])
-      );
+      const stageEvaluations = projectMembers.map((member) => {
+        const existing = data.find((e: Evaluation) =>
+          e.mentee.id === member.id && e.stage === currentStage
+        );
 
-      // Create or get evaluations for all team members
-      const allEvaluations = projectMembers.map((member) => {
-        const existing = existingEvaluations.get(member.id);
-        if (existing) return existing;
-
-        // Return a new evaluation object for members without evaluations
-        return {
-          id: `temp_${member.id}`, // Will be replaced with real ID after creation
+        return existing || {
+          id: `${member.id}-${currentStage}`, // Stable temporary ID
           projectId: id,
           stage: currentStage,
           mentee: member,
@@ -160,38 +162,40 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
         };
       });
 
-      setEvaluations(allEvaluations);
+      setEvaluations(stageEvaluations);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch evaluations"
       );
       toast.error("Failed to fetch evaluations");
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Fetch evaluations
+  // Modify useEffect to ensure proper dependency tracking
   useEffect(() => {
-    if (!id) return;
-
-    fetchProjectAndMembers();
+    if (id) {
+      fetchProjectAndMembers();
+    }
   }, [id]);
 
   useEffect(() => {
-    if (!projectMembers.length) return;
+    if (projectMembers.length > 0) {
+      fetchOrInitializeEvaluations();
+    }
+  }, [projectMembers, currentStage, id]);
 
-    fetchOrInitializeEvaluations();
-  }, [projectMembers, currentStage]);
-
+  // Update the handleCommentChange function
   const handleCommentChange = (evaluationId: string, comment: string) => {
-    setComments((prev) => ({
+    setUnsavedChanges((prev) => ({
       ...prev,
-      [evaluationId]: comment,
+      [evaluationId]: {
+        scores: prev[evaluationId]?.scores || {},
+        comments: comment,
+      },
     }));
   };
 
-  const handleScoreChange = async (
+  const handleScoreChange = (
     evaluationId: string,
     category: keyof Score,
     value: number
@@ -199,68 +203,115 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     const maxValue = stages[currentStage].maxScores[category];
     const clampedValue = Math.min(Math.max(0, value), maxValue);
 
+    setUnsavedChanges((prev) => ({
+      ...prev,
+      [evaluationId]: {
+        ...prev[evaluationId],
+        scores: {
+          ...(prev[evaluationId]?.scores || {}),
+          [category]: clampedValue,
+        },
+      },
+    }));
+  };
+
+  const handleSaveChanges = async () => {
     try {
-      const evaluation = evaluations.find((e) => e.id === evaluationId);
-      if (!evaluation) return;
+      const updates = await Promise.all(
+        Object.entries(unsavedChanges).map(async ([evaluationId, changes]) => {
+          if (evaluationId.startsWith("temp_")) {
+            const evaluation = evaluations.find((e) => e.id === evaluationId);
+            if (!evaluation) return null;
 
-      const updatedScores = {
-        ...evaluation.scores,
-        [category]: clampedValue,
-      };
+            const response = await fetch("/api/evaluation", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                projectId: id,
+                stage: currentStage,
+                menteeId: evaluation.mentee.id,
+                scores: {
+                  ...evaluation.scores,
+                  ...changes.scores,
+                },
+                comments: changes.comments || "",
+              }),
+            });
 
-      // If this is a new evaluation (temporary ID)
-      if (evaluationId.startsWith("temp_")) {
-        // Create new evaluation
-        const response = await fetch("/api/evaluation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            projectId: id,
-            stage: currentStage,
-            menteeId: evaluation.mentee.id,
-            scores: updatedScores,
-            comments: comments[evaluationId] || "", // Include comments
-          }),
-        });
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Failed to create evaluation");
+            }
 
-        if (!response.ok) throw new Error("Failed to create evaluation");
-        const { data: newEvaluation } = await response.json();
+            const { data } = await response.json();
 
-        // Update evaluations with the new evaluation
-        setEvaluations((prevEvals) =>
-          prevEvals.map((e) =>
-            e.mentee.id === evaluation.mentee.id ? newEvaluation : e
-          )
+            return data;
+          } else {
+            const evaluation = evaluations.find((e) => e.id === evaluationId);
+            if (!evaluation) return null;
+
+            // Ensure all score fields are included in the update
+            const updatedScores = {
+              regularUpdates:
+                changes.scores.regularUpdates ??
+                evaluation.scores.regularUpdates,
+              viva: changes.scores.viva ?? evaluation.scores.viva,
+              content: changes.scores.content ?? evaluation.scores.content,
+            };
+
+            const response = await fetch(`/api/evaluation?id=${evaluationId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...updatedScores,
+                comments: changes.comments ?? evaluation.comments ?? "",
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Failed to update evaluation");
+            }
+
+            const { data } = await response.json();
+            if (!data) throw new Error("No data returned from server");
+
+            return data;
+          }
+        })
+      );
+
+      // Filter out null values and update state
+      const validUpdates = updates.filter(
+        (update): update is Evaluation => update !== null
+      );
+
+      if (validUpdates.length > 0) {
+        setEvaluations((prev) =>
+          prev.map((evaluation) => {
+            const updated = validUpdates.find((u) => u.id === evaluation.id);
+            return updated || evaluation;
+          })
         );
+        setUnsavedChanges({});
+        toast.success("Changes saved successfully");
       } else {
-        // Update existing evaluation
-        const response = await fetch(`/api/evaluation?id=${evaluationId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...updatedScores,
-            comments: comments[evaluationId] || "", // Include comments
-          }),
-        });
-
-        if (!response.ok) throw new Error("Failed to update score");
-
-        const { data } = await response.json();
-        setEvaluations((prevEvals) =>
-          prevEvals.map((e) =>
-            e.id === evaluationId ? { ...e, scores: data.scores } : e
-          )
-        );
+        toast.error("No changes were saved");
       }
-
-      toast.success("Score updated successfully");
     } catch (err) {
-      toast.error("Failed to update score");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save changes"
+      );
+      console.error(err);
     }
   };
 
   // Add this helper to get only the editable score fields
-  const editableScoreFields: (keyof Score)[] = ["regularUpdates", "viva", "content"];
+  const editableScoreFields: (keyof Score)[] = [
+    "regularUpdates",
+    "viva",
+    "content",
+  ];
 
   // Update the ScoreInput component to only show editable fields
   const ScoreInput = ({
@@ -279,11 +330,14 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       editingScore.menteeId === evaluation.mentee.id &&
       editingScore.category === category;
     const maxScore = stages[currentStage].maxScores[category];
-    const currentScore = evaluation.scores[category];
+    const currentScore =
+      unsavedChanges[evaluation.id]?.scores[category] ??
+      evaluation.scores?.[category] ??
+      0; // Add optional chaining and fallback
     const percentage = (currentScore / maxScore) * 100;
 
     return (
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 round`ed-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <label className="capitalize text-gray-700 font-medium">
             {category}
@@ -311,7 +365,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
           <div className="mt-2">
             <input
               type="number"
-              step="0.1"
+              step="1"
               min="0"
               max={maxScore}
               value={currentScore}
@@ -319,7 +373,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
                 handleScoreChange(
                   evaluation.id,
                   category,
-                  Number(e.target.value)
+                  Math.round(Number(e.target.value))
                 )
               }
               onBlur={() => setEditingScore({ menteeId: null, category: null })}
@@ -343,8 +397,11 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
   };
 
   // Update the name display with fallback
-  const getMenteeName = (mentee: Mentee) => {
-    return mentee.user?.name || mentee.name || 'Unknown User';
+  const getMenteeName = (mentee: Mentee | undefined) => {
+    if (!mentee) return "Unknown User";
+    if (mentee.user?.name) return mentee.user.name;
+    if (mentee.name) return mentee.name;
+    return "Unknown User";
   };
 
   const ScoringInterface = () => (
@@ -376,7 +433,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
       <div className="grid gap-6">
         {evaluations.map((evaluation) => (
           <div
-            key={evaluation.id}
+            key={`${evaluation.mentee.id}-${currentStage}`} // Stable key
             className="bg-white rounded-xl shadow-lg overflow-hidden"
           >
             <div className="p-6">
@@ -412,19 +469,52 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
                 ))}
               </div>
 
-              {/* Add comment box */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Update the comment box implementation */}
+              <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                <label
+                  htmlFor={`comment-${evaluation.id}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Comments
                 </label>
                 <textarea
-                  value={comments[evaluation.id] || ""}
-                  onChange={(e) =>
-                    handleCommentChange(evaluation.id, e.target.value)
+                  id={`comment-${evaluation.id}`}
+                  value={
+                    // First check if there's an active edit in progress
+                    activeComments[evaluation.id] !== undefined
+                      ? activeComments[evaluation.id]
+                      // Then check unsaved changes
+                      : unsavedChanges[evaluation.id]?.comments !== undefined
+                        ? unsavedChanges[evaluation.id].comments
+                        // Finally fall back to saved comments
+                        : evaluation.comments || ""
                   }
-                  placeholder="Add any comments about the evaluation..."
-                  className="w-full p-2 border rounded-lg min-h-[100px]"
+                  onChange={(e) => {
+                    // Only update local state during typing for better performance
+                    setActiveComments(prev => ({
+                      ...prev,
+                      [evaluation.id]: e.target.value
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    // Update unsavedChanges only when textarea loses focus
+                    const commentValue = activeComments[evaluation.id];
+                    if (commentValue !== undefined) {
+                      setUnsavedChanges(prev => ({
+                        ...prev,
+                        [evaluation.id]: {
+                          scores: prev[evaluation.id]?.scores || {},
+                          comments: commentValue,
+                        }
+                      }));
+                    }
+                  }}
+                  placeholder="Add any comments about the student's performance..."
+                  className="w-full p-3 border border-gray-300 rounded-lg min-h-[120px] text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition duration-200"
                 />
+                <p className="mt-2 text-xs text-gray-500">
+                  Add detailed feedback on strengths and areas for improvement.
+                </p>
               </div>
             </div>
           </div>
@@ -494,7 +584,7 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
                 <Award className="text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold">Class Average</h3>
+                <h3 className="font-semibold">Group Average</h3>
                 <p className="text-2xl font-bold">
                   {(
                     (evaluations.reduce((acc, e) => acc + e.scores.total, 0) /
@@ -616,7 +706,74 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
+  const exportToCSV = () => {
+    try {
+      // Prepare the data for export
+      const csvData = evaluations.map((evaluation) => ({
+        "Student Name": getMenteeName(evaluation.mentee),
+        Stage: stages[evaluation.stage].name,
+        "Regular Updates": evaluation.scores.regularUpdates,
+        Viva: evaluation.scores.viva,
+        Content: evaluation.scores.content,
+        "Total Score": Object.entries(evaluation.scores)
+          .filter(([key]) => editableScoreFields.includes(key as keyof Score))
+          .reduce((acc, [_, value]) => acc + value, 0),
+        "Max Score": Object.values(stages[evaluation.stage].maxScores).reduce(
+          (a, b) => a + b,
+          0
+        ),
+        Percentage:
+          (
+            (Object.entries(evaluation.scores)
+              .filter(([key]) =>
+                editableScoreFields.includes(key as keyof Score)
+              )
+              .reduce((acc, [_, value]) => acc + value, 0) /
+              Object.values(stages[evaluation.stage].maxScores).reduce(
+                (a, b) => a + b,
+                0
+              )) *
+            100
+          ).toFixed(1) + "%",
+        Comments: evaluation.comments || "",
+      }));
+
+      // Convert to CSV
+      const headers = Object.keys(csvData[0]);
+      const csvString = [
+        headers.join(","),
+        ...csvData.map((row) =>
+          headers
+            .map((header) => JSON.stringify(row[header as keyof typeof row]))
+            .join(",")
+        ),
+      ].join("\n");
+
+      // Create and trigger download
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute(
+          "download",
+          `project_evaluation_${currentStage}_${new Date().toISOString().split("T")[0]
+          }.csv`
+        );
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success("Report exported successfully");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Failed to export report");
+    }
+  };
+
+  // Remove the loading check and keep only the error check
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -638,15 +795,19 @@ const ProjectEvaluation = ({ params: { id } }: { params: { id: string } }) => {
             {showSummary ? "Show Scoring" : "Show Summary"}
           </button>
           <button
-            onClick={() => {
-              console.log("Exporting data...");
-            }}
+            onClick={exportToCSV}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
+            disabled={evaluations.length === 0}
           >
             <Download className="w-5 h-5" />
             Export Report
           </button>
-          <Button onClick={() => console.log("submitted")}>Save changes</Button>
+          <Button
+            onClick={handleSaveChanges}
+            disabled={Object.keys(unsavedChanges).length === 0}
+          >
+            Save changes
+          </Button>
         </div>
       </div>
 

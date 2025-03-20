@@ -102,7 +102,6 @@ export default function TeamsPage() {
       }`}
     >
       <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
         <div className="flex justify-between items-center mb-8 animate-fade-in">
           <h1 className="text-3xl font-bold text-black dark:text-white tracking-tight">
             Teams

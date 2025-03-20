@@ -4,50 +4,23 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FolderGit, ListTodo, Github, Users } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  FolderGit,
+  ListTodo,
+  Github,
+  Users,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ArrowUpRight,
+  Calendar,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
-const useTaskPriority = () => {
-  const getPriority = (dueDate: Date) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const daysUntilDue = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
-
-    if (daysUntilDue < 0) return "Overdue";
-    if (daysUntilDue <= 2) return "High";
-    if (daysUntilDue <= 5) return "Medium";
-    return "Low";
-  };
-
-  const getUrgencyColor = (dueDate: Date) => {
-    const priority = getPriority(dueDate);
-
-    switch (priority) {
-      case "Overdue":
-        return {
-          light: "bg-red-50 border-red-200 text-red-700",
-          dark: "dark:bg-red-950 dark:border-red-800 dark:text-red-300",
-        };
-      case "High":
-        return {
-          light: "bg-orange-50 border-orange-200 text-orange-700",
-          dark: "dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300",
-        };
-      case "Medium":
-        return {
-          light: "bg-yellow-50 border-yellow-200 text-yellow-700",
-          dark: "dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-300",
-        };
-      default:
-        return {
-          light: "bg-green-50 border-green-200 text-green-700",
-          dark: "dark:bg-green-950 dark:border-green-800 dark:text-green-300",
-        };
-    }
-  };
-
-  return { getPriority, getUrgencyColor };
-};
+// Keep existing interfaces
+interface Mentor {
+  user: { name: string };
+}
 
 interface Project {
   id: string;
@@ -61,54 +34,116 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  dueDate: Date;
+  dueDate: string;
   status: string;
-  projectName: string;
+  projectName?: string;
 }
 
-interface Mentor {
-  name: string;
-}
+// Modified StatCard component with new design
+const StatCard = ({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string;
+  value: number;
+  icon: React.ElementType;
+  color: string;
+}) => (
+  <Card className="relative overflow-hidden">
+    <div className={`absolute top-0 left-0 w-1 h-full bg-${color}-500`} />
+    <CardContent className="p-6">
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="text-3xl font-bold">{value}</p>
+        </div>
+        <div
+          className={`p-2 rounded-lg bg-${color}-100 dark:bg-${color}-900/20`}
+        >
+          <Icon
+            className={`w-5 h-5 text-${color}-500 dark:text-${color}-400`}
+          />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 
-export default function Page() {
+const useTaskPriority = () => {
+  const getPriority = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const daysUntilDue = Math.ceil(
+      (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilDue < 0) return "Overdue";
+    if (daysUntilDue <= 2) return "High";
+    if (daysUntilDue <= 5) return "Medium";
+    return "Low";
+  };
+
+  const getUrgencyColor = (priority: string) => {
+    const colors = {
+      Overdue: {
+        bg: "bg-red-50 dark:bg-red-900/20",
+        text: "text-red-700 dark:text-red-300",
+        accent: "bg-red-500",
+      },
+      High: {
+        bg: "bg-orange-50 dark:bg-orange-900/20",
+        text: "text-orange-700 dark:text-orange-300",
+        accent: "bg-orange-500",
+      },
+      Medium: {
+        bg: "bg-yellow-50 dark:bg-yellow-900/20",
+        text: "text-yellow-700 dark:text-yellow-300",
+        accent: "bg-yellow-500",
+      },
+      Low: {
+        bg: "bg-green-50 dark:bg-green-900/20",
+        text: "text-green-700 dark:text-green-300",
+        accent: "bg-green-500",
+      },
+    };
+    return colors[priority as keyof typeof colors];
+  };
+
+  return { getPriority, getUrgencyColor };
+};
+
+export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { data: session, status } = useSession();
+  const [taskStats, setTaskStats] = useState({
+    total: 0,
+    completed: 0,
+    ongoing: 0,
+    overdue: 0,
+  });
   const { getPriority, getUrgencyColor } = useTaskPriority();
   const router = useRouter();
 
-  const RedirectTask = (taskid: string) => {
-    router.push("/mentee/task/" + taskid);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 },
-  };
-
-  const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0 },
-  };
+  // Keep existing useEffect hooks for fetching data
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // Fetch projects
         const response = await fetch("/api/project");
         const data = await response.json();
-
-        const projdatas: Project[] = data.map((projdata: Project) => ({
+        const projdatas: Project[] = data.map((projdata: any) => ({
           id: projdata.id,
           title: projdata.title,
           description: projdata.description,
           repository: "https://github.com/" + projdata.repository,
-          mentor: projdata.mentor.map((mentor1: Mentor) => ({
-            name: mentor1.user.name,
-          })),
+          mentor: projdata.mentor,
         }));
         setProjects(projdatas);
-      } catch {
-        console.error("Error fetching projects");
+      } catch (error) {
+        console.error("Error fetching projects:", error);
       }
     };
     fetchProjects();
@@ -118,101 +153,135 @@ export default function Page() {
     const fetchTasks = async () => {
       try {
         const allTasks: Task[] = [];
+        let completed = 0;
+        let ongoing = 0;
+        let overdue = 0;
 
-        if (!projects) return; // Guard clause if projects aren't loaded yet
+        for (const project of projects) {
+          const taskResponse = await fetch(`/api/tasks/${project.id}`);
+          const { tasks: projectTasks } = await taskResponse.json();
 
-        for (let i = 0; i < projects.length; i++) {
-          const taskResponse = await fetch(`/api/tasks/${projects[i].id}`);
-          const { tasks } = await taskResponse.json();
+          if (projectTasks && Array.isArray(projectTasks)) {
+            projectTasks.forEach((task: Task) => {
+              if (task.status.toLowerCase() === "completed") completed++;
+              else if (task.status.toLowerCase() === "ongoing") ongoing++;
+              if (new Date(task.dueDate) < new Date()) overdue++;
 
-          if (tasks && Array.isArray(tasks)) {
-            for (let j = 0; j < tasks.length; j++) {
-              if (
-                tasks[j].status.toLowerCase() === "pending" ||
-                tasks[j].status.toLowerCase() === "ongoing"
-              ) {
+              if (["pending", "ongoing"].includes(task.status.toLowerCase())) {
                 allTasks.push({
-                  id: tasks[j].id,
-                  title: tasks[j].title,
-                  description: tasks[j].description,
-                  dueDate: new Date(tasks[j].dueDate).toISOString(),
-                  status: tasks[j].status,
-                  projectName: projects[i].title,
+                  ...task,
+                  projectName: project.title,
                 });
               }
-            }
+            });
           }
         }
 
         setTasks(allTasks);
+        setTaskStats({
+          total: allTasks.length + completed,
+          completed,
+          ongoing,
+          overdue,
+        });
       } catch (error) {
         console.error("Error fetching tasks:", error);
       }
     };
 
-    fetchTasks();
+    if (projects.length > 0) {
+      fetchTasks();
+    }
   }, [projects]);
 
   return (
-    <div className="p-6 min-h-screen bg-gradient-to-br from-white to-gray-100 dark:from-gray-900 dark:to-black">
-      <motion.h1
-        className="text-3xl font-bold mb-6 text-indigo-600 dark:text-indigo-400"
-        variants={titleVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5 }}
-      >
-        Mentee Dashboard
-      </motion.h1>
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-gray-100">
+            Welcome {session?.user?.name ?? ""} !
+          </h1>
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-5 h-5 text-gray-500" />
+            <span className="text-sm text-gray-500">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-        <motion.div
-          className="h-full"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-purple-200 dark:border-purple-800 h-full transition-transform duration-300 hover:scale-[1.02]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                <FolderGit className="w-5 h-5" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatCard
+            label="Total Tasks"
+            value={taskStats.total}
+            icon={ListTodo}
+            color="blue"
+          />
+          <StatCard
+            label="Completed"
+            value={taskStats.completed}
+            icon={CheckCircle2}
+            color="green"
+          />
+          <StatCard
+            label="Ongoing"
+            value={taskStats.ongoing}
+            icon={Clock}
+            color="yellow"
+          />
+          <StatCard
+            label="Overdue"
+            value={taskStats.overdue}
+            icon={AlertCircle}
+            color="red"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+              <CardTitle className="flex items-center gap-2">
+                <FolderGit className="w-5 h-5 text-indigo-500" />
                 Active Projects
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[500px]">
+              <CardContent className="p-6">
                 <div className="space-y-4">
                   {projects.map((project) => (
                     <div
-                      key={project.title}
-                      className="p-4 rounded-lg bg-purple-50/80 dark:bg-purple-950/50 border border-purple-100 dark:border-purple-800 transition-all duration-300 hover:bg-purple-100/80 dark:hover:bg-purple-900/50"
+                      key={project.id}
+                      className="group p-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-purple-900 dark:text-purple-100">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                           {project.title}
                         </h3>
                         <a
                           href={project.repository}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-200"
+                          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <Github className="w-5 h-5" />
+                          <Github className="w-5 h-5 text-gray-500 group-hover:text-indigo-500 transition-colors" />
                         </a>
                       </div>
-                      <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                         {project.description}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <div className="flex items-center gap-3">
+                        <Users className="w-4 h-4 text-gray-400" />
                         <div className="flex flex-wrap gap-2">
                           {project.mentor.map((mentor, index) => (
                             <span
                               key={index}
-                              className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                              className="text-xs px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300"
                             >
-                              {mentor.name}
+                              {mentor.user.name}
                             </span>
                           ))}
                         </div>
@@ -220,62 +289,73 @@ export default function Page() {
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
-            </CardContent>
+              </CardContent>
+            </ScrollArea>
           </Card>
-        </motion.div>
 
-        <motion.div
-          className="h-full"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-pink-200 dark:border-pink-800 h-full transition-transform duration-300 hover:scale-[1.02]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-pink-600 dark:text-pink-400">
-                <ListTodo className="w-5 h-5" />
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+              <CardTitle className="flex items-center gap-2">
+                <ListTodo className="w-5 h-5 text-pink-500" />
                 Pending Tasks
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[500px]">
+              <CardContent className="p-6">
                 <div className="space-y-4">
                   {tasks.map((task) => {
                     const priority = getPriority(task.dueDate);
-                    const urgencyColor = getUrgencyColor(task.dueDate);
+                    const colors = getUrgencyColor(priority);
                     return (
                       <div
                         key={task.id}
-                        className={`p-4 rounded-lg border transition-all duration-300 hover:translate-x-1 ${urgencyColor.light} ${urgencyColor.dark}`}
-                        onClick={() => RedirectTask(task.id)}
+                        className={`group relative p-4 rounded-lg ${colors.bg} border border-gray-200 dark:border-gray-700 transition-all duration-200`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-medium">{task.title}</h3>
-                          <span className="text-sm">
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                            {task.title}
+                          </h3>
                         </div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-300">
-                            Project: {task.projectName}
-                          </span>
-                        </div>
-                        <p className="text-sm opacity-90 mb-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                           {task.description}
                         </p>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 dark:bg-black/20">
-                          {priority} Priority
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">
+                            {task.projectName}
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${colors.bg} ${colors.text}`}
+                            >
+                              {priority}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              Due: {new Date(task.dueDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-end mt-3 space-x-2">
+                          <button
+                            onClick={() => router.push(`/mentee/markdown/${task.id}`)}
+                            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Edit Markdown
+                          </button>
+                          <button
+                            onClick={() => router.push(`/mentee/file/${task.id}`)}
+                            className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          >
+                            Upload Files
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-              </ScrollArea>
-            </CardContent>
+              </CardContent>
+            </ScrollArea>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -1,185 +1,199 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "cockroachdb"
-    url      = env("DATABASE_URL")
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Files {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
 }
 
 model User {
-    id       String  @id @default(cuid())
-    name     String
-    email    String  @unique
-    role     Role    @default(MENTEE)
-    phoneNo  String?
-    rollNo   String? @unique
-    image    String?
-    password String
+  id       String  @id @default(cuid())
+  name     String
+  email    String  @unique
+  role     Role    @default(MENTEE)
+  phoneNo  String?
+  rollNo   String  @unique
+  image    String?
+  password String
 
-    bio String?
+  bio String?
 
-    githubId       String? @unique
-    githubUsername String?
-    githubToken    String?
+  githubId       String? @unique
+  githubUsername String?
+  githubToken    String?
 
-    createdAt          DateTime @default(now())
-    lastPasswordChange DateTime @default(now())
-    isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  lastPasswordChange DateTime @default(now())
+  isActive           Boolean  @default(true)
 
-    Mentor Mentor[]
-
-    Mentee Mentee[]
-
-    Admin Admin[]
+  Mentor Mentor[]
+  Mentee Mentee[]
+  Admin  Admin[]
 }
 
 model GlobalSettings {
-    id               Int      @id @default(1)
-    globalTeamFreeze Boolean  @default(false)
-    updatedAt        DateTime @unique @default(now())
+  id               Int      @id @default(1)
+  globalTeamFreeze Boolean  @default(false)
+  updatedAt        DateTime @unique @default(now())
 }
 
 model GlobalProj {
-    id               Int      @id @default(1)
-    globalProjFreeze Boolean  @default(false)
-    updatedAt        DateTime @unique @default(now())
+  id               Int      @id @default(1)
+  globalProjFreeze Boolean  @default(false)
+  updatedAt        DateTime @unique @default(now())
 }
 
 model Admin {
-    id   String @id @default(cuid())
-    user User   @relation(fields: [id], references: [id])
+  id   String @id @default(cuid())
+  user User   @relation(fields: [id], references: [id])
 }
 
 model Mentee {
-    id   String @id
-    user User   @relation(fields: [id], references: [id])
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
 
-    Team      Team[]
-    leadTeams Team[] @relation(name: "TeamLeader")
-    teams     Team[] @relation(name: "TeamMembers")
+  Team      Team[]
+  leadTeams Team[] @relation(name: "TeamLeader")
+  teams     Team[] @relation(name: "TeamMembers")
 
-    evaluations Evaluation[] // Changed from Evaluations to Evaluation to match your schema
+  evaluations Evaluation[]
 }
 
 model Mentor {
-    id   String @id
-    user User   @relation(fields: [id], references: [id])
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
 
-    Project Project[]
+  Project Project[]
 
-    evaluations Evaluation[]  // Changed name to be more descriptive and match schema
+  evaluations Evaluation[]
 }
 
 enum Role {
-    MENTOR
-    MENTEE
-    ADMIN
+  MENTOR
+  MENTEE
+  ADMIN
 }
 
 enum EvaluationStage {
-    Review1
-    Review2
-    Final_Review
+  Review1
+  Review2
+  Final_Review
 }
-model Evaluation {
-    id             String          @id @default(cuid())
-    project        Project         @relation(fields: [projectId], references: [id])
-    projectId      String
-    stage          EvaluationStage
-    scores         Score?          
-    comments       String?
-    evaluatedAt    DateTime        @default(now())
-    evaluator      Mentor          @relation(fields: [mentorId], references: [id])
-    mentorId       String
-    mentee         Mentee          @relation(fields: [menteeId], references: [id])
-    menteeId       String
 
-    @@unique([projectId, stage, menteeId])  // Prevent duplicate evaluations
-    @@index([projectId, stage])             // Common query pattern
+model Evaluation {
+  id          String          @id @default(cuid())
+  project     Project         @relation(fields: [projectId], references: [id])
+  projectId   String
+  stage       EvaluationStage
+  scores      Score?
+  comments    String?
+  evaluatedAt DateTime        @default(now())
+  evaluator   Mentor          @relation(fields: [mentorId], references: [id])
+  mentorId    String
+  mentee      Mentee          @relation(fields: [menteeId], references: [id])
+  menteeId    String
+
+  @@unique([projectId, stage, menteeId]) // Prevent duplicate evaluations
+  @@index([projectId, stage]) // Common query pattern
 }
 
 model Score {
-    id             String     @id @default(cuid())
-    evaluation     Evaluation @relation(fields: [evaluationId], references: [id])
-    evaluationId   String     @unique
-    regularUpdates Float      @default(0)
-    viva           Float      @default(0)
-    content        Float      @default(0)
-    total          Float      @default(0)
+  id             String     @id @default(cuid())
+  evaluation     Evaluation @relation(fields: [evaluationId], references: [id])
+  evaluationId   String     @unique
+  regularUpdates Float      @default(0)
+  viva           Float      @default(0)
+  content        Float      @default(0)
+  total          Float      @default(0)
 
-    @@index([evaluationId])
+  @@index([evaluationId])
 }
+
 model Project {
-    id          String   @id @default(cuid())
-    title       String
-    description String?
-    status      Status   @default(PENDING)
-    isPrivate   Boolean  @default(false)
-    repository  String?
-    githubtoken String?
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    isactive    Boolean  @default(true)
-    mentor      Mentor[]
-    freezed     Boolean? @default(false)
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      Status   @default(PENDING)
+  isPrivate   Boolean  @default(false)
+  repository  String?
+  githubtoken String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isactive    Boolean  @default(true)
+  mentor      Mentor[]
+  freezed     Boolean? @default(false)
+  files       String[]
 
-    team   Team   @relation(fields: [teamId], references: [id])
-    teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String
 
-    Task Task[]
+  Task Task[]
 
-    evaluations  Evaluation[]
-    currentStage EvaluationStage @default(Review1)
+  evaluations  Evaluation[]
+  currentStage EvaluationStage @default(Review1)
 
-    ProjectReport ProjectReport[]
+  ProjectReport ProjectReport[]
+  Files         Files[]
 }
 
 enum Status {
-    PENDING
-    ONGOING
-    COMPLETED
+  PENDING
+  ONGOING
+  COMPLETED
 }
 
 model Team {
-    id           String    @id @default(cuid())
-    name         String
-    description  String?
-    teamLeader   Mentee    @relation(fields: [teamLeaderId], references: [id], name: "TeamLeader")
-    teamLeaderId String
-    members      Mentee[]  @relation(name: "TeamMembers")
-    isactive     Boolean   @default(true)
-    createdAt    DateTime  @default(now())
-    maxMembers   Int       @default(4)
-    joinCode     String    @unique @default(cuid())
-    class        String?
-    semester     String?
-    Project      Project[]
-    Mentee       Mentee[]
-    freezed      Boolean?  @default(false)
-    @@index([joinCode])
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  teamLeader   Mentee    @relation(fields: [teamLeaderId], references: [id], name: "TeamLeader")
+  teamLeaderId String
+  members      Mentee[]  @relation(name: "TeamMembers")
+  isactive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  maxMembers   Int       @default(4)
+  joinCode     String    @unique @default(cuid())
+  class        String?
+  semester     String?
+  Project      Project[]
+  Mentee       Mentee[]
+  freezed      Boolean?  @default(false)
+
+  @@index([joinCode])
 }
 
 model Task {
-    id          String   @id @default(cuid())
-    title       String
-    description String?
-    status      Status   @default(PENDING)
-    createdAt   DateTime @default(now())
-    dueDate     DateTime
-    grade       Int?
-    remarks     String?
-    file        String?
-    images      String[]
-    project     Project  @relation(fields: [projectid], references: [id])
-    projectid   String
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      Status   @default(PENDING)
+  createdAt   DateTime @default(now())
+  dueDate     DateTime
+  grade       Int?
+  remarks     String?
+  file        String?
+  images      String[]
+  project     Project  @relation(fields: [projectid], references: [id])
+  projectid   String
+  files       String[]
 }
 
 model ProjectReport {
-    id          String    @id @default(cuid())
-    projectId   String
-    project     Project   @relation(fields: [projectId], references: [id])
-    description String
-    grade       Int?
-    submittedAt DateTime? @default(now())
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id])
+  description String
+  grade       Int?
+  submittedAt DateTime? @default(now())
 }

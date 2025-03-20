@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Search, Snowflake } from "lucide-react";
+import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 
 type Project = {
   id: string;
@@ -130,11 +131,14 @@ export default function Page() {
   };
   const fetchProjects = useCallback(async () => {
     try {
+      console.log("Fetching projects...");
       const response = await fetch("/api/project");
+      console.log("Response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch projects");
       }
       const data = await response.json();
+      console.log("Fetched data:", data);
       if (Array.isArray(data)) {
         setProjects(data);
       } else {
@@ -319,7 +323,7 @@ export default function Page() {
                             hover:bg-gray-50 dark:hover:bg-gray-900
                             transition-all duration-200 animate-fade-in-up`}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  onClick={() => router.push(`/mentee/project/${project.id}`)}
+                  onClick={() => router.push(`/admin/project/${project.id}`)}
                 >
                   <TableCell className="text-black dark:text-white font-medium">
                     {project.title}
@@ -352,6 +356,7 @@ export default function Page() {
                       className="flex gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <EditProjectDialog project={project} />
                       <Button
                         onClick={() => handleFreeze(project.id)}
                         variant={project.freezed ? "destructive" : "ghost"}

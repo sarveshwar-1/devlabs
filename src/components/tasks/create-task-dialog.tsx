@@ -12,16 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 
-export function CreateTaskDialog({ projectId }: { projectId: string }) {
+export function CreateTaskDialog({
+  projectId,
+  fetchtasks,
+}: {
+  projectId: string;
+  fetchtasks: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -66,7 +72,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
         dueDate: "",
         status: "PENDING",
       });
-      router.reload();
+      fetchtasks();
     } catch (error) {
       console.error("Failed to create task: ", error);
       setError(
@@ -111,7 +117,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
               }
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
               value={formData.status}
@@ -131,7 +137,7 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
                 <SelectItem value="COMPLETED">Completed</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>
             <Input
@@ -144,7 +150,12 @@ export function CreateTaskDialog({ projectId }: { projectId: string }) {
               required
             />
           </div>
-          <Button type="submit">Create Task</Button>
+          <Button
+            className="bg-black text-white dark:bg-white dark:text-black"
+            type="submit"
+          >
+            Create Task
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
