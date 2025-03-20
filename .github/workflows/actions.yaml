@@ -3,7 +3,7 @@ name: Deploy Next.js App
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to the 'main' branch
+      - main
 
 jobs:
   deploy:
@@ -22,10 +22,10 @@ jobs:
           script: |
             cd /home/sarvesh/devlabs
             git pull origin main
-            pm2 stop devlabs || true  # Stop if running
-            rm -rf .next  # Remove old build
-            npm install  # Install dependencies
-            npm run build  # Build the app
+            pm2 stop devlabs || true  
+            rm -rf .next  
+            npm install  
+            npm run build  
             pm2 restart devlabs || pm2 start npm --name "devlabs" -- start
             pm2 save
             pm2 status
