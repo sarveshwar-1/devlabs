@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(
                 { error: "Missing required parameters" },
                 { status: 400 }
-            );
+            ); 
         }
         console.log('bucketName', bucketName);
         const file = await downloadFile(filename, bucketName);
