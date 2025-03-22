@@ -1,7 +1,7 @@
 # 🚀 DevLabs
 
 ## 🌟 Overview
-**Devlabs** is a powerful **project management and development platform** designed to streamline software development workflows. It integrates various tools and technologies to enhance collaboration, automate tasks, and improve efficiency.
+**Devlabs** DevLabs is a project management and collaboration platform that integrates GitHub analytics, real-time issue tracking, and team contribution insights. It helps development teams streamline workflows, track progress, and optimize project management.
 
 ## ✨ Features
 - 🔍 **Project Tracking**: Monitor progress and tasks effortlessly.
