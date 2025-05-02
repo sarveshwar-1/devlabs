@@ -15,6 +15,8 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { name: "Home", href: "/dashboard", icon: Home },
+  { name: "Departments", href: "/departments", icon: Home },
+
 ];
 
 export function MainNav() {

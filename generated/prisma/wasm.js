@@ -126,18 +126,25 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   role: 'role',
+  rollNumber: 'rollNumber',
   classId: 'classId'
 };
 
 exports.Prisma.DepartmentScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  name: 'name',
+  totalSemesters: 'totalSemesters'
+};
+
+exports.Prisma.BatchScalarFieldEnum = {
+  id: 'id',
+  departmentId: 'departmentId',
+  graduationYear: 'graduationYear'
 };
 
 exports.Prisma.ClassScalarFieldEnum = {
   id: 'id',
-  departmentId: 'departmentId',
-  year: 'year',
+  batchId: 'batchId',
   section: 'section'
 };
 
@@ -145,7 +152,7 @@ exports.Prisma.SubjectScalarFieldEnum = {
   id: 'id',
   name: 'name',
   departmentId: 'departmentId',
-  year: 'year'
+  semester: 'semester'
 };
 
 exports.Prisma.TeachingAssignmentScalarFieldEnum = {
@@ -248,6 +255,7 @@ exports.TitleStatus = exports.$Enums.TitleStatus = {
 exports.Prisma.ModelName = {
   User: 'User',
   Department: 'Department',
+  Batch: 'Batch',
   Class: 'Class',
   Subject: 'Subject',
   TeachingAssignment: 'TeachingAssignment',

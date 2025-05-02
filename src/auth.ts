@@ -2,6 +2,12 @@ import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import { compare } from 'bcryptjs'
+
+declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
+}
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -31,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if(!passwordMatch) {
             throw new Error('Invalid password')
         }
-        const userData = { id: user.id, name: user.name, email: user.email }
+        const userData = { id: user.id, name: user.name, email: user.email, role: user.role }
 
         return userData
       }
@@ -44,6 +50,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({session, token}) {
       if(token?.sub){
         session.user.id = token.sub;
+        session.user.role = token.role as string | undefined;
       }
       return session
     },
@@ -51,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({token, user}) {
       if(user){
         token.sub = user.id
+        token.role = user.role
       }
       return token;
     },
