@@ -4,7 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, LucideIcon } from "lucide-react";
+import {
+  Home,
+  Users,
+  FolderGit2,
+  School,
+  LucideIcon,
+  FileCheck2,
+  Users2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 
 type NavItem = {
@@ -13,22 +21,42 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-const navItems: NavItem[] = [
-  { name: "Home", href: "/dashboard", icon: Home },
-  { name: "Departments", href: "/departments", icon: Home },
+type UserRole = "STUDENT" | "STAFF" | "ADMIN";
 
-];
+const navItemsByRole: Record<UserRole, NavItem[]> = {
+  ADMIN: [
+    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "Departments", href: "/admin/departments", icon: School },
+    { name: "Staffs", href: "/staffs", icon: Users },
+    { name: "Reviews", href: "/reviews", icon: FileCheck2 },
+  ],
+  STAFF: [
+    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "Projects", href: "/projects", icon: FolderGit2 },
+    { name: "Evaluate", href: "/evaluate", icon: FileCheck2 },
+  ],
+  STUDENT: [
+    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "Teams", href: "/teams", icon: Users2 },
+    { name: "Projects", href: "/projects", icon: FolderGit2 },
+  ],
+};
 
 export function MainNav() {
   const pathname = usePathname();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status !== "loading") {
       setLoading(false);
+      const role = session?.user?.role as UserRole;
+      if (role && navItemsByRole[role]) {
+        setNavItems(navItemsByRole[role]);
+      }
     }
-  }, [status]);
+  }, [status, session]);
 
   return (
     <div className="fixed top-14 left-0 flex h-[calc(100%-3.5rem)] w-[80px] flex-col z-20 bg-background border-r">
@@ -63,4 +91,3 @@ export function MainNav() {
     </div>
   );
 }
-

@@ -33,7 +33,7 @@ import {
           {classes.map((classItem) => (
             <TableRow key={classItem.id}>
               <TableCell>
-                <Link href={`/classes/${classItem.id}`} className="text-blue-500 hover:underline">
+                <Link href={`/admin/classes/${classItem.id}`} className="text-blue-500 hover:underline">
                   {classItem.section}
                 </Link>
               </TableCell>

@@ -55,7 +55,7 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
           key={dept.id}
           className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border"
         >
-          <Link href={`/departments/${dept.name}`} passHref>
+          <Link href={`/admin/departments/${dept.name}`} passHref>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium flex items-center gap-2">
                 <Building className="h-4 w-4 text-primary" />

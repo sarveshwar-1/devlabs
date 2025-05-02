@@ -61,7 +61,7 @@ export function BatchList({ departmentName, onEdit }: BatchListProps) {
           key={batch.id}
           className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border"
         >
-          <Link href={`/departments/${batch.department.name}/${batch.graduationYear}`} passHref>
+          <Link href={`/admin/departments/${batch.department.name}/${batch.graduationYear}`} passHref>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" />
