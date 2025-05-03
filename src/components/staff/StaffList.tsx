@@ -3,35 +3,35 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import type { Student } from "@/types"
+import type { Staff } from "@/types"
 import { DeleteConfirmationModal } from "@/components/deleteConfirmationModal"
 import { Edit, Trash2 } from "lucide-react"
 
-interface StudentListProps {
-  students: Student[]
-  onEdit: (student: Student) => void
-  onDelete: (studentId: string) => void
+interface StaffListProps {
+  staffMembers: Staff[]
+  onEdit: (staff: Staff) => void
+  onDelete: (staffId: string) => void
 }
 
-export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
+export function StaffList({ staffMembers, onEdit, onDelete }: StaffListProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null)
+  const [staffToDelete, setStaffToDelete] = useState<Staff | null>(null)
 
-  const handleDeleteClick = (student: Student) => {
-    setStudentToDelete(student)
+  const handleDeleteClick = (staff: Staff) => {
+    setStaffToDelete(staff)
     setDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = () => {
-    if (studentToDelete) {
-      onDelete(studentToDelete.id)
+    if (staffToDelete) {
+      onDelete(staffToDelete.id)
       setDeleteModalOpen(false)
-      setStudentToDelete(null)
+      setStaffToDelete(null)
     }
   }
 
-  if (students.length === 0) {
-    return <p className="text-center py-6 text-muted-foreground">No students found in this class</p>
+  if (staffMembers.length === 0) {
+    return <p className="text-center py-6 text-muted-foreground">No staff members found</p>
   }
 
   return (
@@ -42,25 +42,23 @@ export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
             <TableRow>
               <TableHead className="font-medium">Name</TableHead>
               <TableHead className="font-medium">Email</TableHead>
-              <TableHead className="font-medium">Roll Number</TableHead>
               <TableHead className="text-right font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => (
-              <TableRow key={student.id} className="hover:bg-muted/50">
-                <TableCell className="font-medium">{student.name}</TableCell>
-                <TableCell>{student.email}</TableCell>
-                <TableCell>{student.rollNumber}</TableCell>
+            {staffMembers.map((staff) => (
+              <TableRow key={staff.id} className="hover:bg-muted/50">
+                <TableCell className="font-medium">{staff.name}</TableCell>
+                <TableCell>{staff.email}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(student)} className="h-8 w-8 p-0 mr-2">
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(staff)} className="h-8 w-8 p-0 mr-2">
                     <Edit className="h-4 w-4" />
                     <span className="sr-only">Edit</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDeleteClick(student)}
+                    onClick={() => handleDeleteClick(staff)}
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -73,13 +71,13 @@ export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
         </Table>
       </div>
 
-      {studentToDelete && (
+      {staffToDelete && (
         <DeleteConfirmationModal
           isOpen={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
           onConfirm={handleConfirmDelete}
-          title="Delete Student"
-          description={`Are you sure you want to delete ${studentToDelete.name}? This action cannot be undone.`}
+          title="Delete Staff Member"
+          description={`Are you sure you want to delete ${staffToDelete.name}? This action cannot be undone.`}
         />
       )}
     </>

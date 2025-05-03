@@ -2,26 +2,24 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Student } from '@/types';
+import { Staff } from '@/types';
 
-interface StudentUpdateData {
+interface StaffUpdateData {
   name: string;
   email: string;
-  rollNumber: string;
   password?: string;
 }
 
-interface StudentEditModalProps {
+interface StaffEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  student: Student;
+  staff: Staff;
 }
 
-export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEditModalProps) {
-  const [name, setName] = useState(student.name);
-  const [email, setEmail] = useState(student.email);
-  const [rollNumber, setRollNumber] = useState(student.rollNumber);
+export function StaffEditModal({ isOpen, onClose, onSave, staff }: StaffEditModalProps) {
+  const [name, setName] = useState(staff.name);
+  const [email, setEmail] = useState(staff.email);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -29,18 +27,18 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
     e.preventDefault();
     setError(null);
     try {
-      const updateData: StudentUpdateData = { name, email, rollNumber };
+      const updateData: StaffUpdateData = { name, email };
       if (password) {
         updateData.password = password;
       }
-      const response = await fetch(`/api/admin/students/${student.id}`, {
+      const response = await fetch(`/api/admin/staff/${staff.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update student');
+        throw new Error(errorData.error || 'Failed to update staff');
       }
       onSave();
       onClose();
@@ -53,7 +51,7 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Student</DialogTitle>
+          <DialogTitle>Edit Staff</DialogTitle>
         </DialogHeader>
         {error && <p className="text-red-500 mb-2">{error}</p>}
         <div>
@@ -71,19 +69,13 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
             className="mb-2"
           />
           <Input
-            placeholder="Roll Number"
-            value={rollNumber}
-            onChange={(e) => setRollNumber(e.target.value)}
-            className="mb-2"
-          />
-          <Input
             placeholder="New Password (optional)"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mb-4"
           />
-          <Button onClick={handleSubmit}>Update Student</Button>
+          <Button onClick={handleSubmit}>Update Staff</Button>
         </div>
       </DialogContent>
     </Dialog>

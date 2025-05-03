@@ -2,46 +2,33 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Student } from '@/types';
 
-interface StudentUpdateData {
-  name: string;
-  email: string;
-  rollNumber: string;
-  password?: string;
-}
-
-interface StudentEditModalProps {
+interface StaffCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  student: Student;
 }
 
-export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEditModalProps) {
-  const [name, setName] = useState(student.name);
-  const [email, setEmail] = useState(student.email);
-  const [rollNumber, setRollNumber] = useState(student.rollNumber);
-  const [password, setPassword] = useState('');
+export function StaffCreateModal({ isOpen, onClose, onSave }: StaffCreateModalProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const updateData: StudentUpdateData = { name, email, rollNumber };
-      if (password) {
-        updateData.password = password;
-      }
-      const response = await fetch(`/api/admin/students/${student.id}`, {
-        method: 'PUT',
+      const response = await fetch('/api/admin/staff', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
+        body: JSON.stringify({ name, email }),
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update student');
+        throw new Error(errorData.error || 'Failed to create staff');
       }
+      setName('');
+      setEmail('');
       onSave();
       onClose();
     } catch (err: unknown) {
@@ -53,7 +40,7 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Student</DialogTitle>
+          <DialogTitle>Add New Staff</DialogTitle>
         </DialogHeader>
         {error && <p className="text-red-500 mb-2">{error}</p>}
         <div>
@@ -68,22 +55,9 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mb-2"
-          />
-          <Input
-            placeholder="Roll Number"
-            value={rollNumber}
-            onChange={(e) => setRollNumber(e.target.value)}
-            className="mb-2"
-          />
-          <Input
-            placeholder="New Password (optional)"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             className="mb-4"
           />
-          <Button onClick={handleSubmit}>Update Student</Button>
+          <Button onClick={handleSubmit}>Create Staff</Button>
         </div>
       </DialogContent>
     </Dialog>

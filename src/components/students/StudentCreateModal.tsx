@@ -20,7 +20,7 @@ export function StudentCreateModal({ isOpen, onClose, onSave, classId }: Student
     e.preventDefault();
     setError(null);
     try {
-      const response = await fetch('/api/students', {
+      const response = await fetch('/api/admin/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, rollNumber, classId }),

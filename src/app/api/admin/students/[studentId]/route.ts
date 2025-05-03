@@ -1,11 +1,17 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
+import { getSession } from '@/lib/getSession';
 
 export async function PUT(
   request: Request,
   { params }: { params: { studentId: string } }
 ) {
+  const session = await getSession();
+  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const param = await params
   const { studentId } = param;
   try {
@@ -38,6 +44,11 @@ export async function DELETE(
   request: Request,
   { params }: { params: { studentId: string } }
 ) {
+  const session = await getSession();
+  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   const param = await params
   const { studentId } = param;
   try {

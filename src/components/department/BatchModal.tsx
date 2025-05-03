@@ -27,7 +27,7 @@ export function BatchModal({ isOpen, onClose, departmentName, batch, onSave }: B
 
     try {
       const method = batch ? 'PUT' : 'POST';
-      const url = batch ? `/api/departments/batches/${batch.id}` : '/api/departments/batches';
+      const url = batch ? `/api/admin/departments/batches/${batch.id}` : '/api/admin/departments/batches';
       const body = batch ? { graduationYear: year } : { departmentName, graduationYear: year };
       const response = await fetch(url, {
         method,

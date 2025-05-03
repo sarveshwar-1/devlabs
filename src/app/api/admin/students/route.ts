@@ -1,8 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
+import { getSession } from '@/lib/getSession';
 
 export async function GET(request: Request) {
+  const session = await getSession();
+  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   const { searchParams } = new URL(request.url);
   const classId = searchParams.get('classId');
 
@@ -31,6 +37,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
   try {
     const { name, email, rollNumber, classId } = await request.json();
     if (!name || !email || !rollNumber || !classId) {

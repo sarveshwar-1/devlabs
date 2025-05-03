@@ -21,6 +21,7 @@ export interface Class {
 
 export interface ClassWithStudents extends Class {
   totalStudents: number;
+  batchId: string;
 }
 
 export interface Student {
@@ -29,3 +30,9 @@ export interface Student {
   email: string;
   rollNumber: string;
 }
+
+export type Staff = {
+  id: string;
+  name: string;
+  email: string;
+};

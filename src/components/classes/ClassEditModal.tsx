@@ -29,7 +29,7 @@ export function ClassEditModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/classes/${classItem.id}`, {
+      const response = await fetch(`/api/admin/classes/${classItem.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section }),

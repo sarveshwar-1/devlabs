@@ -27,8 +27,8 @@ export default function ClassPage() {
     async function fetchData() {
       try {
         const [classResponse, studentsResponse] = await Promise.all([
-          fetch(`/api/classes/${classId}`),
-          fetch(`/api/students?classId=${classId}`),
+          fetch(`/api/admin/classes/${classId}`),
+          fetch(`/api/admin/students?classId=${classId}`),
         ]);
         if (!classResponse.ok || !studentsResponse.ok) {
           throw new Error('Failed to fetch data');
@@ -47,7 +47,7 @@ export default function ClassPage() {
   }, [classId]);
 
   const handleStudentAddedOrUpdated = () => {
-    fetch(`/api/students?classId=${classId}`)
+    fetch(`/api/admin/students?classId=${classId}`)
       .then((res) => res.json())
       .then((data) => setStudents(data))
       .catch((err) => setError(err.message));
@@ -60,7 +60,7 @@ export default function ClassPage() {
 
   const handleDelete = async (studentId: string) => {
     try {
-      const response = await fetch(`/api/students/${studentId}`, {
+      const response = await fetch(`/api/admin/students/${studentId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

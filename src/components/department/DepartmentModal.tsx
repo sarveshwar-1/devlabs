@@ -22,7 +22,7 @@ export function DepartmentModal({ isOpen, onClose, department, onSave }: Departm
     e.preventDefault();
     try {
       const method = department ? 'PUT' : 'POST';
-      const url = department ? `/api/departments/${department.id}` : '/api/departments';
+      const url = department ? `/api/admin/departments/${department.id}` : '/api/admin/departments';
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },

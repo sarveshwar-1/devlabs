@@ -25,10 +25,10 @@ type UserRole = "STUDENT" | "STAFF" | "ADMIN";
 
 const navItemsByRole: Record<UserRole, NavItem[]> = {
   ADMIN: [
-    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "Home", href: "/admin/dashboard", icon: Home },
     { name: "Departments", href: "/admin/departments", icon: School },
-    { name: "Staffs", href: "/staffs", icon: Users },
-    { name: "Reviews", href: "/reviews", icon: FileCheck2 },
+    { name: "Staffs", href: "/admin/staff", icon: Users },
+    { name: "Reviews", href: "/admin/reviews", icon: FileCheck2 },
   ],
   STAFF: [
     { name: "Home", href: "/dashboard", icon: Home },

@@ -31,7 +31,7 @@ export function ClassCreateModal({
     e.preventDefault();
     try {
       const response = await fetch(
-        `/api/classes?departmentName=${encodeURIComponent(
+        `/api/admin/classes?departmentName=${encodeURIComponent(
           departmentName
         )}&graduationYear=${graduationYear}`,
         {

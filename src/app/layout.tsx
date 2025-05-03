@@ -4,6 +4,7 @@ import "./globals.css";
 import HeaderNav from "@/components/nav/headerNav";
 import { Providers } from "@/providers";
 import { MainNav } from "@/components/nav/mainNav";
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           <main className="flex-1 mt-14 h-[94vh] overscroll-contain ml-28 m-6">
             {children}
           </main>
+          <Toaster />
         </Providers>
       </body>
     </html>
