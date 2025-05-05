@@ -15,12 +15,17 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!name || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+    const rollNumber = email.split('@')[0];
+    if (!rollNumber) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
 
     const staff = await prisma.user.update({
       where: { id },
       data: {
         name,
         email,
+        rollNumber,
       },
     });
     return NextResponse.json(staff);

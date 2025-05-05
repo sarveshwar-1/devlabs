@@ -22,7 +22,6 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email);
   const [rollNumber, setRollNumber] = useState(student.rollNumber);
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,9 +29,6 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
     setError(null);
     try {
       const updateData: StudentUpdateData = { name, email, rollNumber };
-      if (password) {
-        updateData.password = password;
-      }
       const response = await fetch(`/api/admin/students/${student.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -75,13 +71,6 @@ export function StudentEditModal({ isOpen, onClose, onSave, student }: StudentEd
             value={rollNumber}
             onChange={(e) => setRollNumber(e.target.value)}
             className="mb-2"
-          />
-          <Input
-            placeholder="New Password (optional)"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mb-4"
           />
           <Button onClick={handleSubmit}>Update Student</Button>
         </div>

@@ -18,7 +18,6 @@ export default function BatchClassesPage() {
   const graduationYear = params.graduationYear as string
   const [classes, setClasses] = useState<ClassWithStudents[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAssignStaffModalOpen, setIsAssignStaffModalOpen] = useState(false)
@@ -38,7 +37,6 @@ export default function BatchClassesPage() {
       setClasses(data)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred"
-      setError(errorMessage)
       toast("Failed to fetch classes", {
         description: errorMessage,
       })

@@ -7,7 +7,7 @@ import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription }
 import { Pencil, Trash2, Building } from "lucide-react"
 import Link from "next/link"
 import type { Department } from "@/types"
-import { DeleteConfirmationModal } from "@/components/deleteConfirmationModal"
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal"
 import { SkeletonCardGrid } from "@/components/ui/skeleton-card-grid"
 
 interface DepartmentListProps {

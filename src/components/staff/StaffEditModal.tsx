@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,6 @@ import { Staff } from '@/types';
 interface StaffUpdateData {
   name: string;
   email: string;
-  password?: string;
 }
 
 interface StaffEditModalProps {
@@ -20,17 +19,20 @@ interface StaffEditModalProps {
 export function StaffEditModal({ isOpen, onClose, onSave, staff }: StaffEditModalProps) {
   const [name, setName] = useState(staff.name);
   const [email, setEmail] = useState(staff.email);
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Sync state with staff prop when it changes
+  useEffect(() => {
+    setName(staff.name);
+    setEmail(staff.email);
+    setError(null); // Reset error when staff changes
+  }, [staff]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       const updateData: StaffUpdateData = { name, email };
-      if (password) {
-        updateData.password = password;
-      }
       const response = await fetch(`/api/admin/staff/${staff.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -66,13 +68,6 @@ export function StaffEditModal({ isOpen, onClose, onSave, staff }: StaffEditModa
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mb-2"
-          />
-          <Input
-            placeholder="New Password (optional)"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             className="mb-4"
           />
           <Button onClick={handleSubmit}>Update Staff</Button>

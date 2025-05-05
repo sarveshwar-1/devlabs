@@ -18,10 +18,16 @@ export function StaffCreateModal({ isOpen, onClose, onSave }: StaffCreateModalPr
     e.preventDefault();
     setError(null);
     try {
+      // Extract roll number from email (everything before @)
+      const rollNumber = email.split('@')[0];
+      if (!rollNumber) {
+        throw new Error('Invalid email format');
+      }
+
       const response = await fetch('/api/admin/staff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, rollNumber }),
       });
       if (!response.ok) {
         const errorData = await response.json();

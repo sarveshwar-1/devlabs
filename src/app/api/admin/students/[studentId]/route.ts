@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { hash } from 'bcryptjs';
 import { getSession } from '@/lib/getSession';
 
 export async function PUT(
@@ -15,7 +14,7 @@ export async function PUT(
   const param = await params
   const { studentId } = param;
   try {
-    const { name, email, rollNumber, password } = await request.json();
+    const { name, email, rollNumber } = await request.json();
     const updateData: { 
       name?: string; 
       email?: string; 
@@ -26,9 +25,6 @@ export async function PUT(
       email, 
       rollNumber 
     };
-    if (password) {
-      updateData.password = await hash(password, 10);
-    }
     const student = await prisma.user.update({
       where: { id: studentId, role: 'STUDENT' },
       data: updateData,

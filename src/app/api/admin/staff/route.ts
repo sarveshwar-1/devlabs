@@ -8,7 +8,6 @@ export async function GET() {
   if (!session?.user?.id || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   try {
     const staffMembers = await prisma.user.findMany({
       where: {
@@ -18,6 +17,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        rollNumber: true,
       },
     });
     return NextResponse.json(staffMembers);
@@ -34,8 +34,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, email } = await request.json();
-    if (!name || !email) {
+    const { name, email, rollNumber } = await request.json();
+    if (!name || !email || !rollNumber) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
+        rollNumber,
         password: hashedPassword,
         role: 'STAFF',
       },

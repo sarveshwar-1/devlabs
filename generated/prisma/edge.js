@@ -263,7 +263,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/sarveshwar/developments/devlabs/generated/prisma",
+      "value": "D:\\Coding\\Devlabs\\devlabs\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -272,12 +272,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/sarveshwar/developments/devlabs/prisma/schema.prisma",
+    "sourceFilePath": "D:\\Coding\\Devlabs\\devlabs\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

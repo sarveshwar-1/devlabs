@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import type { ClassWithStudents } from "@/types"
-import { DeleteConfirmationModal } from "@/components/deleteConfirmationModal"
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal"
 import { Edit, Trash2, UserPlus } from "lucide-react"
 import { SkeletonTable } from "@/components/ui/skeleton-table"
 

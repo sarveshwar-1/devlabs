@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card"
 import { Pencil, Trash2, Calendar } from "lucide-react"
 import Link from "next/link"
-import { DeleteConfirmationModal } from "@/components/deleteConfirmationModal"
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal"
 import { SkeletonCardGrid } from "@/components/ui/skeleton-card-grid"
 
 interface Batch {
