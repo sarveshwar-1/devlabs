@@ -14,22 +14,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text", placeholder:"username" },
         password: {  label: "Password", type: "password" }
       },
       authorize : async (credentials) => {
-        const email = credentials.email as string | undefined
+        const username = credentials.username as string | undefined
         const password = credentials.password as string | undefined
 
-        if(!email || !password) {
+        if(!username || !password) {
           throw new CredentialsSignin('Please fill all the fields') 
         }
         const user = await prisma.user.findUnique({
-                where: { email },
+                where: { rollNumber: username },
             })
 
         if (!user) {
-                throw new Error('User does not exist')
+                return null;
             }
             
         const passwordMatch = await compare(password, user.password)
@@ -37,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if(!passwordMatch) {
             throw new Error('Invalid password')
         }
-        const userData = { id: user.id, name: user.name, email: user.email, role: user.role }
+        const userData = { id: user.id, name: user.name, username: user.rollNumber, role: user.role }
 
         return userData
       }

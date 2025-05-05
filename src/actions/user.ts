@@ -7,11 +7,11 @@ import { hash } from 'bcryptjs'
 const register = async (formdata: FormData) => {
   try {
     const name = formdata.get('name') as string | undefined
-    const email = formdata.get('email') as string | undefined
+    const username = formdata.get('username') as string | undefined
     const password = formdata.get('password') as string | undefined
     const role = formdata.get('role') as string | undefined
 
-    if (!name || !email || !password || !role) {
+    if (!name || !username || !password || !role) {
       return { success: false, error: 'Please fill all the fields' }
     }
 
@@ -22,7 +22,7 @@ const register = async (formdata: FormData) => {
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { rollNumber: username },
     })
 
     if (existingUser) {
@@ -33,7 +33,7 @@ const register = async (formdata: FormData) => {
     await prisma.user.create({
       data: {
         name,
-        email,
+        rollNumber: username,
         password: hashedPassword,
         role: role as 'STUDENT' | 'STAFF' | 'ADMIN',
       },
@@ -41,7 +41,7 @@ const register = async (formdata: FormData) => {
 
     const result = await signIn('credentials', {
       redirect: false,
-      email,
+      username,
       password,
     })
 
@@ -56,16 +56,16 @@ const register = async (formdata: FormData) => {
 }
 
 const login = async (formdata: FormData) => {
-  const email = formdata.get('email') as string | undefined
+  const username = formdata.get('username') as string | undefined
   const password = formdata.get('password') as string | undefined
 
-  if (!email || !password) {
+  if (!username || !password) {
     return { success: false, error: 'Please fill all the fields' }
   }
 
   const result = await signIn('credentials', {
     redirect: false,
-    email,
+    username,
     password,
   })
 

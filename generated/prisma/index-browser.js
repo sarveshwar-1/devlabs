@@ -192,7 +192,17 @@ exports.Prisma.ProjectSubjectScalarFieldEnum = {
 exports.Prisma.ReviewScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  deadline: 'deadline'
+  startDate: 'startDate',
+  endDate: 'endDate',
+  departmentId: 'departmentId',
+  batchId: 'batchId',
+  classId: 'classId',
+  semester: 'semester'
+};
+
+exports.Prisma.ReviewSubjectScalarFieldEnum = {
+  reviewId: 'reviewId',
+  subjectId: 'subjectId'
 };
 
 exports.Prisma.RubricScalarFieldEnum = {
@@ -264,6 +274,7 @@ exports.Prisma.ModelName = {
   Project: 'Project',
   ProjectSubject: 'ProjectSubject',
   Review: 'Review',
+  ReviewSubject: 'ReviewSubject',
   Rubric: 'Rubric',
   Submission: 'Submission',
   Evaluation: 'Evaluation',

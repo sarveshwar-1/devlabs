@@ -69,6 +69,11 @@ export type ProjectSubject = $Result.DefaultSelection<Prisma.$ProjectSubjectPayl
  */
 export type Review = $Result.DefaultSelection<Prisma.$ReviewPayload>
 /**
+ * Model ReviewSubject
+ * 
+ */
+export type ReviewSubject = $Result.DefaultSelection<Prisma.$ReviewSubjectPayload>
+/**
  * Model Rubric
  * 
  */
@@ -354,6 +359,16 @@ export class PrismaClient<
     * ```
     */
   get review(): Prisma.ReviewDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.reviewSubject`: Exposes CRUD operations for the **ReviewSubject** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ReviewSubjects
+    * const reviewSubjects = await prisma.reviewSubject.findMany()
+    * ```
+    */
+  get reviewSubject(): Prisma.ReviewSubjectDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.rubric`: Exposes CRUD operations for the **Rubric** model.
@@ -845,6 +860,7 @@ export namespace Prisma {
     Project: 'Project',
     ProjectSubject: 'ProjectSubject',
     Review: 'Review',
+    ReviewSubject: 'ReviewSubject',
     Rubric: 'Rubric',
     Submission: 'Submission',
     Evaluation: 'Evaluation',
@@ -867,7 +883,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "department" | "batch" | "class" | "subject" | "teachingAssignment" | "group" | "groupMember" | "project" | "projectSubject" | "review" | "rubric" | "submission" | "evaluation" | "evaluationScore"
+      modelProps: "user" | "department" | "batch" | "class" | "subject" | "teachingAssignment" | "group" | "groupMember" | "project" | "projectSubject" | "review" | "reviewSubject" | "rubric" | "submission" | "evaluation" | "evaluationScore"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1685,6 +1701,80 @@ export namespace Prisma {
           }
         }
       }
+      ReviewSubject: {
+        payload: Prisma.$ReviewSubjectPayload<ExtArgs>
+        fields: Prisma.ReviewSubjectFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReviewSubjectFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReviewSubjectFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          findFirst: {
+            args: Prisma.ReviewSubjectFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReviewSubjectFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          findMany: {
+            args: Prisma.ReviewSubjectFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>[]
+          }
+          create: {
+            args: Prisma.ReviewSubjectCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          createMany: {
+            args: Prisma.ReviewSubjectCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReviewSubjectCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>[]
+          }
+          delete: {
+            args: Prisma.ReviewSubjectDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          update: {
+            args: Prisma.ReviewSubjectUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReviewSubjectDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReviewSubjectUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ReviewSubjectUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>[]
+          }
+          upsert: {
+            args: Prisma.ReviewSubjectUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewSubjectPayload>
+          }
+          aggregate: {
+            args: Prisma.ReviewSubjectAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReviewSubject>
+          }
+          groupBy: {
+            args: Prisma.ReviewSubjectGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReviewSubjectGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReviewSubjectCountArgs<ExtArgs>
+            result: $Utils.Optional<ReviewSubjectCountAggregateOutputType> | number
+          }
+        }
+      }
       Rubric: {
         payload: Prisma.$RubricPayload<ExtArgs>
         fields: Prisma.RubricFieldRefs
@@ -2076,6 +2166,7 @@ export namespace Prisma {
     project?: ProjectOmit
     projectSubject?: ProjectSubjectOmit
     review?: ReviewOmit
+    reviewSubject?: ReviewSubjectOmit
     rubric?: RubricOmit
     submission?: SubmissionOmit
     evaluation?: EvaluationOmit
@@ -2345,11 +2436,13 @@ export namespace Prisma {
   export type SubjectCountOutputType = {
     teachingAssignments: number
     projectSubjects: number
+    reviewSubjects: number
   }
 
   export type SubjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     teachingAssignments?: boolean | SubjectCountOutputTypeCountTeachingAssignmentsArgs
     projectSubjects?: boolean | SubjectCountOutputTypeCountProjectSubjectsArgs
+    reviewSubjects?: boolean | SubjectCountOutputTypeCountReviewSubjectsArgs
   }
 
   // Custom InputTypes
@@ -2375,6 +2468,13 @@ export namespace Prisma {
    */
   export type SubjectCountOutputTypeCountProjectSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProjectSubjectWhereInput
+  }
+
+  /**
+   * SubjectCountOutputType without action
+   */
+  export type SubjectCountOutputTypeCountReviewSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReviewSubjectWhereInput
   }
 
 
@@ -2463,11 +2563,13 @@ export namespace Prisma {
    */
 
   export type ReviewCountOutputType = {
+    reviewSubjects: number
     rubrics: number
     submissions: number
   }
 
   export type ReviewCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reviewSubjects?: boolean | ReviewCountOutputTypeCountReviewSubjectsArgs
     rubrics?: boolean | ReviewCountOutputTypeCountRubricsArgs
     submissions?: boolean | ReviewCountOutputTypeCountSubmissionsArgs
   }
@@ -2481,6 +2583,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the ReviewCountOutputType
      */
     select?: ReviewCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ReviewCountOutputType without action
+   */
+  export type ReviewCountOutputTypeCountReviewSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReviewSubjectWhereInput
   }
 
   /**
@@ -2743,10 +2852,10 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     name: string
-    email: string
+    email: string | null
     password: string
     role: $Enums.Role
-    rollNumber: string | null
+    rollNumber: string
     classId: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -2840,10 +2949,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      email: string
+      email: string | null
       password: string
       role: $Enums.Role
-      rollNumber: string | null
+      rollNumber: string
       classId: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -7297,6 +7406,7 @@ export namespace Prisma {
     department?: boolean | DepartmentDefaultArgs<ExtArgs>
     teachingAssignments?: boolean | Subject$teachingAssignmentsArgs<ExtArgs>
     projectSubjects?: boolean | Subject$projectSubjectsArgs<ExtArgs>
+    reviewSubjects?: boolean | Subject$reviewSubjectsArgs<ExtArgs>
     _count?: boolean | SubjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["subject"]>
 
@@ -7328,6 +7438,7 @@ export namespace Prisma {
     department?: boolean | DepartmentDefaultArgs<ExtArgs>
     teachingAssignments?: boolean | Subject$teachingAssignmentsArgs<ExtArgs>
     projectSubjects?: boolean | Subject$projectSubjectsArgs<ExtArgs>
+    reviewSubjects?: boolean | Subject$reviewSubjectsArgs<ExtArgs>
     _count?: boolean | SubjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SubjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7343,6 +7454,7 @@ export namespace Prisma {
       department: Prisma.$DepartmentPayload<ExtArgs>
       teachingAssignments: Prisma.$TeachingAssignmentPayload<ExtArgs>[]
       projectSubjects: Prisma.$ProjectSubjectPayload<ExtArgs>[]
+      reviewSubjects: Prisma.$ReviewSubjectPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7746,6 +7858,7 @@ export namespace Prisma {
     department<T extends DepartmentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DepartmentDefaultArgs<ExtArgs>>): Prisma__DepartmentClient<$Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     teachingAssignments<T extends Subject$teachingAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Subject$teachingAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeachingAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     projectSubjects<T extends Subject$projectSubjectsArgs<ExtArgs> = {}>(args?: Subset<T, Subject$projectSubjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectSubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviewSubjects<T extends Subject$reviewSubjectsArgs<ExtArgs> = {}>(args?: Subset<T, Subject$reviewSubjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8220,6 +8333,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProjectSubjectScalarFieldEnum | ProjectSubjectScalarFieldEnum[]
+  }
+
+  /**
+   * Subject.reviewSubjects
+   */
+  export type Subject$reviewSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    where?: ReviewSubjectWhereInput
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    cursor?: ReviewSubjectWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReviewSubjectScalarFieldEnum | ReviewSubjectScalarFieldEnum[]
   }
 
   /**
@@ -13607,46 +13744,94 @@ export namespace Prisma {
 
   export type AggregateReview = {
     _count: ReviewCountAggregateOutputType | null
+    _avg: ReviewAvgAggregateOutputType | null
+    _sum: ReviewSumAggregateOutputType | null
     _min: ReviewMinAggregateOutputType | null
     _max: ReviewMaxAggregateOutputType | null
+  }
+
+  export type ReviewAvgAggregateOutputType = {
+    semester: number | null
+  }
+
+  export type ReviewSumAggregateOutputType = {
+    semester: number | null
   }
 
   export type ReviewMinAggregateOutputType = {
     id: string | null
     name: string | null
-    deadline: Date | null
+    startDate: Date | null
+    endDate: Date | null
+    departmentId: string | null
+    batchId: string | null
+    classId: string | null
+    semester: number | null
   }
 
   export type ReviewMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    deadline: Date | null
+    startDate: Date | null
+    endDate: Date | null
+    departmentId: string | null
+    batchId: string | null
+    classId: string | null
+    semester: number | null
   }
 
   export type ReviewCountAggregateOutputType = {
     id: number
     name: number
-    deadline: number
+    startDate: number
+    endDate: number
+    departmentId: number
+    batchId: number
+    classId: number
+    semester: number
     _all: number
   }
 
 
+  export type ReviewAvgAggregateInputType = {
+    semester?: true
+  }
+
+  export type ReviewSumAggregateInputType = {
+    semester?: true
+  }
+
   export type ReviewMinAggregateInputType = {
     id?: true
     name?: true
-    deadline?: true
+    startDate?: true
+    endDate?: true
+    departmentId?: true
+    batchId?: true
+    classId?: true
+    semester?: true
   }
 
   export type ReviewMaxAggregateInputType = {
     id?: true
     name?: true
-    deadline?: true
+    startDate?: true
+    endDate?: true
+    departmentId?: true
+    batchId?: true
+    classId?: true
+    semester?: true
   }
 
   export type ReviewCountAggregateInputType = {
     id?: true
     name?: true
-    deadline?: true
+    startDate?: true
+    endDate?: true
+    departmentId?: true
+    batchId?: true
+    classId?: true
+    semester?: true
     _all?: true
   }
 
@@ -13688,6 +13873,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ReviewAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ReviewSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ReviewMinAggregateInputType
@@ -13718,6 +13915,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ReviewCountAggregateInputType | true
+    _avg?: ReviewAvgAggregateInputType
+    _sum?: ReviewSumAggregateInputType
     _min?: ReviewMinAggregateInputType
     _max?: ReviewMaxAggregateInputType
   }
@@ -13725,8 +13924,15 @@ export namespace Prisma {
   export type ReviewGroupByOutputType = {
     id: string
     name: string
-    deadline: Date
+    startDate: Date
+    endDate: Date
+    departmentId: string | null
+    batchId: string | null
+    classId: string | null
+    semester: number
     _count: ReviewCountAggregateOutputType | null
+    _avg: ReviewAvgAggregateOutputType | null
+    _sum: ReviewSumAggregateOutputType | null
     _min: ReviewMinAggregateOutputType | null
     _max: ReviewMaxAggregateOutputType | null
   }
@@ -13748,7 +13954,13 @@ export namespace Prisma {
   export type ReviewSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    deadline?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    departmentId?: boolean
+    batchId?: boolean
+    classId?: boolean
+    semester?: boolean
+    reviewSubjects?: boolean | Review$reviewSubjectsArgs<ExtArgs>
     rubrics?: boolean | Review$rubricsArgs<ExtArgs>
     submissions?: boolean | Review$submissionsArgs<ExtArgs>
     _count?: boolean | ReviewCountOutputTypeDefaultArgs<ExtArgs>
@@ -13757,23 +13969,39 @@ export namespace Prisma {
   export type ReviewSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    deadline?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    departmentId?: boolean
+    batchId?: boolean
+    classId?: boolean
+    semester?: boolean
   }, ExtArgs["result"]["review"]>
 
   export type ReviewSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    deadline?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    departmentId?: boolean
+    batchId?: boolean
+    classId?: boolean
+    semester?: boolean
   }, ExtArgs["result"]["review"]>
 
   export type ReviewSelectScalar = {
     id?: boolean
     name?: boolean
-    deadline?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    departmentId?: boolean
+    batchId?: boolean
+    classId?: boolean
+    semester?: boolean
   }
 
-  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "deadline", ExtArgs["result"]["review"]>
+  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "startDate" | "endDate" | "departmentId" | "batchId" | "classId" | "semester", ExtArgs["result"]["review"]>
   export type ReviewInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reviewSubjects?: boolean | Review$reviewSubjectsArgs<ExtArgs>
     rubrics?: boolean | Review$rubricsArgs<ExtArgs>
     submissions?: boolean | Review$submissionsArgs<ExtArgs>
     _count?: boolean | ReviewCountOutputTypeDefaultArgs<ExtArgs>
@@ -13784,13 +14012,19 @@ export namespace Prisma {
   export type $ReviewPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Review"
     objects: {
+      reviewSubjects: Prisma.$ReviewSubjectPayload<ExtArgs>[]
       rubrics: Prisma.$RubricPayload<ExtArgs>[]
       submissions: Prisma.$SubmissionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      deadline: Date
+      startDate: Date
+      endDate: Date
+      departmentId: string | null
+      batchId: string | null
+      classId: string | null
+      semester: number
     }, ExtArgs["result"]["review"]>
     composites: {}
   }
@@ -14185,6 +14419,7 @@ export namespace Prisma {
    */
   export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    reviewSubjects<T extends Review$reviewSubjectsArgs<ExtArgs> = {}>(args?: Subset<T, Review$reviewSubjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     rubrics<T extends Review$rubricsArgs<ExtArgs> = {}>(args?: Subset<T, Review$rubricsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RubricPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     submissions<T extends Review$submissionsArgs<ExtArgs> = {}>(args?: Subset<T, Review$submissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubmissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -14218,7 +14453,12 @@ export namespace Prisma {
   interface ReviewFieldRefs {
     readonly id: FieldRef<"Review", 'String'>
     readonly name: FieldRef<"Review", 'String'>
-    readonly deadline: FieldRef<"Review", 'DateTime'>
+    readonly startDate: FieldRef<"Review", 'DateTime'>
+    readonly endDate: FieldRef<"Review", 'DateTime'>
+    readonly departmentId: FieldRef<"Review", 'String'>
+    readonly batchId: FieldRef<"Review", 'String'>
+    readonly classId: FieldRef<"Review", 'String'>
+    readonly semester: FieldRef<"Review", 'Int'>
   }
     
 
@@ -14607,6 +14847,30 @@ export namespace Prisma {
   }
 
   /**
+   * Review.reviewSubjects
+   */
+  export type Review$reviewSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    where?: ReviewSubjectWhereInput
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    cursor?: ReviewSubjectWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReviewSubjectScalarFieldEnum | ReviewSubjectScalarFieldEnum[]
+  }
+
+  /**
    * Review.rubrics
    */
   export type Review$rubricsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14670,6 +14934,1033 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ReviewInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ReviewSubject
+   */
+
+  export type AggregateReviewSubject = {
+    _count: ReviewSubjectCountAggregateOutputType | null
+    _min: ReviewSubjectMinAggregateOutputType | null
+    _max: ReviewSubjectMaxAggregateOutputType | null
+  }
+
+  export type ReviewSubjectMinAggregateOutputType = {
+    reviewId: string | null
+    subjectId: string | null
+  }
+
+  export type ReviewSubjectMaxAggregateOutputType = {
+    reviewId: string | null
+    subjectId: string | null
+  }
+
+  export type ReviewSubjectCountAggregateOutputType = {
+    reviewId: number
+    subjectId: number
+    _all: number
+  }
+
+
+  export type ReviewSubjectMinAggregateInputType = {
+    reviewId?: true
+    subjectId?: true
+  }
+
+  export type ReviewSubjectMaxAggregateInputType = {
+    reviewId?: true
+    subjectId?: true
+  }
+
+  export type ReviewSubjectCountAggregateInputType = {
+    reviewId?: true
+    subjectId?: true
+    _all?: true
+  }
+
+  export type ReviewSubjectAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReviewSubject to aggregate.
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReviewSubjects to fetch.
+     */
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReviewSubjectWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReviewSubjects from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReviewSubjects.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ReviewSubjects
+    **/
+    _count?: true | ReviewSubjectCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReviewSubjectMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReviewSubjectMaxAggregateInputType
+  }
+
+  export type GetReviewSubjectAggregateType<T extends ReviewSubjectAggregateArgs> = {
+        [P in keyof T & keyof AggregateReviewSubject]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReviewSubject[P]>
+      : GetScalarType<T[P], AggregateReviewSubject[P]>
+  }
+
+
+
+
+  export type ReviewSubjectGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReviewSubjectWhereInput
+    orderBy?: ReviewSubjectOrderByWithAggregationInput | ReviewSubjectOrderByWithAggregationInput[]
+    by: ReviewSubjectScalarFieldEnum[] | ReviewSubjectScalarFieldEnum
+    having?: ReviewSubjectScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReviewSubjectCountAggregateInputType | true
+    _min?: ReviewSubjectMinAggregateInputType
+    _max?: ReviewSubjectMaxAggregateInputType
+  }
+
+  export type ReviewSubjectGroupByOutputType = {
+    reviewId: string
+    subjectId: string
+    _count: ReviewSubjectCountAggregateOutputType | null
+    _min: ReviewSubjectMinAggregateOutputType | null
+    _max: ReviewSubjectMaxAggregateOutputType | null
+  }
+
+  type GetReviewSubjectGroupByPayload<T extends ReviewSubjectGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReviewSubjectGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReviewSubjectGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReviewSubjectGroupByOutputType[P]>
+            : GetScalarType<T[P], ReviewSubjectGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReviewSubjectSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    reviewId?: boolean
+    subjectId?: boolean
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviewSubject"]>
+
+  export type ReviewSubjectSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    reviewId?: boolean
+    subjectId?: boolean
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviewSubject"]>
+
+  export type ReviewSubjectSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    reviewId?: boolean
+    subjectId?: boolean
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviewSubject"]>
+
+  export type ReviewSubjectSelectScalar = {
+    reviewId?: boolean
+    subjectId?: boolean
+  }
+
+  export type ReviewSubjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"reviewId" | "subjectId", ExtArgs["result"]["reviewSubject"]>
+  export type ReviewSubjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }
+  export type ReviewSubjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }
+  export type ReviewSubjectIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    review?: boolean | ReviewDefaultArgs<ExtArgs>
+    subject?: boolean | SubjectDefaultArgs<ExtArgs>
+  }
+
+  export type $ReviewSubjectPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReviewSubject"
+    objects: {
+      review: Prisma.$ReviewPayload<ExtArgs>
+      subject: Prisma.$SubjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      reviewId: string
+      subjectId: string
+    }, ExtArgs["result"]["reviewSubject"]>
+    composites: {}
+  }
+
+  type ReviewSubjectGetPayload<S extends boolean | null | undefined | ReviewSubjectDefaultArgs> = $Result.GetResult<Prisma.$ReviewSubjectPayload, S>
+
+  type ReviewSubjectCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReviewSubjectFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReviewSubjectCountAggregateInputType | true
+    }
+
+  export interface ReviewSubjectDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReviewSubject'], meta: { name: 'ReviewSubject' } }
+    /**
+     * Find zero or one ReviewSubject that matches the filter.
+     * @param {ReviewSubjectFindUniqueArgs} args - Arguments to find a ReviewSubject
+     * @example
+     * // Get one ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReviewSubjectFindUniqueArgs>(args: SelectSubset<T, ReviewSubjectFindUniqueArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ReviewSubject that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReviewSubjectFindUniqueOrThrowArgs} args - Arguments to find a ReviewSubject
+     * @example
+     * // Get one ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReviewSubjectFindUniqueOrThrowArgs>(args: SelectSubset<T, ReviewSubjectFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ReviewSubject that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectFindFirstArgs} args - Arguments to find a ReviewSubject
+     * @example
+     * // Get one ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReviewSubjectFindFirstArgs>(args?: SelectSubset<T, ReviewSubjectFindFirstArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ReviewSubject that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectFindFirstOrThrowArgs} args - Arguments to find a ReviewSubject
+     * @example
+     * // Get one ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReviewSubjectFindFirstOrThrowArgs>(args?: SelectSubset<T, ReviewSubjectFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ReviewSubjects that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ReviewSubjects
+     * const reviewSubjects = await prisma.reviewSubject.findMany()
+     * 
+     * // Get first 10 ReviewSubjects
+     * const reviewSubjects = await prisma.reviewSubject.findMany({ take: 10 })
+     * 
+     * // Only select the `reviewId`
+     * const reviewSubjectWithReviewIdOnly = await prisma.reviewSubject.findMany({ select: { reviewId: true } })
+     * 
+     */
+    findMany<T extends ReviewSubjectFindManyArgs>(args?: SelectSubset<T, ReviewSubjectFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ReviewSubject.
+     * @param {ReviewSubjectCreateArgs} args - Arguments to create a ReviewSubject.
+     * @example
+     * // Create one ReviewSubject
+     * const ReviewSubject = await prisma.reviewSubject.create({
+     *   data: {
+     *     // ... data to create a ReviewSubject
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReviewSubjectCreateArgs>(args: SelectSubset<T, ReviewSubjectCreateArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ReviewSubjects.
+     * @param {ReviewSubjectCreateManyArgs} args - Arguments to create many ReviewSubjects.
+     * @example
+     * // Create many ReviewSubjects
+     * const reviewSubject = await prisma.reviewSubject.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReviewSubjectCreateManyArgs>(args?: SelectSubset<T, ReviewSubjectCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ReviewSubjects and returns the data saved in the database.
+     * @param {ReviewSubjectCreateManyAndReturnArgs} args - Arguments to create many ReviewSubjects.
+     * @example
+     * // Create many ReviewSubjects
+     * const reviewSubject = await prisma.reviewSubject.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ReviewSubjects and only return the `reviewId`
+     * const reviewSubjectWithReviewIdOnly = await prisma.reviewSubject.createManyAndReturn({
+     *   select: { reviewId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReviewSubjectCreateManyAndReturnArgs>(args?: SelectSubset<T, ReviewSubjectCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ReviewSubject.
+     * @param {ReviewSubjectDeleteArgs} args - Arguments to delete one ReviewSubject.
+     * @example
+     * // Delete one ReviewSubject
+     * const ReviewSubject = await prisma.reviewSubject.delete({
+     *   where: {
+     *     // ... filter to delete one ReviewSubject
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReviewSubjectDeleteArgs>(args: SelectSubset<T, ReviewSubjectDeleteArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ReviewSubject.
+     * @param {ReviewSubjectUpdateArgs} args - Arguments to update one ReviewSubject.
+     * @example
+     * // Update one ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReviewSubjectUpdateArgs>(args: SelectSubset<T, ReviewSubjectUpdateArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ReviewSubjects.
+     * @param {ReviewSubjectDeleteManyArgs} args - Arguments to filter ReviewSubjects to delete.
+     * @example
+     * // Delete a few ReviewSubjects
+     * const { count } = await prisma.reviewSubject.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReviewSubjectDeleteManyArgs>(args?: SelectSubset<T, ReviewSubjectDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReviewSubjects.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ReviewSubjects
+     * const reviewSubject = await prisma.reviewSubject.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReviewSubjectUpdateManyArgs>(args: SelectSubset<T, ReviewSubjectUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ReviewSubjects and returns the data updated in the database.
+     * @param {ReviewSubjectUpdateManyAndReturnArgs} args - Arguments to update many ReviewSubjects.
+     * @example
+     * // Update many ReviewSubjects
+     * const reviewSubject = await prisma.reviewSubject.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ReviewSubjects and only return the `reviewId`
+     * const reviewSubjectWithReviewIdOnly = await prisma.reviewSubject.updateManyAndReturn({
+     *   select: { reviewId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ReviewSubjectUpdateManyAndReturnArgs>(args: SelectSubset<T, ReviewSubjectUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ReviewSubject.
+     * @param {ReviewSubjectUpsertArgs} args - Arguments to update or create a ReviewSubject.
+     * @example
+     * // Update or create a ReviewSubject
+     * const reviewSubject = await prisma.reviewSubject.upsert({
+     *   create: {
+     *     // ... data to create a ReviewSubject
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ReviewSubject we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReviewSubjectUpsertArgs>(args: SelectSubset<T, ReviewSubjectUpsertArgs<ExtArgs>>): Prisma__ReviewSubjectClient<$Result.GetResult<Prisma.$ReviewSubjectPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ReviewSubjects.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectCountArgs} args - Arguments to filter ReviewSubjects to count.
+     * @example
+     * // Count the number of ReviewSubjects
+     * const count = await prisma.reviewSubject.count({
+     *   where: {
+     *     // ... the filter for the ReviewSubjects we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReviewSubjectCountArgs>(
+      args?: Subset<T, ReviewSubjectCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReviewSubjectCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ReviewSubject.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReviewSubjectAggregateArgs>(args: Subset<T, ReviewSubjectAggregateArgs>): Prisma.PrismaPromise<GetReviewSubjectAggregateType<T>>
+
+    /**
+     * Group by ReviewSubject.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewSubjectGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReviewSubjectGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReviewSubjectGroupByArgs['orderBy'] }
+        : { orderBy?: ReviewSubjectGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReviewSubjectGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReviewSubjectGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ReviewSubject model
+   */
+  readonly fields: ReviewSubjectFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ReviewSubject.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReviewSubjectClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    review<T extends ReviewDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ReviewDefaultArgs<ExtArgs>>): Prisma__ReviewClient<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    subject<T extends SubjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubjectDefaultArgs<ExtArgs>>): Prisma__SubjectClient<$Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ReviewSubject model
+   */
+  interface ReviewSubjectFieldRefs {
+    readonly reviewId: FieldRef<"ReviewSubject", 'String'>
+    readonly subjectId: FieldRef<"ReviewSubject", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ReviewSubject findUnique
+   */
+  export type ReviewSubjectFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter, which ReviewSubject to fetch.
+     */
+    where: ReviewSubjectWhereUniqueInput
+  }
+
+  /**
+   * ReviewSubject findUniqueOrThrow
+   */
+  export type ReviewSubjectFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter, which ReviewSubject to fetch.
+     */
+    where: ReviewSubjectWhereUniqueInput
+  }
+
+  /**
+   * ReviewSubject findFirst
+   */
+  export type ReviewSubjectFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter, which ReviewSubject to fetch.
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReviewSubjects to fetch.
+     */
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReviewSubjects.
+     */
+    cursor?: ReviewSubjectWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReviewSubjects from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReviewSubjects.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReviewSubjects.
+     */
+    distinct?: ReviewSubjectScalarFieldEnum | ReviewSubjectScalarFieldEnum[]
+  }
+
+  /**
+   * ReviewSubject findFirstOrThrow
+   */
+  export type ReviewSubjectFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter, which ReviewSubject to fetch.
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReviewSubjects to fetch.
+     */
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ReviewSubjects.
+     */
+    cursor?: ReviewSubjectWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReviewSubjects from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReviewSubjects.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReviewSubjects.
+     */
+    distinct?: ReviewSubjectScalarFieldEnum | ReviewSubjectScalarFieldEnum[]
+  }
+
+  /**
+   * ReviewSubject findMany
+   */
+  export type ReviewSubjectFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter, which ReviewSubjects to fetch.
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ReviewSubjects to fetch.
+     */
+    orderBy?: ReviewSubjectOrderByWithRelationInput | ReviewSubjectOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ReviewSubjects.
+     */
+    cursor?: ReviewSubjectWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ReviewSubjects from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ReviewSubjects.
+     */
+    skip?: number
+    distinct?: ReviewSubjectScalarFieldEnum | ReviewSubjectScalarFieldEnum[]
+  }
+
+  /**
+   * ReviewSubject create
+   */
+  export type ReviewSubjectCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ReviewSubject.
+     */
+    data: XOR<ReviewSubjectCreateInput, ReviewSubjectUncheckedCreateInput>
+  }
+
+  /**
+   * ReviewSubject createMany
+   */
+  export type ReviewSubjectCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ReviewSubjects.
+     */
+    data: ReviewSubjectCreateManyInput | ReviewSubjectCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ReviewSubject createManyAndReturn
+   */
+  export type ReviewSubjectCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * The data used to create many ReviewSubjects.
+     */
+    data: ReviewSubjectCreateManyInput | ReviewSubjectCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReviewSubject update
+   */
+  export type ReviewSubjectUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ReviewSubject.
+     */
+    data: XOR<ReviewSubjectUpdateInput, ReviewSubjectUncheckedUpdateInput>
+    /**
+     * Choose, which ReviewSubject to update.
+     */
+    where: ReviewSubjectWhereUniqueInput
+  }
+
+  /**
+   * ReviewSubject updateMany
+   */
+  export type ReviewSubjectUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ReviewSubjects.
+     */
+    data: XOR<ReviewSubjectUpdateManyMutationInput, ReviewSubjectUncheckedUpdateManyInput>
+    /**
+     * Filter which ReviewSubjects to update
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * Limit how many ReviewSubjects to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ReviewSubject updateManyAndReturn
+   */
+  export type ReviewSubjectUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * The data used to update ReviewSubjects.
+     */
+    data: XOR<ReviewSubjectUpdateManyMutationInput, ReviewSubjectUncheckedUpdateManyInput>
+    /**
+     * Filter which ReviewSubjects to update
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * Limit how many ReviewSubjects to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ReviewSubject upsert
+   */
+  export type ReviewSubjectUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ReviewSubject to update in case it exists.
+     */
+    where: ReviewSubjectWhereUniqueInput
+    /**
+     * In case the ReviewSubject found by the `where` argument doesn't exist, create a new ReviewSubject with this data.
+     */
+    create: XOR<ReviewSubjectCreateInput, ReviewSubjectUncheckedCreateInput>
+    /**
+     * In case the ReviewSubject was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReviewSubjectUpdateInput, ReviewSubjectUncheckedUpdateInput>
+  }
+
+  /**
+   * ReviewSubject delete
+   */
+  export type ReviewSubjectDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
+    /**
+     * Filter which ReviewSubject to delete.
+     */
+    where: ReviewSubjectWhereUniqueInput
+  }
+
+  /**
+   * ReviewSubject deleteMany
+   */
+  export type ReviewSubjectDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ReviewSubjects to delete
+     */
+    where?: ReviewSubjectWhereInput
+    /**
+     * Limit how many ReviewSubjects to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ReviewSubject without action
+   */
+  export type ReviewSubjectDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ReviewSubject
+     */
+    select?: ReviewSubjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ReviewSubject
+     */
+    omit?: ReviewSubjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewSubjectInclude<ExtArgs> | null
   }
 
 
@@ -19190,10 +20481,23 @@ export namespace Prisma {
   export const ReviewScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    deadline: 'deadline'
+    startDate: 'startDate',
+    endDate: 'endDate',
+    departmentId: 'departmentId',
+    batchId: 'batchId',
+    classId: 'classId',
+    semester: 'semester'
   };
 
   export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
+
+
+  export const ReviewSubjectScalarFieldEnum: {
+    reviewId: 'reviewId',
+    subjectId: 'subjectId'
+  };
+
+  export type ReviewSubjectScalarFieldEnum = (typeof ReviewSubjectScalarFieldEnum)[keyof typeof ReviewSubjectScalarFieldEnum]
 
 
   export const RubricScalarFieldEnum: {
@@ -19361,10 +20665,10 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
-    email?: StringFilter<"User"> | string
+    email?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    rollNumber?: StringNullableFilter<"User"> | string | null
+    rollNumber?: StringFilter<"User"> | string
     classId?: StringNullableFilter<"User"> | string | null
     class?: XOR<ClassNullableScalarRelationFilter, ClassWhereInput> | null
     teachingAssignments?: TeachingAssignmentListRelationFilter
@@ -19375,10 +20679,10 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     password?: SortOrder
     role?: SortOrder
-    rollNumber?: SortOrderInput | SortOrder
+    rollNumber?: SortOrder
     classId?: SortOrderInput | SortOrder
     class?: ClassOrderByWithRelationInput
     teachingAssignments?: TeachingAssignmentOrderByRelationAggregateInput
@@ -19406,10 +20710,10 @@ export namespace Prisma {
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     password?: SortOrder
     role?: SortOrder
-    rollNumber?: SortOrderInput | SortOrder
+    rollNumber?: SortOrder
     classId?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -19422,10 +20726,10 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
-    email?: StringWithAggregatesFilter<"User"> | string
+    email?: StringNullableWithAggregatesFilter<"User"> | string | null
     password?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
-    rollNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
+    rollNumber?: StringWithAggregatesFilter<"User"> | string
     classId?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
@@ -19596,6 +20900,7 @@ export namespace Prisma {
     department?: XOR<DepartmentScalarRelationFilter, DepartmentWhereInput>
     teachingAssignments?: TeachingAssignmentListRelationFilter
     projectSubjects?: ProjectSubjectListRelationFilter
+    reviewSubjects?: ReviewSubjectListRelationFilter
   }
 
   export type SubjectOrderByWithRelationInput = {
@@ -19606,6 +20911,7 @@ export namespace Prisma {
     department?: DepartmentOrderByWithRelationInput
     teachingAssignments?: TeachingAssignmentOrderByRelationAggregateInput
     projectSubjects?: ProjectSubjectOrderByRelationAggregateInput
+    reviewSubjects?: ReviewSubjectOrderByRelationAggregateInput
   }
 
   export type SubjectWhereUniqueInput = Prisma.AtLeast<{
@@ -19619,6 +20925,7 @@ export namespace Prisma {
     department?: XOR<DepartmentScalarRelationFilter, DepartmentWhereInput>
     teachingAssignments?: TeachingAssignmentListRelationFilter
     projectSubjects?: ProjectSubjectListRelationFilter
+    reviewSubjects?: ReviewSubjectListRelationFilter
   }, "id">
 
   export type SubjectOrderByWithAggregationInput = {
@@ -19921,7 +21228,13 @@ export namespace Prisma {
     NOT?: ReviewWhereInput | ReviewWhereInput[]
     id?: StringFilter<"Review"> | string
     name?: StringFilter<"Review"> | string
-    deadline?: DateTimeFilter<"Review"> | Date | string
+    startDate?: DateTimeFilter<"Review"> | Date | string
+    endDate?: DateTimeFilter<"Review"> | Date | string
+    departmentId?: StringNullableFilter<"Review"> | string | null
+    batchId?: StringNullableFilter<"Review"> | string | null
+    classId?: StringNullableFilter<"Review"> | string | null
+    semester?: IntFilter<"Review"> | number
+    reviewSubjects?: ReviewSubjectListRelationFilter
     rubrics?: RubricListRelationFilter
     submissions?: SubmissionListRelationFilter
   }
@@ -19929,7 +21242,13 @@ export namespace Prisma {
   export type ReviewOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    deadline?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
+    batchId?: SortOrderInput | SortOrder
+    classId?: SortOrderInput | SortOrder
+    semester?: SortOrder
+    reviewSubjects?: ReviewSubjectOrderByRelationAggregateInput
     rubrics?: RubricOrderByRelationAggregateInput
     submissions?: SubmissionOrderByRelationAggregateInput
   }
@@ -19940,7 +21259,13 @@ export namespace Prisma {
     OR?: ReviewWhereInput[]
     NOT?: ReviewWhereInput | ReviewWhereInput[]
     name?: StringFilter<"Review"> | string
-    deadline?: DateTimeFilter<"Review"> | Date | string
+    startDate?: DateTimeFilter<"Review"> | Date | string
+    endDate?: DateTimeFilter<"Review"> | Date | string
+    departmentId?: StringNullableFilter<"Review"> | string | null
+    batchId?: StringNullableFilter<"Review"> | string | null
+    classId?: StringNullableFilter<"Review"> | string | null
+    semester?: IntFilter<"Review"> | number
+    reviewSubjects?: ReviewSubjectListRelationFilter
     rubrics?: RubricListRelationFilter
     submissions?: SubmissionListRelationFilter
   }, "id">
@@ -19948,10 +21273,17 @@ export namespace Prisma {
   export type ReviewOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    deadline?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    departmentId?: SortOrderInput | SortOrder
+    batchId?: SortOrderInput | SortOrder
+    classId?: SortOrderInput | SortOrder
+    semester?: SortOrder
     _count?: ReviewCountOrderByAggregateInput
+    _avg?: ReviewAvgOrderByAggregateInput
     _max?: ReviewMaxOrderByAggregateInput
     _min?: ReviewMinOrderByAggregateInput
+    _sum?: ReviewSumOrderByAggregateInput
   }
 
   export type ReviewScalarWhereWithAggregatesInput = {
@@ -19960,7 +21292,56 @@ export namespace Prisma {
     NOT?: ReviewScalarWhereWithAggregatesInput | ReviewScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Review"> | string
     name?: StringWithAggregatesFilter<"Review"> | string
-    deadline?: DateTimeWithAggregatesFilter<"Review"> | Date | string
+    startDate?: DateTimeWithAggregatesFilter<"Review"> | Date | string
+    endDate?: DateTimeWithAggregatesFilter<"Review"> | Date | string
+    departmentId?: StringNullableWithAggregatesFilter<"Review"> | string | null
+    batchId?: StringNullableWithAggregatesFilter<"Review"> | string | null
+    classId?: StringNullableWithAggregatesFilter<"Review"> | string | null
+    semester?: IntWithAggregatesFilter<"Review"> | number
+  }
+
+  export type ReviewSubjectWhereInput = {
+    AND?: ReviewSubjectWhereInput | ReviewSubjectWhereInput[]
+    OR?: ReviewSubjectWhereInput[]
+    NOT?: ReviewSubjectWhereInput | ReviewSubjectWhereInput[]
+    reviewId?: StringFilter<"ReviewSubject"> | string
+    subjectId?: StringFilter<"ReviewSubject"> | string
+    review?: XOR<ReviewScalarRelationFilter, ReviewWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+  }
+
+  export type ReviewSubjectOrderByWithRelationInput = {
+    reviewId?: SortOrder
+    subjectId?: SortOrder
+    review?: ReviewOrderByWithRelationInput
+    subject?: SubjectOrderByWithRelationInput
+  }
+
+  export type ReviewSubjectWhereUniqueInput = Prisma.AtLeast<{
+    reviewId_subjectId?: ReviewSubjectReviewIdSubjectIdCompoundUniqueInput
+    AND?: ReviewSubjectWhereInput | ReviewSubjectWhereInput[]
+    OR?: ReviewSubjectWhereInput[]
+    NOT?: ReviewSubjectWhereInput | ReviewSubjectWhereInput[]
+    reviewId?: StringFilter<"ReviewSubject"> | string
+    subjectId?: StringFilter<"ReviewSubject"> | string
+    review?: XOR<ReviewScalarRelationFilter, ReviewWhereInput>
+    subject?: XOR<SubjectScalarRelationFilter, SubjectWhereInput>
+  }, "reviewId_subjectId">
+
+  export type ReviewSubjectOrderByWithAggregationInput = {
+    reviewId?: SortOrder
+    subjectId?: SortOrder
+    _count?: ReviewSubjectCountOrderByAggregateInput
+    _max?: ReviewSubjectMaxOrderByAggregateInput
+    _min?: ReviewSubjectMinOrderByAggregateInput
+  }
+
+  export type ReviewSubjectScalarWhereWithAggregatesInput = {
+    AND?: ReviewSubjectScalarWhereWithAggregatesInput | ReviewSubjectScalarWhereWithAggregatesInput[]
+    OR?: ReviewSubjectScalarWhereWithAggregatesInput[]
+    NOT?: ReviewSubjectScalarWhereWithAggregatesInput | ReviewSubjectScalarWhereWithAggregatesInput[]
+    reviewId?: StringWithAggregatesFilter<"ReviewSubject"> | string
+    subjectId?: StringWithAggregatesFilter<"ReviewSubject"> | string
   }
 
   export type RubricWhereInput = {
@@ -20203,10 +21584,10 @@ export namespace Prisma {
   export type UserCreateInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     class?: ClassCreateNestedOneWithoutStudentsInput
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutStaffInput
     groups?: GroupMemberCreateNestedManyWithoutUserInput
@@ -20216,10 +21597,10 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     classId?: string | null
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutStaffInput
     groups?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
@@ -20229,10 +21610,10 @@ export namespace Prisma {
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     class?: ClassUpdateOneWithoutStudentsNestedInput
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUpdateManyWithoutUserNestedInput
@@ -20242,10 +21623,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     classId?: NullableStringFieldUpdateOperationsInput | string | null
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
@@ -20255,29 +21636,29 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     classId?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     classId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -20436,6 +21817,7 @@ export namespace Prisma {
     department: DepartmentCreateNestedOneWithoutSubjectsInput
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutSubjectInput
     projectSubjects?: ProjectSubjectCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectUncheckedCreateInput = {
@@ -20445,6 +21827,7 @@ export namespace Prisma {
     semester: number
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutSubjectInput
     projectSubjects?: ProjectSubjectUncheckedCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectUpdateInput = {
@@ -20454,6 +21837,7 @@ export namespace Prisma {
     department?: DepartmentUpdateOneRequiredWithoutSubjectsNestedInput
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutSubjectNestedInput
     projectSubjects?: ProjectSubjectUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectUncheckedUpdateInput = {
@@ -20463,6 +21847,7 @@ export namespace Prisma {
     semester?: IntFieldUpdateOperationsInput | number
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutSubjectNestedInput
     projectSubjects?: ProjectSubjectUncheckedUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectCreateManyInput = {
@@ -20735,7 +22120,13 @@ export namespace Prisma {
   export type ReviewCreateInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutReviewInput
     rubrics?: RubricCreateNestedManyWithoutReviewInput
     submissions?: SubmissionCreateNestedManyWithoutReviewInput
   }
@@ -20743,7 +22134,13 @@ export namespace Prisma {
   export type ReviewUncheckedCreateInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutReviewInput
     rubrics?: RubricUncheckedCreateNestedManyWithoutReviewInput
     submissions?: SubmissionUncheckedCreateNestedManyWithoutReviewInput
   }
@@ -20751,7 +22148,13 @@ export namespace Prisma {
   export type ReviewUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutReviewNestedInput
     rubrics?: RubricUpdateManyWithoutReviewNestedInput
     submissions?: SubmissionUpdateManyWithoutReviewNestedInput
   }
@@ -20759,7 +22162,13 @@ export namespace Prisma {
   export type ReviewUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutReviewNestedInput
     rubrics?: RubricUncheckedUpdateManyWithoutReviewNestedInput
     submissions?: SubmissionUncheckedUpdateManyWithoutReviewNestedInput
   }
@@ -20767,19 +22176,68 @@ export namespace Prisma {
   export type ReviewCreateManyInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
   }
 
   export type ReviewUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
   }
 
   export type ReviewUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type ReviewSubjectCreateInput = {
+    review: ReviewCreateNestedOneWithoutReviewSubjectsInput
+    subject: SubjectCreateNestedOneWithoutReviewSubjectsInput
+  }
+
+  export type ReviewSubjectUncheckedCreateInput = {
+    reviewId: string
+    subjectId: string
+  }
+
+  export type ReviewSubjectUpdateInput = {
+    review?: ReviewUpdateOneRequiredWithoutReviewSubjectsNestedInput
+    subject?: SubjectUpdateOneRequiredWithoutReviewSubjectsNestedInput
+  }
+
+  export type ReviewSubjectUncheckedUpdateInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ReviewSubjectCreateManyInput = {
+    reviewId: string
+    subjectId: string
+  }
+
+  export type ReviewSubjectUpdateManyMutationInput = {
+
+  }
+
+  export type ReviewSubjectUncheckedUpdateManyInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+    subjectId?: StringFieldUpdateOperationsInput | string
   }
 
   export type RubricCreateInput = {
@@ -21019,13 +22477,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type EnumRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
-  }
-
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -21039,6 +22490,13 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type EnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
   export type ClassNullableScalarRelationFilter = {
@@ -21129,16 +22587,6 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRoleFilter<$PrismaModel>
-    _max?: NestedEnumRoleFilter<$PrismaModel>
-  }
-
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -21155,6 +22603,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -21330,7 +22788,17 @@ export namespace Prisma {
     none?: ProjectSubjectWhereInput
   }
 
+  export type ReviewSubjectListRelationFilter = {
+    every?: ReviewSubjectWhereInput
+    some?: ReviewSubjectWhereInput
+    none?: ReviewSubjectWhereInput
+  }
+
   export type ProjectSubjectOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReviewSubjectOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -21592,19 +23060,42 @@ export namespace Prisma {
   export type ReviewCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    deadline?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    departmentId?: SortOrder
+    batchId?: SortOrder
+    classId?: SortOrder
+    semester?: SortOrder
+  }
+
+  export type ReviewAvgOrderByAggregateInput = {
+    semester?: SortOrder
   }
 
   export type ReviewMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    deadline?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    departmentId?: SortOrder
+    batchId?: SortOrder
+    classId?: SortOrder
+    semester?: SortOrder
   }
 
   export type ReviewMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    deadline?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    departmentId?: SortOrder
+    batchId?: SortOrder
+    classId?: SortOrder
+    semester?: SortOrder
+  }
+
+  export type ReviewSumOrderByAggregateInput = {
+    semester?: SortOrder
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -21624,6 +23115,26 @@ export namespace Prisma {
   export type ReviewScalarRelationFilter = {
     is?: ReviewWhereInput
     isNot?: ReviewWhereInput
+  }
+
+  export type ReviewSubjectReviewIdSubjectIdCompoundUniqueInput = {
+    reviewId: string
+    subjectId: string
+  }
+
+  export type ReviewSubjectCountOrderByAggregateInput = {
+    reviewId?: SortOrder
+    subjectId?: SortOrder
+  }
+
+  export type ReviewSubjectMaxOrderByAggregateInput = {
+    reviewId?: SortOrder
+    subjectId?: SortOrder
+  }
+
+  export type ReviewSubjectMinOrderByAggregateInput = {
+    reviewId?: SortOrder
+    subjectId?: SortOrder
   }
 
   export type EvaluationScoreListRelationFilter = {
@@ -21812,12 +23323,12 @@ export namespace Prisma {
     set?: string
   }
 
-  export type EnumRoleFieldUpdateOperationsInput = {
-    set?: $Enums.Role
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type EnumRoleFieldUpdateOperationsInput = {
+    set?: $Enums.Role
   }
 
   export type ClassUpdateOneWithoutStudentsNestedInput = {
@@ -22222,6 +23733,13 @@ export namespace Prisma {
     connect?: ProjectSubjectWhereUniqueInput | ProjectSubjectWhereUniqueInput[]
   }
 
+  export type ReviewSubjectCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput> | ReviewSubjectCreateWithoutSubjectInput[] | ReviewSubjectUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutSubjectInput | ReviewSubjectCreateOrConnectWithoutSubjectInput[]
+    createMany?: ReviewSubjectCreateManySubjectInputEnvelope
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+  }
+
   export type TeachingAssignmentUncheckedCreateNestedManyWithoutSubjectInput = {
     create?: XOR<TeachingAssignmentCreateWithoutSubjectInput, TeachingAssignmentUncheckedCreateWithoutSubjectInput> | TeachingAssignmentCreateWithoutSubjectInput[] | TeachingAssignmentUncheckedCreateWithoutSubjectInput[]
     connectOrCreate?: TeachingAssignmentCreateOrConnectWithoutSubjectInput | TeachingAssignmentCreateOrConnectWithoutSubjectInput[]
@@ -22234,6 +23752,13 @@ export namespace Prisma {
     connectOrCreate?: ProjectSubjectCreateOrConnectWithoutSubjectInput | ProjectSubjectCreateOrConnectWithoutSubjectInput[]
     createMany?: ProjectSubjectCreateManySubjectInputEnvelope
     connect?: ProjectSubjectWhereUniqueInput | ProjectSubjectWhereUniqueInput[]
+  }
+
+  export type ReviewSubjectUncheckedCreateNestedManyWithoutSubjectInput = {
+    create?: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput> | ReviewSubjectCreateWithoutSubjectInput[] | ReviewSubjectUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutSubjectInput | ReviewSubjectCreateOrConnectWithoutSubjectInput[]
+    createMany?: ReviewSubjectCreateManySubjectInputEnvelope
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
   }
 
   export type DepartmentUpdateOneRequiredWithoutSubjectsNestedInput = {
@@ -22272,6 +23797,20 @@ export namespace Prisma {
     deleteMany?: ProjectSubjectScalarWhereInput | ProjectSubjectScalarWhereInput[]
   }
 
+  export type ReviewSubjectUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput> | ReviewSubjectCreateWithoutSubjectInput[] | ReviewSubjectUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutSubjectInput | ReviewSubjectCreateOrConnectWithoutSubjectInput[]
+    upsert?: ReviewSubjectUpsertWithWhereUniqueWithoutSubjectInput | ReviewSubjectUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: ReviewSubjectCreateManySubjectInputEnvelope
+    set?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    disconnect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    delete?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    update?: ReviewSubjectUpdateWithWhereUniqueWithoutSubjectInput | ReviewSubjectUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: ReviewSubjectUpdateManyWithWhereWithoutSubjectInput | ReviewSubjectUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
+  }
+
   export type TeachingAssignmentUncheckedUpdateManyWithoutSubjectNestedInput = {
     create?: XOR<TeachingAssignmentCreateWithoutSubjectInput, TeachingAssignmentUncheckedCreateWithoutSubjectInput> | TeachingAssignmentCreateWithoutSubjectInput[] | TeachingAssignmentUncheckedCreateWithoutSubjectInput[]
     connectOrCreate?: TeachingAssignmentCreateOrConnectWithoutSubjectInput | TeachingAssignmentCreateOrConnectWithoutSubjectInput[]
@@ -22298,6 +23837,20 @@ export namespace Prisma {
     update?: ProjectSubjectUpdateWithWhereUniqueWithoutSubjectInput | ProjectSubjectUpdateWithWhereUniqueWithoutSubjectInput[]
     updateMany?: ProjectSubjectUpdateManyWithWhereWithoutSubjectInput | ProjectSubjectUpdateManyWithWhereWithoutSubjectInput[]
     deleteMany?: ProjectSubjectScalarWhereInput | ProjectSubjectScalarWhereInput[]
+  }
+
+  export type ReviewSubjectUncheckedUpdateManyWithoutSubjectNestedInput = {
+    create?: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput> | ReviewSubjectCreateWithoutSubjectInput[] | ReviewSubjectUncheckedCreateWithoutSubjectInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutSubjectInput | ReviewSubjectCreateOrConnectWithoutSubjectInput[]
+    upsert?: ReviewSubjectUpsertWithWhereUniqueWithoutSubjectInput | ReviewSubjectUpsertWithWhereUniqueWithoutSubjectInput[]
+    createMany?: ReviewSubjectCreateManySubjectInputEnvelope
+    set?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    disconnect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    delete?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    update?: ReviewSubjectUpdateWithWhereUniqueWithoutSubjectInput | ReviewSubjectUpdateWithWhereUniqueWithoutSubjectInput[]
+    updateMany?: ReviewSubjectUpdateManyWithWhereWithoutSubjectInput | ReviewSubjectUpdateManyWithWhereWithoutSubjectInput[]
+    deleteMany?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutTeachingAssignmentsInput = {
@@ -22602,6 +24155,13 @@ export namespace Prisma {
     update?: XOR<XOR<SubjectUpdateToOneWithWhereWithoutProjectSubjectsInput, SubjectUpdateWithoutProjectSubjectsInput>, SubjectUncheckedUpdateWithoutProjectSubjectsInput>
   }
 
+  export type ReviewSubjectCreateNestedManyWithoutReviewInput = {
+    create?: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput> | ReviewSubjectCreateWithoutReviewInput[] | ReviewSubjectUncheckedCreateWithoutReviewInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutReviewInput | ReviewSubjectCreateOrConnectWithoutReviewInput[]
+    createMany?: ReviewSubjectCreateManyReviewInputEnvelope
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+  }
+
   export type RubricCreateNestedManyWithoutReviewInput = {
     create?: XOR<RubricCreateWithoutReviewInput, RubricUncheckedCreateWithoutReviewInput> | RubricCreateWithoutReviewInput[] | RubricUncheckedCreateWithoutReviewInput[]
     connectOrCreate?: RubricCreateOrConnectWithoutReviewInput | RubricCreateOrConnectWithoutReviewInput[]
@@ -22614,6 +24174,13 @@ export namespace Prisma {
     connectOrCreate?: SubmissionCreateOrConnectWithoutReviewInput | SubmissionCreateOrConnectWithoutReviewInput[]
     createMany?: SubmissionCreateManyReviewInputEnvelope
     connect?: SubmissionWhereUniqueInput | SubmissionWhereUniqueInput[]
+  }
+
+  export type ReviewSubjectUncheckedCreateNestedManyWithoutReviewInput = {
+    create?: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput> | ReviewSubjectCreateWithoutReviewInput[] | ReviewSubjectUncheckedCreateWithoutReviewInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutReviewInput | ReviewSubjectCreateOrConnectWithoutReviewInput[]
+    createMany?: ReviewSubjectCreateManyReviewInputEnvelope
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
   }
 
   export type RubricUncheckedCreateNestedManyWithoutReviewInput = {
@@ -22632,6 +24199,20 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type ReviewSubjectUpdateManyWithoutReviewNestedInput = {
+    create?: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput> | ReviewSubjectCreateWithoutReviewInput[] | ReviewSubjectUncheckedCreateWithoutReviewInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutReviewInput | ReviewSubjectCreateOrConnectWithoutReviewInput[]
+    upsert?: ReviewSubjectUpsertWithWhereUniqueWithoutReviewInput | ReviewSubjectUpsertWithWhereUniqueWithoutReviewInput[]
+    createMany?: ReviewSubjectCreateManyReviewInputEnvelope
+    set?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    disconnect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    delete?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    update?: ReviewSubjectUpdateWithWhereUniqueWithoutReviewInput | ReviewSubjectUpdateWithWhereUniqueWithoutReviewInput[]
+    updateMany?: ReviewSubjectUpdateManyWithWhereWithoutReviewInput | ReviewSubjectUpdateManyWithWhereWithoutReviewInput[]
+    deleteMany?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
   }
 
   export type RubricUpdateManyWithoutReviewNestedInput = {
@@ -22662,6 +24243,20 @@ export namespace Prisma {
     deleteMany?: SubmissionScalarWhereInput | SubmissionScalarWhereInput[]
   }
 
+  export type ReviewSubjectUncheckedUpdateManyWithoutReviewNestedInput = {
+    create?: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput> | ReviewSubjectCreateWithoutReviewInput[] | ReviewSubjectUncheckedCreateWithoutReviewInput[]
+    connectOrCreate?: ReviewSubjectCreateOrConnectWithoutReviewInput | ReviewSubjectCreateOrConnectWithoutReviewInput[]
+    upsert?: ReviewSubjectUpsertWithWhereUniqueWithoutReviewInput | ReviewSubjectUpsertWithWhereUniqueWithoutReviewInput[]
+    createMany?: ReviewSubjectCreateManyReviewInputEnvelope
+    set?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    disconnect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    delete?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    connect?: ReviewSubjectWhereUniqueInput | ReviewSubjectWhereUniqueInput[]
+    update?: ReviewSubjectUpdateWithWhereUniqueWithoutReviewInput | ReviewSubjectUpdateWithWhereUniqueWithoutReviewInput[]
+    updateMany?: ReviewSubjectUpdateManyWithWhereWithoutReviewInput | ReviewSubjectUpdateManyWithWhereWithoutReviewInput[]
+    deleteMany?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
+  }
+
   export type RubricUncheckedUpdateManyWithoutReviewNestedInput = {
     create?: XOR<RubricCreateWithoutReviewInput, RubricUncheckedCreateWithoutReviewInput> | RubricCreateWithoutReviewInput[] | RubricUncheckedCreateWithoutReviewInput[]
     connectOrCreate?: RubricCreateOrConnectWithoutReviewInput | RubricCreateOrConnectWithoutReviewInput[]
@@ -22688,6 +24283,34 @@ export namespace Prisma {
     update?: SubmissionUpdateWithWhereUniqueWithoutReviewInput | SubmissionUpdateWithWhereUniqueWithoutReviewInput[]
     updateMany?: SubmissionUpdateManyWithWhereWithoutReviewInput | SubmissionUpdateManyWithWhereWithoutReviewInput[]
     deleteMany?: SubmissionScalarWhereInput | SubmissionScalarWhereInput[]
+  }
+
+  export type ReviewCreateNestedOneWithoutReviewSubjectsInput = {
+    create?: XOR<ReviewCreateWithoutReviewSubjectsInput, ReviewUncheckedCreateWithoutReviewSubjectsInput>
+    connectOrCreate?: ReviewCreateOrConnectWithoutReviewSubjectsInput
+    connect?: ReviewWhereUniqueInput
+  }
+
+  export type SubjectCreateNestedOneWithoutReviewSubjectsInput = {
+    create?: XOR<SubjectCreateWithoutReviewSubjectsInput, SubjectUncheckedCreateWithoutReviewSubjectsInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutReviewSubjectsInput
+    connect?: SubjectWhereUniqueInput
+  }
+
+  export type ReviewUpdateOneRequiredWithoutReviewSubjectsNestedInput = {
+    create?: XOR<ReviewCreateWithoutReviewSubjectsInput, ReviewUncheckedCreateWithoutReviewSubjectsInput>
+    connectOrCreate?: ReviewCreateOrConnectWithoutReviewSubjectsInput
+    upsert?: ReviewUpsertWithoutReviewSubjectsInput
+    connect?: ReviewWhereUniqueInput
+    update?: XOR<XOR<ReviewUpdateToOneWithWhereWithoutReviewSubjectsInput, ReviewUpdateWithoutReviewSubjectsInput>, ReviewUncheckedUpdateWithoutReviewSubjectsInput>
+  }
+
+  export type SubjectUpdateOneRequiredWithoutReviewSubjectsNestedInput = {
+    create?: XOR<SubjectCreateWithoutReviewSubjectsInput, SubjectUncheckedCreateWithoutReviewSubjectsInput>
+    connectOrCreate?: SubjectCreateOrConnectWithoutReviewSubjectsInput
+    upsert?: SubjectUpsertWithoutReviewSubjectsInput
+    connect?: SubjectWhereUniqueInput
+    update?: XOR<XOR<SubjectUpdateToOneWithWhereWithoutReviewSubjectsInput, SubjectUpdateWithoutReviewSubjectsInput>, SubjectUncheckedUpdateWithoutReviewSubjectsInput>
   }
 
   export type ReviewCreateNestedOneWithoutRubricsInput = {
@@ -22928,13 +24551,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type NestedEnumRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
-  }
-
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -22947,6 +24563,13 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedEnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -22977,16 +24600,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRoleFilter<$PrismaModel>
-    _max?: NestedEnumRoleFilter<$PrismaModel>
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -23013,6 +24626,16 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -23325,6 +24948,7 @@ export namespace Prisma {
     semester: number
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutSubjectInput
     projectSubjects?: ProjectSubjectCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectUncheckedCreateWithoutDepartmentInput = {
@@ -23333,6 +24957,7 @@ export namespace Prisma {
     semester: number
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutSubjectInput
     projectSubjects?: ProjectSubjectUncheckedCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectCreateOrConnectWithoutDepartmentInput = {
@@ -23511,10 +25136,10 @@ export namespace Prisma {
   export type UserCreateWithoutClassInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutStaffInput
     groups?: GroupMemberCreateNestedManyWithoutUserInput
     evaluations?: EvaluationCreateNestedManyWithoutStaffInput
@@ -23523,10 +25148,10 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutClassInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutStaffInput
     groups?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     evaluations?: EvaluationUncheckedCreateNestedManyWithoutStaffInput
@@ -23633,10 +25258,10 @@ export namespace Prisma {
     NOT?: UserScalarWhereInput | UserScalarWhereInput[]
     id?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
-    email?: StringFilter<"User"> | string
+    email?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    rollNumber?: StringNullableFilter<"User"> | string | null
+    rollNumber?: StringFilter<"User"> | string
     classId?: StringNullableFilter<"User"> | string | null
   }
 
@@ -23740,6 +25365,24 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ReviewSubjectCreateWithoutSubjectInput = {
+    review: ReviewCreateNestedOneWithoutReviewSubjectsInput
+  }
+
+  export type ReviewSubjectUncheckedCreateWithoutSubjectInput = {
+    reviewId: string
+  }
+
+  export type ReviewSubjectCreateOrConnectWithoutSubjectInput = {
+    where: ReviewSubjectWhereUniqueInput
+    create: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type ReviewSubjectCreateManySubjectInputEnvelope = {
+    data: ReviewSubjectCreateManySubjectInput | ReviewSubjectCreateManySubjectInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DepartmentUpsertWithoutSubjectsInput = {
     update: XOR<DepartmentUpdateWithoutSubjectsInput, DepartmentUncheckedUpdateWithoutSubjectsInput>
     create: XOR<DepartmentCreateWithoutSubjectsInput, DepartmentUncheckedCreateWithoutSubjectsInput>
@@ -23805,13 +25448,37 @@ export namespace Prisma {
     subjectId?: StringFilter<"ProjectSubject"> | string
   }
 
+  export type ReviewSubjectUpsertWithWhereUniqueWithoutSubjectInput = {
+    where: ReviewSubjectWhereUniqueInput
+    update: XOR<ReviewSubjectUpdateWithoutSubjectInput, ReviewSubjectUncheckedUpdateWithoutSubjectInput>
+    create: XOR<ReviewSubjectCreateWithoutSubjectInput, ReviewSubjectUncheckedCreateWithoutSubjectInput>
+  }
+
+  export type ReviewSubjectUpdateWithWhereUniqueWithoutSubjectInput = {
+    where: ReviewSubjectWhereUniqueInput
+    data: XOR<ReviewSubjectUpdateWithoutSubjectInput, ReviewSubjectUncheckedUpdateWithoutSubjectInput>
+  }
+
+  export type ReviewSubjectUpdateManyWithWhereWithoutSubjectInput = {
+    where: ReviewSubjectScalarWhereInput
+    data: XOR<ReviewSubjectUpdateManyMutationInput, ReviewSubjectUncheckedUpdateManyWithoutSubjectInput>
+  }
+
+  export type ReviewSubjectScalarWhereInput = {
+    AND?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
+    OR?: ReviewSubjectScalarWhereInput[]
+    NOT?: ReviewSubjectScalarWhereInput | ReviewSubjectScalarWhereInput[]
+    reviewId?: StringFilter<"ReviewSubject"> | string
+    subjectId?: StringFilter<"ReviewSubject"> | string
+  }
+
   export type UserCreateWithoutTeachingAssignmentsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     class?: ClassCreateNestedOneWithoutStudentsInput
     groups?: GroupMemberCreateNestedManyWithoutUserInput
     evaluations?: EvaluationCreateNestedManyWithoutStaffInput
@@ -23820,10 +25487,10 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTeachingAssignmentsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     classId?: string | null
     groups?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     evaluations?: EvaluationUncheckedCreateNestedManyWithoutStaffInput
@@ -23840,6 +25507,7 @@ export namespace Prisma {
     semester: number
     department: DepartmentCreateNestedOneWithoutSubjectsInput
     projectSubjects?: ProjectSubjectCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectUncheckedCreateWithoutTeachingAssignmentsInput = {
@@ -23848,6 +25516,7 @@ export namespace Prisma {
     departmentId: string
     semester: number
     projectSubjects?: ProjectSubjectUncheckedCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectCreateOrConnectWithoutTeachingAssignmentsInput = {
@@ -23890,10 +25559,10 @@ export namespace Prisma {
   export type UserUpdateWithoutTeachingAssignmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     class?: ClassUpdateOneWithoutStudentsNestedInput
     groups?: GroupMemberUpdateManyWithoutUserNestedInput
     evaluations?: EvaluationUpdateManyWithoutStaffNestedInput
@@ -23902,10 +25571,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTeachingAssignmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     classId?: NullableStringFieldUpdateOperationsInput | string | null
     groups?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     evaluations?: EvaluationUncheckedUpdateManyWithoutStaffNestedInput
@@ -23928,6 +25597,7 @@ export namespace Prisma {
     semester?: IntFieldUpdateOperationsInput | number
     department?: DepartmentUpdateOneRequiredWithoutSubjectsNestedInput
     projectSubjects?: ProjectSubjectUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectUncheckedUpdateWithoutTeachingAssignmentsInput = {
@@ -23936,6 +25606,7 @@ export namespace Prisma {
     departmentId?: StringFieldUpdateOperationsInput | string
     semester?: IntFieldUpdateOperationsInput | number
     projectSubjects?: ProjectSubjectUncheckedUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutSubjectNestedInput
   }
 
   export type ClassUpsertWithoutTeachingAssignmentsInput = {
@@ -24133,10 +25804,10 @@ export namespace Prisma {
   export type UserCreateWithoutGroupsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     class?: ClassCreateNestedOneWithoutStudentsInput
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutStaffInput
     evaluations?: EvaluationCreateNestedManyWithoutStaffInput
@@ -24145,10 +25816,10 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutGroupsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     classId?: string | null
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutStaffInput
     evaluations?: EvaluationUncheckedCreateNestedManyWithoutStaffInput
@@ -24198,10 +25869,10 @@ export namespace Prisma {
   export type UserUpdateWithoutGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     class?: ClassUpdateOneWithoutStudentsNestedInput
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutStaffNestedInput
     evaluations?: EvaluationUpdateManyWithoutStaffNestedInput
@@ -24210,10 +25881,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     classId?: NullableStringFieldUpdateOperationsInput | string | null
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutStaffNestedInput
     evaluations?: EvaluationUncheckedUpdateManyWithoutStaffNestedInput
@@ -24391,6 +26062,7 @@ export namespace Prisma {
     semester: number
     department: DepartmentCreateNestedOneWithoutSubjectsInput
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectUncheckedCreateWithoutProjectSubjectsInput = {
@@ -24399,6 +26071,7 @@ export namespace Prisma {
     departmentId: string
     semester: number
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutSubjectInput
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutSubjectInput
   }
 
   export type SubjectCreateOrConnectWithoutProjectSubjectsInput = {
@@ -24458,6 +26131,7 @@ export namespace Prisma {
     semester?: IntFieldUpdateOperationsInput | number
     department?: DepartmentUpdateOneRequiredWithoutSubjectsNestedInput
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectUncheckedUpdateWithoutProjectSubjectsInput = {
@@ -24466,6 +26140,25 @@ export namespace Prisma {
     departmentId?: StringFieldUpdateOperationsInput | string
     semester?: IntFieldUpdateOperationsInput | number
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type ReviewSubjectCreateWithoutReviewInput = {
+    subject: SubjectCreateNestedOneWithoutReviewSubjectsInput
+  }
+
+  export type ReviewSubjectUncheckedCreateWithoutReviewInput = {
+    subjectId: string
+  }
+
+  export type ReviewSubjectCreateOrConnectWithoutReviewInput = {
+    where: ReviewSubjectWhereUniqueInput
+    create: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput>
+  }
+
+  export type ReviewSubjectCreateManyReviewInputEnvelope = {
+    data: ReviewSubjectCreateManyReviewInput | ReviewSubjectCreateManyReviewInput[]
+    skipDuplicates?: boolean
   }
 
   export type RubricCreateWithoutReviewInput = {
@@ -24522,6 +26215,22 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ReviewSubjectUpsertWithWhereUniqueWithoutReviewInput = {
+    where: ReviewSubjectWhereUniqueInput
+    update: XOR<ReviewSubjectUpdateWithoutReviewInput, ReviewSubjectUncheckedUpdateWithoutReviewInput>
+    create: XOR<ReviewSubjectCreateWithoutReviewInput, ReviewSubjectUncheckedCreateWithoutReviewInput>
+  }
+
+  export type ReviewSubjectUpdateWithWhereUniqueWithoutReviewInput = {
+    where: ReviewSubjectWhereUniqueInput
+    data: XOR<ReviewSubjectUpdateWithoutReviewInput, ReviewSubjectUncheckedUpdateWithoutReviewInput>
+  }
+
+  export type ReviewSubjectUpdateManyWithWhereWithoutReviewInput = {
+    where: ReviewSubjectScalarWhereInput
+    data: XOR<ReviewSubjectUpdateManyMutationInput, ReviewSubjectUncheckedUpdateManyWithoutReviewInput>
+  }
+
   export type RubricUpsertWithWhereUniqueWithoutReviewInput = {
     where: RubricWhereUniqueInput
     update: XOR<RubricUpdateWithoutReviewInput, RubricUncheckedUpdateWithoutReviewInput>
@@ -24564,17 +26273,149 @@ export namespace Prisma {
     data: XOR<SubmissionUpdateManyMutationInput, SubmissionUncheckedUpdateManyWithoutReviewInput>
   }
 
+  export type ReviewCreateWithoutReviewSubjectsInput = {
+    id?: string
+    name: string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    rubrics?: RubricCreateNestedManyWithoutReviewInput
+    submissions?: SubmissionCreateNestedManyWithoutReviewInput
+  }
+
+  export type ReviewUncheckedCreateWithoutReviewSubjectsInput = {
+    id?: string
+    name: string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    rubrics?: RubricUncheckedCreateNestedManyWithoutReviewInput
+    submissions?: SubmissionUncheckedCreateNestedManyWithoutReviewInput
+  }
+
+  export type ReviewCreateOrConnectWithoutReviewSubjectsInput = {
+    where: ReviewWhereUniqueInput
+    create: XOR<ReviewCreateWithoutReviewSubjectsInput, ReviewUncheckedCreateWithoutReviewSubjectsInput>
+  }
+
+  export type SubjectCreateWithoutReviewSubjectsInput = {
+    id?: string
+    name: string
+    semester: number
+    department: DepartmentCreateNestedOneWithoutSubjectsInput
+    teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutSubjectInput
+    projectSubjects?: ProjectSubjectCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectUncheckedCreateWithoutReviewSubjectsInput = {
+    id?: string
+    name: string
+    departmentId: string
+    semester: number
+    teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutSubjectInput
+    projectSubjects?: ProjectSubjectUncheckedCreateNestedManyWithoutSubjectInput
+  }
+
+  export type SubjectCreateOrConnectWithoutReviewSubjectsInput = {
+    where: SubjectWhereUniqueInput
+    create: XOR<SubjectCreateWithoutReviewSubjectsInput, SubjectUncheckedCreateWithoutReviewSubjectsInput>
+  }
+
+  export type ReviewUpsertWithoutReviewSubjectsInput = {
+    update: XOR<ReviewUpdateWithoutReviewSubjectsInput, ReviewUncheckedUpdateWithoutReviewSubjectsInput>
+    create: XOR<ReviewCreateWithoutReviewSubjectsInput, ReviewUncheckedCreateWithoutReviewSubjectsInput>
+    where?: ReviewWhereInput
+  }
+
+  export type ReviewUpdateToOneWithWhereWithoutReviewSubjectsInput = {
+    where?: ReviewWhereInput
+    data: XOR<ReviewUpdateWithoutReviewSubjectsInput, ReviewUncheckedUpdateWithoutReviewSubjectsInput>
+  }
+
+  export type ReviewUpdateWithoutReviewSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    rubrics?: RubricUpdateManyWithoutReviewNestedInput
+    submissions?: SubmissionUpdateManyWithoutReviewNestedInput
+  }
+
+  export type ReviewUncheckedUpdateWithoutReviewSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    rubrics?: RubricUncheckedUpdateManyWithoutReviewNestedInput
+    submissions?: SubmissionUncheckedUpdateManyWithoutReviewNestedInput
+  }
+
+  export type SubjectUpsertWithoutReviewSubjectsInput = {
+    update: XOR<SubjectUpdateWithoutReviewSubjectsInput, SubjectUncheckedUpdateWithoutReviewSubjectsInput>
+    create: XOR<SubjectCreateWithoutReviewSubjectsInput, SubjectUncheckedCreateWithoutReviewSubjectsInput>
+    where?: SubjectWhereInput
+  }
+
+  export type SubjectUpdateToOneWithWhereWithoutReviewSubjectsInput = {
+    where?: SubjectWhereInput
+    data: XOR<SubjectUpdateWithoutReviewSubjectsInput, SubjectUncheckedUpdateWithoutReviewSubjectsInput>
+  }
+
+  export type SubjectUpdateWithoutReviewSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    semester?: IntFieldUpdateOperationsInput | number
+    department?: DepartmentUpdateOneRequiredWithoutSubjectsNestedInput
+    teachingAssignments?: TeachingAssignmentUpdateManyWithoutSubjectNestedInput
+    projectSubjects?: ProjectSubjectUpdateManyWithoutSubjectNestedInput
+  }
+
+  export type SubjectUncheckedUpdateWithoutReviewSubjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    departmentId?: StringFieldUpdateOperationsInput | string
+    semester?: IntFieldUpdateOperationsInput | number
+    teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutSubjectNestedInput
+    projectSubjects?: ProjectSubjectUncheckedUpdateManyWithoutSubjectNestedInput
+  }
+
   export type ReviewCreateWithoutRubricsInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutReviewInput
     submissions?: SubmissionCreateNestedManyWithoutReviewInput
   }
 
   export type ReviewUncheckedCreateWithoutRubricsInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutReviewInput
     submissions?: SubmissionUncheckedCreateNestedManyWithoutReviewInput
   }
 
@@ -24619,14 +26460,26 @@ export namespace Prisma {
   export type ReviewUpdateWithoutRubricsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutReviewNestedInput
     submissions?: SubmissionUpdateManyWithoutReviewNestedInput
   }
 
   export type ReviewUncheckedUpdateWithoutRubricsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutReviewNestedInput
     submissions?: SubmissionUncheckedUpdateManyWithoutReviewNestedInput
   }
 
@@ -24688,14 +26541,26 @@ export namespace Prisma {
   export type ReviewCreateWithoutSubmissionsInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectCreateNestedManyWithoutReviewInput
     rubrics?: RubricCreateNestedManyWithoutReviewInput
   }
 
   export type ReviewUncheckedCreateWithoutSubmissionsInput = {
     id?: string
     name: string
-    deadline: Date | string
+    startDate: Date | string
+    endDate: Date | string
+    departmentId?: string | null
+    batchId?: string | null
+    classId?: string | null
+    semester: number
+    reviewSubjects?: ReviewSubjectUncheckedCreateNestedManyWithoutReviewInput
     rubrics?: RubricUncheckedCreateNestedManyWithoutReviewInput
   }
 
@@ -24777,14 +26642,26 @@ export namespace Prisma {
   export type ReviewUpdateWithoutSubmissionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutReviewNestedInput
     rubrics?: RubricUpdateManyWithoutReviewNestedInput
   }
 
   export type ReviewUncheckedUpdateWithoutSubmissionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    deadline?: DateTimeFieldUpdateOperationsInput | Date | string
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    classId?: NullableStringFieldUpdateOperationsInput | string | null
+    semester?: IntFieldUpdateOperationsInput | number
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutReviewNestedInput
     rubrics?: RubricUncheckedUpdateManyWithoutReviewNestedInput
   }
 
@@ -24832,10 +26709,10 @@ export namespace Prisma {
   export type UserCreateWithoutEvaluationsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     class?: ClassCreateNestedOneWithoutStudentsInput
     teachingAssignments?: TeachingAssignmentCreateNestedManyWithoutStaffInput
     groups?: GroupMemberCreateNestedManyWithoutUserInput
@@ -24844,10 +26721,10 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutEvaluationsInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
     classId?: string | null
     teachingAssignments?: TeachingAssignmentUncheckedCreateNestedManyWithoutStaffInput
     groups?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
@@ -24925,10 +26802,10 @@ export namespace Prisma {
   export type UserUpdateWithoutEvaluationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     class?: ClassUpdateOneWithoutStudentsNestedInput
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUpdateManyWithoutUserNestedInput
@@ -24937,10 +26814,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutEvaluationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     classId?: NullableStringFieldUpdateOperationsInput | string | null
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
@@ -25150,6 +27027,7 @@ export namespace Prisma {
     semester?: IntFieldUpdateOperationsInput | number
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutSubjectNestedInput
     projectSubjects?: ProjectSubjectUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectUncheckedUpdateWithoutDepartmentInput = {
@@ -25158,6 +27036,7 @@ export namespace Prisma {
     semester?: IntFieldUpdateOperationsInput | number
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutSubjectNestedInput
     projectSubjects?: ProjectSubjectUncheckedUpdateManyWithoutSubjectNestedInput
+    reviewSubjects?: ReviewSubjectUncheckedUpdateManyWithoutSubjectNestedInput
   }
 
   export type SubjectUncheckedUpdateManyWithoutDepartmentInput = {
@@ -25195,10 +27074,10 @@ export namespace Prisma {
   export type UserCreateManyClassInput = {
     id?: string
     name: string
-    email: string
+    email?: string | null
     password: string
     role: $Enums.Role
-    rollNumber?: string | null
+    rollNumber: string
   }
 
   export type TeachingAssignmentCreateManyClassInput = {
@@ -25215,10 +27094,10 @@ export namespace Prisma {
   export type UserUpdateWithoutClassInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     teachingAssignments?: TeachingAssignmentUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUpdateManyWithoutUserNestedInput
     evaluations?: EvaluationUpdateManyWithoutStaffNestedInput
@@ -25227,10 +27106,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutClassInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
     teachingAssignments?: TeachingAssignmentUncheckedUpdateManyWithoutStaffNestedInput
     groups?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     evaluations?: EvaluationUncheckedUpdateManyWithoutStaffNestedInput
@@ -25239,10 +27118,10 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyWithoutClassInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    rollNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    rollNumber?: StringFieldUpdateOperationsInput | string
   }
 
   export type TeachingAssignmentUpdateWithoutClassInput = {
@@ -25292,6 +27171,10 @@ export namespace Prisma {
     projectId: string
   }
 
+  export type ReviewSubjectCreateManySubjectInput = {
+    reviewId: string
+  }
+
   export type TeachingAssignmentUpdateWithoutSubjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     staff?: UserUpdateOneRequiredWithoutTeachingAssignmentsNestedInput
@@ -25320,6 +27203,18 @@ export namespace Prisma {
 
   export type ProjectSubjectUncheckedUpdateManyWithoutSubjectInput = {
     projectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ReviewSubjectUpdateWithoutSubjectInput = {
+    review?: ReviewUpdateOneRequiredWithoutReviewSubjectsNestedInput
+  }
+
+  export type ReviewSubjectUncheckedUpdateWithoutSubjectInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ReviewSubjectUncheckedUpdateManyWithoutSubjectInput = {
+    reviewId?: StringFieldUpdateOperationsInput | string
   }
 
   export type GroupMemberCreateManyGroupInput = {
@@ -25436,6 +27331,10 @@ export namespace Prisma {
     llmSummary?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type ReviewSubjectCreateManyReviewInput = {
+    subjectId: string
+  }
+
   export type RubricCreateManyReviewInput = {
     id?: string
     criterion: string
@@ -25449,6 +27348,18 @@ export namespace Prisma {
     fileUrl: string
     submittedAt: Date | string
     llmSummary?: string | null
+  }
+
+  export type ReviewSubjectUpdateWithoutReviewInput = {
+    subject?: SubjectUpdateOneRequiredWithoutReviewSubjectsNestedInput
+  }
+
+  export type ReviewSubjectUncheckedUpdateWithoutReviewInput = {
+    subjectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ReviewSubjectUncheckedUpdateManyWithoutReviewInput = {
+    subjectId?: StringFieldUpdateOperationsInput | string
   }
 
   export type RubricUpdateWithoutReviewInput = {

@@ -59,12 +59,12 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">username</Label>
               <Input
-                id="email"
+                id="username"
                 placeholder="you@example.com"
-                type="email"
-                name="email"
+                type="text"
+                name="username"
                 required
                 disabled={isPending}
               />

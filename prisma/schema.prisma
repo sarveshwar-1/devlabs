@@ -8,14 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model for students, staff, and admins
 model User {
   id                  String               @id @default(cuid())
   name                String
-  email               String               @unique
+  email               String?              @unique
   password            String
   role                Role
-  rollNumber          String?              @unique
+  rollNumber          String               @unique
   classId             String? // Only for STUDENT users
   class               Class?               @relation("StudentClass", fields: [classId], references: [id])
   teachingAssignments TeachingAssignment[] @relation("StaffTeaching")
@@ -72,6 +71,7 @@ model Subject {
   semester            Int
   teachingAssignments TeachingAssignment[]
   projectSubjects     ProjectSubject[]
+  reviewSubjects      ReviewSubject[]
 
   @@index([departmentId])
 }
@@ -138,11 +138,26 @@ model ProjectSubject {
 }
 
 model Review {
-  id          String       @id @default(cuid())
-  name        String
-  deadline    DateTime
-  rubrics     Rubric[]
-  submissions Submission[]
+  id             String          @id @default(cuid())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  departmentId   String?
+  batchId        String?
+  classId        String?
+  semester       Int
+  reviewSubjects ReviewSubject[]
+  rubrics        Rubric[]
+  submissions    Submission[]
+}
+
+model ReviewSubject {
+  reviewId  String
+  subjectId String
+  review    Review  @relation(fields: [reviewId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  @@id([reviewId, subjectId])
 }
 
 model Rubric {
