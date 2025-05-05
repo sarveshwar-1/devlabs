@@ -28,7 +28,7 @@ export default function BatchClassesPage() {
     try {
       setIsLoading(true)
       const response = await fetch(
-        `/api/admin/classes?departmentName=${encodeURIComponent(departmentName)}&graduationYear=${graduationYear}`,
+        `/api/classes?departmentName=${encodeURIComponent(departmentName)}&graduationYear=${graduationYear}`,
       )
       if (!response.ok) {
         throw new Error("Failed to fetch classes")

@@ -27,8 +27,8 @@ export default function ClassPage() {
     async function fetchData() {
       try {
         const [classResponse, studentsResponse] = await Promise.all([
-          fetch(`/api/admin/classes/${classId}`),
-          fetch(`/api/admin/students?classId=${classId}`),
+          fetch(`/api/classes/${classId}`),
+          fetch(`/api/students?classId=${classId}`),
         ]);
         if (!classResponse.ok || !studentsResponse.ok) {
           throw new Error('Failed to fetch data');
@@ -47,7 +47,7 @@ export default function ClassPage() {
   }, [classId]);
 
   const handleStudentAddedOrUpdated = () => {
-    fetch(`/api/admin/students?classId=${classId}`)
+    fetch(`/api/students?classId=${classId}`)
       .then((res) => res.json())
       .then((data) => setStudents(data))
       .catch((err) => setError(err.message));

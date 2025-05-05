@@ -24,7 +24,7 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
   const fetchDepartments = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/admin/departments")
+      const response = await fetch("/api/departments")
       if (!response.ok) throw new Error("Failed to fetch departments")
       const data = await response.json()
       setDepartments(data)

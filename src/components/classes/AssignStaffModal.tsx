@@ -97,7 +97,7 @@ export function AssignStaffModal({ isOpen, onClose, classId }: AssignStaffModalP
 
     setLoadingSubjects(true)
     try {
-      const response = await fetch(`/api/admin/subjects?departmentId=${departmentId}&semester=${selectedSemester}`)
+      const response = await fetch(`/api/subjects?departmentId=${departmentId}&semester=${selectedSemester}`)
       if (!response.ok) throw new Error("Failed to fetch subjects")
       const data = await response.json()
       setSubjects(data)

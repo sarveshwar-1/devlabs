@@ -31,7 +31,7 @@ export function BatchList({ departmentName, onEdit }: BatchListProps) {
     setIsLoading(true)
     try {
       const response = await fetch(
-        `/api/admin/departments/batches?departmentName=${encodeURIComponent(departmentName)}`,
+        `/api/departments/batches?departmentName=${encodeURIComponent(departmentName)}`,
       )
       if (!response.ok) throw new Error("Failed to fetch batches")
       const data = await response.json()

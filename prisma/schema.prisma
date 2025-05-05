@@ -58,6 +58,7 @@ model Class {
   students            User[]               @relation("StudentClass")
   teachingAssignments TeachingAssignment[]
   groups              Group[]
+  reviews             Review[]             @relation("ReviewClasses")
 
   @@unique([batchId, section])
   @@index([batchId])
@@ -72,6 +73,7 @@ model Subject {
   teachingAssignments TeachingAssignment[]
   projectSubjects     ProjectSubject[]
   reviewSubjects      ReviewSubject[]
+  reviews             Review[]             @relation("ReviewSubjects")
 
   @@index([departmentId])
 }
@@ -149,6 +151,8 @@ model Review {
   reviewSubjects ReviewSubject[]
   rubrics        Rubric[]
   submissions    Submission[]
+  subjects       Subject[]       @relation("ReviewSubjects")
+  classes        Class[]         @relation("ReviewClasses")
 }
 
 model ReviewSubject {
