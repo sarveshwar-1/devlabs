@@ -55,25 +55,25 @@ const register = async (formdata: FormData) => {
   }
 }
 
-const login = async (formdata: FormData) => {
-  const username = formdata.get('username') as string | undefined
-  const password = formdata.get('password') as string | undefined
+async function login(formData: FormData) {
+  try {
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
 
-  if (!username || !password) {
-    return { success: false, error: 'Please fill all the fields' }
+    await signIn("credentials", {
+      username,
+      password,
+      redirect: false, // Prevent default redirection
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    // Handle specific errors from authorize
+    return {
+      success: false,
+      error: "Invalid credentials",
+    };
   }
-
-  const result = await signIn('credentials', {
-    redirect: false,
-    username,
-    password,
-  })
-
-  if (result?.error) {
-    return { success: false, error: result.error }
-  }
-
-  return { success: true }
 }
 
 export { register, login }
