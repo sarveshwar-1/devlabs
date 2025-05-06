@@ -11,30 +11,56 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const departmentName = searchParams.get('departmentName');
   const graduationYear = searchParams.get('graduationYear');
+  const user = session.user;
 
   if (!departmentName || !graduationYear) {
     return NextResponse.json({ error: 'Department name and graduation year required' }, { status: 400 });
   }
 
   try {
-    const classes = await prisma.class.findMany({
-      where: {
-        batch: {
-          department: { name: departmentName },
-          graduationYear: parseInt(graduationYear),
+    let classes;
+    if (user.role === 'ADMIN') {
+      classes = await prisma.class.findMany({
+        where: {
+          batch: {
+            department: { name: departmentName },
+            graduationYear: parseInt(graduationYear),
+          },
         },
-      },
-      select: {
-        id: true,
-        section: true,
-        _count: {
-          select: { students: true },
+        select: {
+          id: true,
+          section: true,
+          _count: {
+            select: { students: true },
+          },
         },
-      },
-      orderBy: {
-        section: 'asc',
-      },
-    });
+        orderBy: {
+          section: 'asc',
+        },
+      });
+    } else {
+      classes = await prisma.class.findMany({
+        where: {
+          batch: {
+            department: { name: departmentName },
+            graduationYear: parseInt(graduationYear),
+          },
+          teachingAssignments: {
+            some: { staffId: user.id },
+          },
+        },
+        select: {
+          id: true,
+          section: true,
+          _count: {
+            select: { students: true },
+          },
+        },
+        orderBy: {
+          section: 'asc',
+        },
+      });
+    }
 
     const formattedClasses = classes.map(cls => ({
       id: cls.id,

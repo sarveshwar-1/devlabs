@@ -1,35 +1,46 @@
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/getSession';
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const { searchParams } = new URL(request.url);
-  const departmentName = searchParams.get('departmentName');
 
+  const { searchParams } = new URL(req.url);
+  const departmentName = searchParams.get('departmentName');
   if (!departmentName) {
-    return NextResponse.json({ error: 'Department name required' }, { status: 400 });
+    return NextResponse.json({ error: 'Department name is required' }, { status: 400 });
   }
 
+  const { user } = session;
   try {
-    const department = await prisma.department.findUnique({
-      where: { name: departmentName },
-    });
+    let batches;
+    if (user.role === 'ADMIN') {
+      batches = await prisma.batch.findMany({
+        where: { department: { name: departmentName } },
+        include: { department: true },
 
-    if (!department) {
-      return NextResponse.json({ error: 'Department not found' }, { status: 404 });
+      });
+    } else {
+      batches = await prisma.batch.findMany({
+        where: {
+          department: { name: departmentName },
+          classes: {
+            some: {
+              teachingAssignments: {
+                some: { staffId: user.id },
+              },
+            },
+          },
+        },
+        select: { id: true, graduationYear: true },
+      });
     }
-
-    const batches = await prisma.batch.findMany({
-      where: { departmentId: department.id },
-      include: { department: true },
-    });
     return NextResponse.json(batches);
   } catch (error) {
-    console.error('Batch fetch failed:', error);
+    console.error('Fetch batches failed:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

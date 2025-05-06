@@ -189,6 +189,22 @@ exports.Prisma.ProjectSubjectScalarFieldEnum = {
   subjectId: 'subjectId'
 };
 
+exports.Prisma.RubricTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RubricScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  criterion: 'criterion',
+  description: 'description',
+  maxScore: 'maxScore'
+};
+
 exports.Prisma.ReviewScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -196,20 +212,13 @@ exports.Prisma.ReviewScalarFieldEnum = {
   endDate: 'endDate',
   departmentId: 'departmentId',
   batchId: 'batchId',
-  classId: 'classId',
-  semester: 'semester'
+  semester: 'semester',
+  rubricTemplateId: 'rubricTemplateId'
 };
 
 exports.Prisma.ReviewSubjectScalarFieldEnum = {
   reviewId: 'reviewId',
   subjectId: 'subjectId'
-};
-
-exports.Prisma.RubricScalarFieldEnum = {
-  id: 'id',
-  reviewId: 'reviewId',
-  criterion: 'criterion',
-  maxScore: 'maxScore'
 };
 
 exports.Prisma.SubmissionScalarFieldEnum = {
@@ -273,9 +282,10 @@ exports.Prisma.ModelName = {
   GroupMember: 'GroupMember',
   Project: 'Project',
   ProjectSubject: 'ProjectSubject',
+  RubricTemplate: 'RubricTemplate',
+  Rubric: 'Rubric',
   Review: 'Review',
   ReviewSubject: 'ReviewSubject',
-  Rubric: 'Rubric',
   Submission: 'Submission',
   Evaluation: 'Evaluation',
   EvaluationScore: 'EvaluationScore'

@@ -11,15 +11,16 @@ datasource db {
 model User {
   id                  String               @id @default(cuid())
   name                String
-  email               String?              @unique
+  email               String               @unique
   password            String
   role                Role
-  rollNumber          String               @unique
-  classId             String? // Only for STUDENT users
+  rollNumber          String?              @unique
+  classId             String?
   class               Class?               @relation("StudentClass", fields: [classId], references: [id])
   teachingAssignments TeachingAssignment[] @relation("StaffTeaching")
   groups              GroupMember[]        @relation("UserGroups")
   evaluations         Evaluation[]         @relation("StaffEvaluations")
+  rubricTemplates     RubricTemplate[]     @relation("UserTemplates") // Templates created by the user
 
   @@index([email])
   @@index([rollNumber])
@@ -58,6 +59,7 @@ model Class {
   students            User[]               @relation("StudentClass")
   teachingAssignments TeachingAssignment[]
   groups              Group[]
+  reviews             Review[]             @relation("ReviewClasses")
 
   @@unique([batchId, section])
   @@index([batchId])
@@ -72,6 +74,7 @@ model Subject {
   teachingAssignments TeachingAssignment[]
   projectSubjects     ProjectSubject[]
   reviewSubjects      ReviewSubject[]
+  reviews             Review[]             @relation("ReviewSubjects")
 
   @@index([departmentId])
 }
@@ -137,18 +140,41 @@ model ProjectSubject {
   @@id([projectId, subjectId])
 }
 
+model RubricTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  createdBy String
+  creator   User     @relation("UserTemplates", fields: [createdBy], references: [id])
+  rubrics   Rubric[]
+  reviews   Review[] // Templates used in reviews
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rubric {
+  id               String            @id @default(cuid())
+  templateId       String
+  template         RubricTemplate    @relation(fields: [templateId], references: [id])
+  criterion        String
+  description      String?
+  maxScore         Int
+  evaluationScores EvaluationScore[]
+}
+
 model Review {
-  id             String          @id @default(cuid())
-  name           String
-  startDate      DateTime
-  endDate        DateTime
-  departmentId   String?
-  batchId        String?
-  classId        String?
-  semester       Int
-  reviewSubjects ReviewSubject[]
-  rubrics        Rubric[]
-  submissions    Submission[]
+  id               String          @id @default(cuid())
+  name             String
+  startDate        DateTime
+  endDate          DateTime
+  departmentId     String?
+  batchId          String?
+  semester         Int
+  reviewSubjects   ReviewSubject[]
+  rubricTemplateId String
+  rubricTemplate   RubricTemplate  @relation(fields: [rubricTemplateId], references: [id])
+  submissions      Submission[]
+  subjects         Subject[]       @relation("ReviewSubjects")
+  classes          Class[]         @relation("ReviewClasses")
 }
 
 model ReviewSubject {
@@ -158,17 +184,6 @@ model ReviewSubject {
   subject   Subject @relation(fields: [subjectId], references: [id])
 
   @@id([reviewId, subjectId])
-}
-
-model Rubric {
-  id               String            @id @default(cuid())
-  reviewId         String
-  review           Review            @relation(fields: [reviewId], references: [id])
-  criterion        String
-  maxScore         Int
-  evaluationScores EvaluationScore[]
-
-  @@index([reviewId])
 }
 
 model Submission {
