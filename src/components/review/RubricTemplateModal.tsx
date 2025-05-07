@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { toast } from 'sonner'
 
 interface Rubric {
   criterion: string
@@ -27,36 +28,41 @@ interface RubricTemplateModalProps {
 }
 
 export function RubricTemplateModal({ isOpen, onClose, onSave, initialData }: RubricTemplateModalProps) {
+  const [isSaving, setIsSaving] = useState(false)
   const [name, setName] = useState(initialData?.name || "")
   const [rubrics, setRubrics] = useState<Rubric[]>(
     initialData?.rubrics || [{ criterion: "", description: "", maxScore: 0 }],
   )
+  const [inputValues, setInputValues] = useState<string[]>(
+    initialData?.rubrics.map(r => String(r.maxScore)) || ["0"]
+  )
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name)
       setRubrics(initialData.rubrics)
+      setInputValues(initialData.rubrics.map(r => String(r.maxScore)))
     } else {
       setName("")
       setRubrics([{ criterion: "", description: "", maxScore: 0 }])
+      setInputValues(["0"])
     }
   }, [initialData, isOpen])
 
   const handleAddRubric = () => {
     setRubrics([...rubrics, { criterion: "", description: "", maxScore: 0 }])
+    setInputValues([...inputValues, "0"])
   }
 
-  // Add auto-scroll functionality
   useEffect(() => {
-    if (rubrics.length > 0) {
-      const scrollArea = document.getElementById("criteria-scroll-area")
-      if (scrollArea) {
-        setTimeout(() => {
-          scrollArea.scrollTo({
-            top: scrollArea.scrollHeight,
-            behavior: "smooth",
-          })
-        }, 100)
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: "smooth",
+        })
       }
     }
   }, [rubrics.length])
@@ -67,15 +73,42 @@ export function RubricTemplateModal({ isOpen, onClose, onSave, initialData }: Ru
     setRubrics(updatedRubrics)
   }
 
-  const handleRemoveRubric = (index: number) => {
-    setRubrics(rubrics.filter((_, i) => i !== index))
+  const handleMaxScoreChange = (index: number, value: string) => {
+    const updatedInputValues = [...inputValues]
+    updatedInputValues[index] = value
+    setInputValues(updatedInputValues)
   }
 
-  const handleSave = () => {
+  const handleMaxScoreBlur = (index: number) => {
+    const value = inputValues[index]
+    const parsedValue = value === "" ? 0 : Number.parseInt(value) || 0
+    handleRubricChange(index, "maxScore", parsedValue)
+    setInputValues(prev => {
+      const updated = [...prev]
+      updated[index] = String(parsedValue)
+      return updated
+    })
+  }
+
+  const handleRemoveRubric = (index: number) => {
+    setRubrics(rubrics.filter((_, i) => i !== index))
+    setInputValues(inputValues.filter((_, i) => i !== index))
+  }
+
+  const handleSave = async () => {
     if (name && rubrics.length > 0 && rubrics.every((r) => r.criterion && r.maxScore > 0)) {
-      onSave({ name, rubrics })
+      setIsSaving(true)
+      try {
+        await onSave({ name, rubrics })
+      } catch (error) {
+        toast.error("Failed to save schema. Please try again.",{
+          description: error instanceof Error ? error.message : String(error),
+        })
+      } finally {
+        setIsSaving(false)
+      }
     } else {
-      alert("Please fill in all required fields")
+      toast.error("Please fill in all fields correctly.")
     }
   }
 
@@ -136,7 +169,7 @@ export function RubricTemplateModal({ isOpen, onClose, onSave, initialData }: Ru
           </div>
         </div>
 
-        <ScrollArea className="max-h-[40vh] px-6 py-2" id="criteria-scroll-area">
+        <ScrollArea className="max-h-[40vh] px-6 py-2" ref={scrollAreaRef}>
           <div className="space-y-4">
             {rubrics.length === 0 && (
               <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg">
@@ -204,46 +237,39 @@ export function RubricTemplateModal({ isOpen, onClose, onSave, initialData }: Ru
                       id={`score-${index}`}
                       type="number"
                       placeholder="Max Score"
-                      value={rubric.maxScore === 0 ? "0" : rubric.maxScore || ""}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : Number.parseInt(e.target.value)
-                        handleRubricChange(index, "maxScore", value)
-                      }}
-                      onFocus={(e) => {
-                        if (e.target.value === "0") {
-                          e.target.value = ""
-                        }
-                      }}
+                      value={inputValues[index]}
+                      onChange={(e) => handleMaxScoreChange(index, e.target.value)}
+                      onBlur={() => handleMaxScoreBlur(index)}
                       min="0"
                       className="w-full"
                     />
                   </div>
                 </CardContent>
               </Card>
-            ))} 
+            ))}
           </div>
         </ScrollArea>
         {rubrics.length > 0 && (
-              <div className="mt-6 p-4 border rounded-lg bg-muted/20">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Maximum Score:</span>
-                  <Badge variant="secondary" className="text-base px-3 py-1">
-                    {rubrics.reduce((total, rubric) => total + (rubric.maxScore || 0), 0)}
-                  </Badge>
-                </div>
-              </div>
-            )}
+          <div className="mt-6 p-4 border rounded-lg bg-muted/20">
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Total Maximum Score:</span>
+              <Badge variant="secondary" className="text-base px-3 py-1">
+                {rubrics.reduce((total, rubric) => total + (rubric.maxScore || 0), 0)}
+              </Badge>
+            </div>
+          </div>
+        )}
 
         <DialogFooter className="px-6 py-4 border-t">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             className={`${isValid ? "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700" : "bg-gray-400 text-white cursor-not-allowed dark:bg-muted dark:text-muted-foreground"} text-white`}
-            disabled={!isValid}
+            disabled={!isValid || isSaving}
           >
-            Save Schema
+            {isSaving ? "Saving..." : "Save Schema"}
           </Button>
         </DialogFooter>
       </DialogContent>

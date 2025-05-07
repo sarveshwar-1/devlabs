@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -20,24 +20,67 @@ interface RubricTableProps {
 
 export function RubricTable({ rubrics, onEdit }: RubricTableProps) {
   const [editedRubrics, setEditedRubrics] = useState<Rubric[]>(rubrics)
+  const [inputValues, setInputValues] = useState<string[]>(rubrics.map(r => String(r.maxScore)))
 
-  const handleInputChange = (index: number, field: keyof Rubric, value: string | number) => {
-    const updatedRubrics = [...editedRubrics]
-    updatedRubrics[index][field] = value as never
-    setEditedRubrics(updatedRubrics)
-    onEdit(updatedRubrics)
+  // Sync editedRubrics and inputValues when the prop rubrics changes
+  useEffect(() => {
+    setEditedRubrics(rubrics)
+    setInputValues(rubrics.map(r => String(r.maxScore)))
+  }, [rubrics])
+
+  // Effect to propagate changes to parent via onEdit
+  useEffect(() => {
+    onEdit(editedRubrics)
+  }, [editedRubrics, onEdit])
+
+  const handleCriterionChange = (index: number, value: string) => {
+    setEditedRubrics(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], criterion: value }
+      return updated
+    })
+  }
+
+  const handleDescriptionChange = (index: number, value: string) => {
+    setEditedRubrics(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], description: value }
+      return updated
+    })
+  }
+
+  const handleMaxScoreChange = (index: number, value: string) => {
+    setInputValues(prev => {
+      const updated = [...prev]
+      updated[index] = value
+      return updated
+    })
+  }
+
+  const handleMaxScoreBlur = (index: number) => {
+    const value = inputValues[index]
+    const parsedValue = value === "" ? 0 : Number.parseInt(value) || 0
+    setEditedRubrics(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], maxScore: parsedValue }
+      return updated
+    })
+    setInputValues(prev => {
+      const updated = [...prev]
+      updated[index] = String(parsedValue)
+      return updated
+    })
   }
 
   const handleAddRubric = () => {
     const newRubric = { criterion: "", description: "", maxScore: 0 }
-    setEditedRubrics([...editedRubrics, newRubric])
-    onEdit([...editedRubrics, newRubric])
+    setEditedRubrics(prev => [...prev, newRubric])
+    setInputValues(prev => [...prev, "0"])
   }
 
   const handleRemoveRubric = (index: number) => {
-    const updatedRubrics = editedRubrics.filter((_, i) => i !== index)
-    setEditedRubrics(updatedRubrics)
-    onEdit(updatedRubrics)
+    setEditedRubrics(prev => prev.filter((_, i) => i !== index))
+    setInputValues(prev => prev.filter((_, i) => i !== index))
   }
 
   if (editedRubrics.length === 0) {
@@ -75,7 +118,7 @@ export function RubricTable({ rubrics, onEdit }: RubricTableProps) {
                 <div className="space-y-1">
                   <Input
                     value={rubric.criterion}
-                    onChange={(e) => handleInputChange(index, "criterion", e.target.value)}
+                    onChange={(e) => handleCriterionChange(index, e.target.value)}
                     className="w-full"
                     placeholder="Enter criterion"
                   />
@@ -84,28 +127,21 @@ export function RubricTable({ rubrics, onEdit }: RubricTableProps) {
               <TableCell>
                 <Input
                   value={rubric.description}
-                  onChange={(e) => handleInputChange(index, "description", e.target.value)}
+                  onChange={(e) => handleDescriptionChange(index, e.target.value)}
                   className="w-full"
                   placeholder="Enter description"
                 />
               </TableCell>
               <TableCell>
-              <Input
-                type="number"
-                value={rubric.maxScore === 0 ? "0" : rubric.maxScore || ""}
-                onChange={(e) => {
-                  const value = e.target.value === "" ? 0 : Number.parseInt(e.target.value)
-                  handleInputChange(index, "maxScore", value)
-                }}
-                onFocus={(e) => {
-                  if (e.target.value === "0") {
-                    e.target.value = ""
-                  }
-                }}
-                min="0"
-                className="w-full"
-              />
-            </TableCell>
+                <Input
+                  type="number"
+                  value={inputValues[index]}
+                  onChange={(e) => handleMaxScoreChange(index, e.target.value)}
+                  onBlur={() => handleMaxScoreBlur(index)}
+                  min="0"
+                  className="w-full"
+                />
+              </TableCell>
               <TableCell>
                 <TooltipProvider>
                   <Tooltip>
@@ -129,11 +165,13 @@ export function RubricTable({ rubrics, onEdit }: RubricTableProps) {
             </TableRow>
           ))}
           <TableRow className="bg-muted/30 font-medium">
-          <TableCell colSpan={2} className="text-right">
-          </TableCell>
-          <TableCell className="pl-4">Total Score: {editedRubrics.reduce((total, rubric) => total + (rubric.maxScore || 0), 0)}</TableCell>
-          <TableCell></TableCell>
-        </TableRow>
+            <TableCell colSpan={
+
+2} className="text-right">
+            </TableCell>
+            <TableCell className="pl-4">Total Score: {editedRubrics.reduce((total, rubric) => total + (rubric.maxScore || 0), 0)}</TableCell>
+            <TableCell></TableCell>
+          </TableRow>
           <TableRow>
             <TableCell colSpan={4} className="text-center p-4">
               <Button

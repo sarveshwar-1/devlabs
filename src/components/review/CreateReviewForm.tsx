@@ -278,10 +278,11 @@ export default function CreateReviewForm({ isOpen, onClose }: CreateReviewFormPr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: `${reviewName} - Custom Template`, rubrics: customRubrics }),
       })
-
     
       if (!newTemplateResponse.ok) {
-        toast("Failed to create custom rubric template")
+        toast("Failed to create custom rubric template", {
+          description: "Please check your input and try again.",
+        })
         setIsLoading(false)
         return
       }

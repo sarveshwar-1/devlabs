@@ -29,19 +29,36 @@ export async function POST(req: NextRequest) {
 
   const { name, rubrics } = await req.json();
 
-  if (!name || !rubrics || rubrics.length === 0) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  if (
+    !name || typeof name !== 'string' || name.trim() === '' ||
+    !Array.isArray(rubrics) || rubrics.length === 0
+  ) {
+    return NextResponse.json({ error: 'Missing or invalid name or rubrics' }, { status: 400 });
+  }
+
+  for (const rubric of rubrics) {
+    if (
+      !rubric ||
+      typeof rubric.criterion !== 'string' || rubric.criterion.trim() === '' ||
+      (typeof rubric.description !== 'string') ||
+      rubric.maxScore == null || typeof rubric.maxScore !== 'number' || rubric.maxScore <= 0
+    ) {
+      return NextResponse.json(
+        { error: 'Each rubric must have a valid criterion (non-empty string), optional description (string), and maxScore > 0' },
+        { status: 400 }
+      );
+    }
   }
 
   try {
     const template = await prisma.rubricTemplate.create({
       data: {
-        name,
+        name: name.trim(),
         createdBy: session.user.id,
         rubrics: {
           create: rubrics.map((rubric: Rubric) => ({
-            criterion: rubric.criterion,
-            description: rubric.description,
+            criterion: rubric.criterion.trim(),
+            description: rubric.description?.trim() || null,
             maxScore: rubric.maxScore,
           })),
         },
