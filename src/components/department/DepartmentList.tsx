@@ -1,69 +1,69 @@
-"use client"
-import { useState, useEffect } from "react"
-import type React from "react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card"
-import { Pencil, Trash2, Building } from "lucide-react"
-import Link from "next/link"
-import type { Department } from "@/types"
-import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal"
-import { SkeletonCardGrid } from "@/components/ui/skeleton-card-grid"
+"use client";
+import { useState, useEffect } from "react";
+import type React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
+import { Pencil, Trash2, Building, BookOpen } from "lucide-react";
+import Link from "next/link";
+import type { Department } from "@/types";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { SkeletonCardGrid } from "@/components/ui/skeleton-card-grid";
 
 interface DepartmentListProps {
-  onEdit: (department: Department) => void
+  onEdit: (department: Department) => void;
+  onEditSubjects: (department: Department) => void;
 }
 
-export function DepartmentList({ onEdit }: DepartmentListProps) {
-  const [departments, setDepartments] = useState<Department[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null)
+export function DepartmentList({ onEdit, onEditSubjects }: DepartmentListProps) {
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
 
   const fetchDepartments = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/departments")
-      if (!response.ok) throw new Error("Failed to fetch departments")
-      const data = await response.json()
-      setDepartments(data)
+      const response = await fetch("/api/departments");
+      if (!response.ok) throw new Error("Failed to fetch departments");
+      const data = await response.json();
+      setDepartments(data);
     } catch (err) {
-      console.error(err)
-      setError("Error fetching departments")
+      console.error(err);
+      setError("Error fetching departments");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteClick = (department: Department, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDepartmentToDelete(department)
-    setDeleteModalOpen(true)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setDepartmentToDelete(department);
+    setDeleteModalOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
-    if (!departmentToDelete) return
+    if (!departmentToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/departments/${departmentToDelete.id}`, { method: "DELETE" })
-      if (!response.ok) throw new Error("Failed to delete department")
-      fetchDepartments() // Refresh the list
-      setDeleteModalOpen(false)
-      setDepartmentToDelete(null)
+      const response = await fetch(`/api/admin/departments/${departmentToDelete.id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete department");
+      fetchDepartments();
+      setDeleteModalOpen(false);
+      setDepartmentToDelete(null);
     } catch (err) {
-      console.error(err)
-      setError("Error deleting department")
+      console.error(err);
+      setError("Error deleting department");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchDepartments()
-  }, [])
+    fetchDepartments();
+  }, []);
 
   if (isLoading) {
-    return <SkeletonCardGrid cards={6} />
+    return <SkeletonCardGrid cards={6} />;
   }
 
   if (error) {
@@ -74,7 +74,7 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
           Retry
         </Button>
       </div>
-    )
+    );
   }
 
   if (departments.length === 0) {
@@ -82,7 +82,7 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
       <div className="rounded-md border p-8 text-center">
         <p className="text-muted-foreground">No departments found</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -118,13 +118,26 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
                   size="sm"
                   className="h-8 w-8 p-0 relative z-30"
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onEdit(dept)
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onEdit(dept);
                   }}
                 >
                   <Pencil className="h-4 w-4 cursor-pointer" />
                   <span className="sr-only">Edit</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 relative z-30"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onEditSubjects(dept);
+                  }}
+                >
+                  <BookOpen className="h-4 w-4 cursor-pointer" />
+                  <span className="sr-only">Edit Subjects</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -151,5 +164,5 @@ export function DepartmentList({ onEdit }: DepartmentListProps) {
         />
       )}
     </>
-  )
+  );
 }

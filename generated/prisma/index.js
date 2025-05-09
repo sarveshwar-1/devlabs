@@ -302,11 +302,12 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "postgresql://devlabs_owner:npg_4qdYyRhZ6gec@ep-square-silence-a489x4ck-pooler.us-east-1.aws.neon.tech/devlabs?sslmode=require"
+        "value": null
       }
     }
   },
