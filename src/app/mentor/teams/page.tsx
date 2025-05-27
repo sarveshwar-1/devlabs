@@ -37,9 +37,10 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
-  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] =
+    useState<Team | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -88,19 +89,14 @@ export default function TeamsPage() {
             placeholder="Search teams..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 
-                     text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800  text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
                      focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
                      transition-all duration-200"
           />
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-xl border border-gray-200 dark:border-gray-800 
-                    shadow-sm hover:shadow-md transition-shadow duration-300
-                    animate-fade-in-up delay-100"
-        >
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">

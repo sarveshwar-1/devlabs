@@ -11,11 +11,14 @@ class RedisClient {
     public static getInstance(): RedisType {
         if (!RedisClient.instance) {
             const redisUrl = process.env.REDIS_URL;
+            const redisPassword = process.env.REDIS_PASSWORD;
+            
             if (!redisUrl) {
                 throw new Error('REDIS_URL is not defined');
             }
             
             RedisClient.instance = new Redis(redisUrl, {
+                password: redisPassword,
                 maxRetriesPerRequest: 3,
                 retryStrategy(times) {
                     const delay = Math.min(times * 500, 2000);

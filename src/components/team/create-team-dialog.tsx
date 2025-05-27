@@ -23,7 +23,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 interface Team {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   joinCode: string;
@@ -112,9 +112,7 @@ export default function TeamsPage() {
                 setSelectedTeam(null);
                 setIsModalOpen(true);
               }}
-              className="bg-black hover:bg-gray-800 text-white dark:bg-white dark:text-black 
-                       dark:hover:bg-gray-200 transition-all duration-200 transform hover:scale-102 
-                       shadow-sm hover:shadow-md"
+              className="bg-black hover:bg-gray-800 text-white dark:bg-white dark:text-black dark:hover:bg-gray-200 transition-all duration-200 transform hover:scale-102 shadow-sm hover:shadow-md"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Team
@@ -129,19 +127,12 @@ export default function TeamsPage() {
             placeholder="Search teams..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 
-                     text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500
-                     focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
-                     transition-all duration-200"
+            className="pl-10 bg-white dark:bg-black border-gray-200 dark:border-gray-800 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200"
           />
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-xl border border-gray-200 dark:border-gray-800 
-                       shadow-sm hover:shadow-md transition-shadow duration-300
-                       animate-fade-in-up delay-100"
-        >
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
@@ -178,10 +169,7 @@ export default function TeamsPage() {
                         <TooltipTrigger className="cursor-help hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                           {team.name}
                         </TooltipTrigger>
-                        <TooltipContent
-                          className="bg-white dark:bg-black text-black dark:text-white 
-                                                border border-gray-200 dark:border-gray-800 shadow-lg"
-                        >
+                        <TooltipContent className="bg-white dark:bg-black text-black dark:text-white border border-gray-200 dark:border-gray-800 shadow-lg">
                           <p>Join Code: {team.joinCode}</p>
                         </TooltipContent>
                       </Tooltip>

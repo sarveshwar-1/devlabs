@@ -75,7 +75,3 @@ body {
   }
 
 }
-
-/* MDX Editor Styles */
-@import url('@radix-ui/colors/tomato-dark.css');
-@import url('@radix-ui/colors/mauve-dark.css');

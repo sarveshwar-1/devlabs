@@ -135,11 +135,7 @@ export default function Page() {
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-xl border border-gray-200 dark:border-gray-800 
-                     shadow-sm hover:shadow-md transition-shadow duration-300
-                     animate-fade-in-up delay-100"
-        >
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
@@ -218,8 +214,7 @@ export default function Page() {
                       href={`https://github.com/${project.repository}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 
-                               dark:hover:text-blue-300 hover:underline flex items-center gap-2"
+                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 hover:underline flex items-center gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <GitBranch className="h-4 w-4" />

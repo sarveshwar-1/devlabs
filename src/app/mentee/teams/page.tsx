@@ -42,7 +42,7 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isGloballyFrozen, setIsGloballyFrozen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
@@ -84,7 +84,7 @@ export default function TeamsPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this team?")) return;
 
     try {
@@ -109,7 +109,7 @@ export default function TeamsPage() {
       });
     } catch (error) {
       console.error("Error deleting team:", error);
-      alert(error.message || "Failed to delete team");
+      alert((error as Error).message || "Failed to delete team");
     }
   };
 
@@ -142,9 +142,7 @@ export default function TeamsPage() {
                   setSelectedTeam(null);
                   setIsModalOpen(true);
                 }}
-                className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 
-                         text-white dark:text-black transition-all duration-200 
-                         transform hover:scale-102 shadow-sm hover:shadow-md flex items-center gap-2"
+                className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black transition-all duration-200 transform hover:scale-102 shadow-sm hover:shadow-md flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 Create Team
@@ -156,31 +154,20 @@ export default function TeamsPage() {
 
         {/* Search Section */}
         <div className="relative max-w-md mb-8 animate-fade-in-up">
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 
-                           text-gray-400 dark:text-gray-500"
-          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <Input
             placeholder="Search teams..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800 
-                     focus:border-black dark:focus:border-white focus:ring-1 
-                     focus:ring-black dark:focus:ring-white transition-all duration-200"
+            className="pl-10 bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white transition-all duration-200"
           />
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-lg border border-gray-200 dark:border-gray-800 
-                     shadow-sm animate-fade-in-up delay-100"
-        >
+        <div className="rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
-              <TableRow
-                className="bg-gray-50 dark:bg-gray-900 
-                                border-b border-gray-200 dark:border-gray-800"
-              >
+              <TableRow className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <TableHead className="font-semibold">Name</TableHead>
                 <TableHead className="font-semibold">Description</TableHead>
                 <TableHead className="font-semibold">Members</TableHead>
@@ -191,25 +178,16 @@ export default function TeamsPage() {
               {filteredTeams.map((team, index) => (
                 <TableRow
                   key={team.id}
-                  className="animate-fade-in-up border-b border-gray-100 dark:border-gray-800 
-                           hover:bg-gray-50 dark:hover:bg-gray-900 
-                           transition-colors duration-200"
+                  className="animate-fade-in-up border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <TableCell className="font-medium">
                     <TooltipProvider>
                       <Tooltip>
-                        <TooltipTrigger
-                          className="cursor-help hover:text-gray-600 
-                                                dark:hover:text-gray-300 transition-colors"
-                        >
+                        <TooltipTrigger className="cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                           {team.name}
                         </TooltipTrigger>
-                        <TooltipContent
-                          className="bg-white dark:bg-gray-950 
-                                                border border-gray-200 dark:border-gray-800 
-                                                shadow-lg"
-                        >
+                        <TooltipContent className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-lg">
                           <p>Join Code: {team.joinCode}</p>
                         </TooltipContent>
                       </Tooltip>
@@ -231,9 +209,7 @@ export default function TeamsPage() {
                             setSelectedTeam(team);
                             setIsModalOpen(true);
                           }}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-900 
-                                   hover:border-black dark:hover:border-white 
-                                   transition-all duration-200"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-black dark:hover:border-white transition-all duration-200"
                         >
                           Edit
                         </Button>
@@ -241,9 +217,7 @@ export default function TeamsPage() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(team.id)}
-                          className="bg-black dark:bg-white hover:bg-gray-800 
-                                   dark:hover:bg-gray-200 text-white dark:text-black 
-                                   transition-all duration-200"
+                          className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black transition-all duration-200"
                         >
                           Delete
                         </Button>

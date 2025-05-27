@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@radix-ui/colors/tomato-dark.css";
+import "@radix-ui/colors/mauve-dark.css";
 import { GeistSans } from "geist/font/sans";
 import { Providers } from "@/components/providers";
 
@@ -24,9 +26,7 @@ export default function RootLayout({
           <HeaderNavbar />
           <main className="flex-1 mt-14 h-[94vh] overscroll-contain">
             <MainNav />
-            <div className="flex-1 ml-28 m-6">
-              {children}
-            </div>
+            <div className="flex-1 ml-28 m-6">{children}</div>
             <Toaster />
           </main>
         </Providers>
