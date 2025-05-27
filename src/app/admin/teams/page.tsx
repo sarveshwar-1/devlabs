@@ -171,7 +171,7 @@ export default function TeamsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this team?")) return;
 
     try {
@@ -198,7 +198,7 @@ export default function TeamsPage() {
       console.error("Error deleting team:", error);
       toast({
         title: "Error",
-        description: (error as Error).message,
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -268,7 +268,9 @@ export default function TeamsPage() {
         </div>
 
         {/* Table Section */}
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
+        <div
+          className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100"
+        >
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">

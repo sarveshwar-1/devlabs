@@ -37,10 +37,9 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
-  const [selectedTeamForMembers, setSelectedTeamForMembers] =
-    useState<Team | null>(null);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -96,7 +95,9 @@ export default function TeamsPage() {
         </div>
 
         {/* Table Section */}
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
+        <div
+          className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100"
+        >
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">

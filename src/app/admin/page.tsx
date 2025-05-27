@@ -1,17 +1,7 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 
 function Page() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to projects page
-    router.replace("/admin/project");
-  }, [router]);
-
-  return null; // Don't render anything as we're redirecting
+  return <div>Staff</div>;
 }
 
 export default Page;
