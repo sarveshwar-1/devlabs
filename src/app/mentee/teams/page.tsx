@@ -154,9 +154,7 @@ export default function TeamsPage() {
 
         {/* Search Section */}
         <div className="relative max-w-md mb-8 animate-fade-in-up">
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"
-          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <Input
             placeholder="Search teams..."
             value={search}
@@ -166,14 +164,10 @@ export default function TeamsPage() {
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm animate-fade-in-up delay-100"
-        >
+        <div className="rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
-              <TableRow
-                className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
-              >
+              <TableRow className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <TableHead className="font-semibold">Name</TableHead>
                 <TableHead className="font-semibold">Description</TableHead>
                 <TableHead className="font-semibold">Members</TableHead>
@@ -190,14 +184,10 @@ export default function TeamsPage() {
                   <TableCell className="font-medium">
                     <TooltipProvider>
                       <Tooltip>
-                        <TooltipTrigger
-                          className="cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                        >
+                        <TooltipTrigger className="cursor-help hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                           {team.name}
                         </TooltipTrigger>
-                        <TooltipContent
-                          className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-lg"
-                        >
+                        <TooltipContent className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 shadow-lg">
                           <p>Join Code: {team.joinCode}</p>
                         </TooltipContent>
                       </Tooltip>

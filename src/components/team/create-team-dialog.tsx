@@ -132,9 +132,7 @@ export default function TeamsPage() {
         </div>
 
         {/* Table Section */}
-        <div
-          className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100"
-        >
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
           <Table>
             <TableHeader>
               <TableRow className="border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
@@ -171,9 +169,7 @@ export default function TeamsPage() {
                         <TooltipTrigger className="cursor-help hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                           {team.name}
                         </TooltipTrigger>
-                        <TooltipContent
-                          className="bg-white dark:bg-black text-black dark:text-white border border-gray-200 dark:border-gray-800 shadow-lg"
-                        >
+                        <TooltipContent className="bg-white dark:bg-black text-black dark:text-white border border-gray-200 dark:border-gray-800 shadow-lg">
                           <p>Join Code: {team.joinCode}</p>
                         </TooltipContent>
                       </Tooltip>
